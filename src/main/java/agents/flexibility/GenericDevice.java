@@ -326,10 +326,24 @@ public class GenericDevice {
 		return currentShiftTimeInSteps;
 	}
 
+	/** Returns maximum shift time in steps; if 0 or negative, no shift time limit applies
+	 * 
+	 * @return maximum shift time in steps */
+	public long getMaximumShiftTimeInSteps() {
+		return maximumShiftTimeInSteps;
+	}
+
 	/** Returns prolonging cost from last transition in EUR
 	 * 
 	 * @return prolonging cost from last transition in EUR */
 	public double getLastProlongingCostInEUR() {
 		return lastProlongingCostInEUR;
+	}
+
+	/** Returns true if prolonging is allowed
+	 * 
+	 * @return true if prolonging is allowed */
+	public boolean hasProlonging() {
+		return enableProlonging;
 	}
 }

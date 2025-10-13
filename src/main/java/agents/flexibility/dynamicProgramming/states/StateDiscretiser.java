@@ -20,6 +20,10 @@ public class StateDiscretiser {
 	private double lowestLevelEnergyInMWH;
 
 	private int[] allStates;
+	/** Maximum amount of energy for downshift in MWh (negative) */
+	private double currentDownshiftEnergyLimitInMWH;
+	/** Maximum amount of energy for upshift in MWh (positive) */
+	private double currentUpshiftEnergyLimitInMWH;
 
 	public StateDiscretiser(double energyResolutionInMWH, TimeSpan timeResolution) {
 		this.energyResolutionInMWH = energyResolutionInMWH;
@@ -72,6 +76,11 @@ public class StateDiscretiser {
 		}
 	}
 
+	public void setShiftEnergyLimits(double currentDownshiftEnergyLimitInMWH, double currentUpshiftEnergyLimitInMWH) {
+		this.currentDownshiftEnergyLimitInMWH = currentDownshiftEnergyLimitInMWH;
+		this.currentUpshiftEnergyLimitInMWH = currentUpshiftEnergyLimitInMWH;
+	}
+
 	/** Returns number of discretisation steps equivalent to given energy delta in MWh (rounded down)
 	 * 
 	 * @param energyDeltaInMWH positive energy delta in MWh
@@ -92,6 +101,10 @@ public class StateDiscretiser {
 		return (stateIndex % numberOfEnergyStates - energyStateOffset) * energyResolutionInMWH;
 	}
 
+	public int getEnergyIndexDelta(int initialStateIndex, int finalStateIndex) {
+		return (finalStateIndex % numberOfEnergyStates - initialStateIndex % numberOfEnergyStates);
+	}
+
 	public int[] getFollowUpStates(int initialStateIndex, double lowestEnergyContentInMWH,
 			double highestEnergyContentInMWH) {
 		int lowestEnergyIndex = energyToCeilIndex(lowestEnergyContentInMWH, lowestLevelEnergyInMWH);
@@ -107,6 +120,18 @@ public class StateDiscretiser {
 			} else if (Math.signum(energyIndex - energyStateOffset) == Math.signum(currentEnergyIndex - energyStateOffset)) {
 				followUpShiftTime = currentShiftTime + 1;
 				if (followUpShiftTime >= numberOfTimeStates) {
+					double energyToBalanceInMWH = energyIndexToEnergy(currentEnergyIndex);
+					if (currentEnergyIndex > energyStateOffset) {
+						double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
+						if (energyIndexToEnergy(energyIndex) > (1 - downshiftShareForBalance) * currentUpshiftEnergyLimitInMWH) {
+							continue;
+						}
+					} else {
+						double upshiftShareForBalance = Math.min(1., -energyToBalanceInMWH / currentUpshiftEnergyLimitInMWH);
+						if (energyIndexToEnergy(energyIndex) < (1 - upshiftShareForBalance) * currentDownshiftEnergyLimitInMWH) {
+							continue;
+						}
+					}
 					followUpShiftTime = 1;
 				}
 			} else {

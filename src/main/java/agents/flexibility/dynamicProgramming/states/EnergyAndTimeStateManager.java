@@ -36,6 +36,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private double[][] bestValue;
 	private double[] transitionValuesCharging;
 	private double[] transitionValuesDischarging;
+	private double[] zeroValues;
 
 	public EnergyAndTimeStateManager(GenericDevice device, AssessmentFunction assessmentFunction,
 			double planningHorizonInHours,
@@ -60,6 +61,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		raiseOnWaterValues();
 		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getNumberOfStates()];
 		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getNumberOfStates()];
+		zeroValues = new double[stateDiscretiser.getNumberOfStates()];
 	}
 
 	private void raiseOnSelfDischarge() {
@@ -80,6 +82,8 @@ public class EnergyAndTimeStateManager implements StateManager {
 		deviceCache.prepareFor(time);
 		currentOptimisationTimeIndex = StateManager.getCurrentOptimisationTimeIndex(time, startingPeriod);
 		cacheTransitions();
+		stateDiscretiser.setShiftEnergyLimits(deviceCache.getMaxNetDischargingEnergyInMWH(),
+				deviceCache.getMaxNetChargingEnergyInMWH());
 	}
 
 	/** Cache values of transitions */
@@ -123,26 +127,42 @@ public class EnergyAndTimeStateManager implements StateManager {
 
 	@Override
 	public double getTransitionValueFor(int initialStateIndex, int finalStateIndex) {
-		// Include penalty and prolonging cost
-		return 0;
+		double prolongingCostInEUR = 0;
+		if (stateDiscretiser.isProlonged(initialStateIndex, finalStateIndex)) {
+			double absoluteInitialEnergyInMWH = Math.abs(stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex));
+			double absoluteFinalEnergyInMWH = Math.abs(stateDiscretiser.getEnergyOfStateInMWH(finalStateIndex));
+			double prolongedEnergyDeltaInMWH = absoluteInitialEnergyInMWH + absoluteFinalEnergyInMWH
+					- Math.abs(absoluteInitialEnergyInMWH - absoluteFinalEnergyInMWH);
+			prolongingCostInEUR = prolongedEnergyDeltaInMWH * deviceCache.getVariableCostInEURperMWH();
+		}
+		return getCachedValueFor(initialStateIndex, finalStateIndex) + prolongingCostInEUR;
+	}
+
+	/** @return cached value of transition, only available without self discharge */
+	private double getCachedValueFor(int initialStateIndex, int finalStateIndex) {
+		int energyIndexDelta = stateDiscretiser.getEnergyIndexDelta(initialStateIndex, finalStateIndex);
+		return energyIndexDelta >= 0 ? transitionValuesCharging[energyIndexDelta]
+				: transitionValuesDischarging[-energyIndexDelta];
 	}
 
 	@Override
 	public double[] getBestValuesNextPeriod() {
-		// TODO Auto-generated method stub
-		return null;
+		if (currentOptimisationTimeIndex + 1 < numberOfTimeSteps) {
+			return bestValue[currentOptimisationTimeIndex + 1];
+		} else {
+			return zeroValues;
+		}
 	}
 
 	@Override
 	public void updateBestFinalState(int initialStateIndex, int bestFinalStateIndex, double bestAssessmentValue) {
-		// TODO Auto-generated method stub
-
+		bestValue[currentOptimisationTimeIndex][initialStateIndex] = bestAssessmentValue;
+		bestNextState[currentOptimisationTimeIndex][initialStateIndex] = bestFinalStateIndex;
 	}
 
 	@Override
 	public int getNumberOfForecastTimeSteps() {
-		// TODO Auto-generated method stub
-		return 0;
+		return numberOfTimeSteps;
 	}
 
 	@Override
@@ -153,8 +173,11 @@ public class EnergyAndTimeStateManager implements StateManager {
 
 	@Override
 	public ArrayList<TimeStamp> getPlanningTimes(TimePeriod startingPeriod) {
-		// TODO Auto-generated method stub
-		return null;
+		int numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
+		ArrayList<TimeStamp> planningTimes = new ArrayList<>(numberOfTimeSteps);
+		for (int step = 0; step < numberOfTimeSteps; step++) {
+			planningTimes.add(startingPeriod.shiftByDuration(step).getStartTime());
+		}
+		return planningTimes;
 	}
-
 }

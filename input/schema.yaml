@@ -3026,6 +3026,15 @@ AgentTypes:
               description: "If positive, enable prolonged shifts of flexibility device beyond maximum shift time"
               unit: 1
               isAbout: [{name: "boolean value", "@id": "OEO_00010422"}]
+          PenaltyCostInEURperMWH:
+            AttributeType: time_series
+            Mandatory: true
+            List: false
+            Default: 0.
+            MetaData:
+              description: "Penalty cost for operating a flexibility device outside of maximum shift time"
+              unit: EUR/MWh
+              isAbout: [ { name: "variable cost", "@id": "OEO_00020145" }, { name: "time series", "@id": "OEO_00030034" } ]
       Assessment:
         AttributeType: block
         Mandatory: true

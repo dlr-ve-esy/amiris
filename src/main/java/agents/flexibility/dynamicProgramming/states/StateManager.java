@@ -5,6 +5,7 @@ package agents.flexibility.dynamicProgramming.states;
 
 import java.util.ArrayList;
 import agents.flexibility.GenericDevice;
+import agents.flexibility.GenericDeviceCache;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -12,6 +13,9 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public interface StateManager {
+	/** Used to avoid rounding errors in floating point calculation of transition steps */
+	static final double PRECISION_GUARD = 1E-6;
+
 	/** Contains the course of the internal energy levels, external energy deltas, and water values over a dispatch */
 	public static class DispatchSchedule {
 		public final double[] externalEnergyDeltasInMWH;
@@ -153,5 +157,36 @@ public interface StateManager {
 	 * @return number of time shifts of given starting period to begin with given time */
 	static int getCurrentOptimisationTimeIndex(TimeStamp time, TimePeriod startingPeriod) {
 		return (int) ((time.getStep() - startingPeriod.getStartTime().getStep()) / startingPeriod.getDuration().getSteps());
+	}
+
+	/** Returns next energy level based on current one and planned energy delta; if current energy level is already out of bounds,
+	 * do <b>not</b> force the planned next energy value onto a modelled energy level. This avoids unplanned dispatch purely because
+	 * an energy level is out-of-bounds. Instead, follow the original dispatch plan.
+	 * 
+	 * @param deviceCache cached generic device prepared for time at which transition takes place
+	 * @param currentInternalEnergyInMWH initial energy level of device
+	 * @param plannedEnergyDeltaInMWH of transition
+	 * @return next energy level based on current one and planned energy delta */
+	static double calcNextEnergyInMWH(GenericDeviceCache deviceCache, double currentInternalEnergyInMWH,
+			double plannedEnergyDeltaInMWH) {
+		double lowerLevelInMWH = deviceCache.getEnergyContentLowerLimitInMWH();
+		double upperLevelInMWH = deviceCache.getEnergyContentUpperLimitInMWH();
+		double plannedNextEnergyContentInMWH = currentInternalEnergyInMWH + plannedEnergyDeltaInMWH;
+		if (currentInternalEnergyInMWH >= lowerLevelInMWH && currentInternalEnergyInMWH <= upperLevelInMWH) {
+			return Math.max(lowerLevelInMWH, Math.min(upperLevelInMWH, plannedNextEnergyContentInMWH));
+		}
+		return plannedNextEnergyContentInMWH;
+	}
+
+	/** Returns specific value in EUR per MWh of a transition with given deltas for energy and value
+	 * 
+	 * @param energyDeltaInMWH of transition
+	 * @param valueDeltaInEUR of transition
+	 * @return specific value of a transition with given deltas for energy and value */
+	static double calcSpecificValueInEURperMWH(double energyDeltaInMWH, double valueDeltaInEUR) {
+		if (Math.abs(energyDeltaInMWH) > PRECISION_GUARD) {
+			return valueDeltaInEUR / energyDeltaInMWH;
+		}
+		return 0;
 	}
 }

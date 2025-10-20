@@ -203,8 +203,10 @@ public class GenericDevice {
 	 * @return whether shift is feasible within power bounds */
 	private boolean isProlongingWithinPowerBounds(double energyToBalanceInMWH, double finalEnergyContentInMWH,
 			TimeSpan duration, TimeStamp time) {
-		double maxNetChargingPowerInMW = getNetInflowInMW(time) + getExternalChargingPowerInMW(time) * getChargingEfficiency(time);
-		double maxNetDischargingPowerInMW = getNetInflowInMW(time) - getExternalDischargingPowerInMW(time) / getDischargingEfficiency(time);
+		double maxNetChargingPowerInMW = getNetInflowInMW(time)
+				+ getExternalChargingPowerInMW(time) * getChargingEfficiency(time);
+		double maxNetDischargingPowerInMW = getNetInflowInMW(time)
+				- getExternalDischargingPowerInMW(time) / getDischargingEfficiency(time);
 		double intervalDurationInHours = (double) duration.getSteps() / STEPS_PER_HOUR;
 		double currentUpshiftEnergyLimitInMWH = maxNetChargingPowerInMW * intervalDurationInHours;
 		double currentDownshiftEnergyLimitInMWH = maxNetDischargingPowerInMW * intervalDurationInHours;

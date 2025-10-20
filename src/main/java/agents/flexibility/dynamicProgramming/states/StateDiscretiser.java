@@ -3,12 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.states;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import de.dlr.gitlab.fame.time.TimeSpan;
 
 /** Handles state discretisation for energy, time
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class StateDiscretiser {
+	private static final String WARN_OUT_OF_BOUNDS = "Detected energy levels outside of feasible bounds.";
+	private static final Logger logger = LoggerFactory.getLogger(StateDiscretiser.class);
+
 	/** Used to avoid rounding errors in floating point calculation of transition steps */
 	private static final double PRECISION_GUARD = 1E-5;
 
@@ -65,7 +70,6 @@ public class StateDiscretiser {
 				arrayIndex++;
 			}
 		}
-
 	}
 
 	public int getNumberOfStates() {
@@ -148,5 +152,37 @@ public class StateDiscretiser {
 		int offsettedInitialEnergyState = initialStateIndex % numberOfEnergyStates - energyStateOffset;
 		int offsettedFinalEnergyState = finalStateIndex % numberOfEnergyStates - energyStateOffset;
 		return finalTime == 1 && (Math.signum(offsettedInitialEnergyState) == Math.signum(offsettedFinalEnergyState));
+	}
+
+	/** @return closest valid energy index corresponding to given energy level */
+	public int energyToNearestEnergyIndex(double energyAmountInMWH) {
+		int nearestIndex = (int) Math.round(energyAmountInMWH / energyResolutionInMWH) + energyStateOffset;
+		int correctedIndex = Math.max(0, Math.min(nearestIndex, numberOfEnergyStates - 1));
+		if (nearestIndex != correctedIndex) {
+			logger.error(WARN_OUT_OF_BOUNDS);
+		}
+		return correctedIndex;
+	}
+
+	/** @return closest valid shift time index corresponding to given shift time in steps */
+	public int roundToNearestShiftTimeIndex(long shiftTimeInSteps) {
+		int atLeast = (int) (shiftTimeInSteps / timeResolution.getSteps());
+		int increase = (int) (((shiftTimeInSteps % timeResolution.getSteps()) * 2) / timeResolution.getSteps());
+		return atLeast + increase;
+	}
+
+	/** @return state index derived from given energy level and shift time indices */
+	public int getStateIndex(int energyLevelIndex, int shiftTimeIndex) {
+		return shiftTimeIndex * numberOfEnergyStates + energyLevelIndex;
+	}
+
+	/** @return energy delta in MWh from initial to final state */
+	public double calcEnergyDeltaInMWH(int initialStateIndex, int finalStateIndex) {
+		return getEnergyIndexDelta(initialStateIndex, finalStateIndex) * energyResolutionInMWH;
+	}
+
+	/** @return corresponding shift time index for given state index */
+	public int calcShiftTimeIndexFromStateIndex(int stateIndex) {
+		return stateIndex / numberOfEnergyStates;
 	}
 }

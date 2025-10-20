@@ -167,8 +167,39 @@ public class EnergyAndTimeStateManager implements StateManager {
 
 	@Override
 	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) {
-		// TODO Auto-generated method stub
-		return null;
+		double currentInternalEnergyInMWH = device.getCurrentInternalEnergyInMWH();
+		long shiftTimeInSteps = device.getCurrentShiftTimeInSteps();
+		int currentShiftTimeIndex = stateDiscretiser.roundToNearestShiftTimeIndex(shiftTimeInSteps);
+		double[] externalEnergyDeltaInMWH = new double[schedulingSteps];
+		double[] internalEnergiesInMWH = new double[schedulingSteps];
+		double[] specificValuesInEURperMWH = new double[schedulingSteps];
+		for (int timeIndex = 0; timeIndex < schedulingSteps; timeIndex++) {
+			TimeStamp time = StateManager.getTimeByIndex(startingPeriod, timeIndex);
+			deviceCache.prepareFor(time);
+
+			internalEnergiesInMWH[timeIndex] = currentInternalEnergyInMWH;
+			int currentEnergyLevelIndex = stateDiscretiser.energyToNearestEnergyIndex(currentInternalEnergyInMWH);
+			int stateIndex = stateDiscretiser.getStateIndex(currentEnergyLevelIndex, currentShiftTimeIndex);
+			int nextStateIndex = bestNextState[timeIndex][stateIndex];
+			double plannedEnergyDeltaInMWH = stateDiscretiser.calcEnergyDeltaInMWH(stateIndex, nextStateIndex);
+			double nextInternalEnergyInMWH = StateManager.calcNextEnergyInMWH(deviceCache, currentInternalEnergyInMWH,
+					plannedEnergyDeltaInMWH);
+			externalEnergyDeltaInMWH[timeIndex] = deviceCache.simulateTransition(currentInternalEnergyInMWH,
+					nextInternalEnergyInMWH);
+			currentInternalEnergyInMWH = nextInternalEnergyInMWH;
+			currentShiftTimeIndex = stateDiscretiser.calcShiftTimeIndexFromStateIndex(nextStateIndex);
+
+			double rawValueDeltaInEUR = getValueOfStorage(timeIndex + 1, nextStateIndex)
+					- getValueOfStorage(timeIndex + 1, stateIndex);
+			specificValuesInEURperMWH[timeIndex] = StateManager.calcSpecificValueInEURperMWH(plannedEnergyDeltaInMWH,
+					rawValueDeltaInEUR);
+		}
+		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH);
+	}
+
+	/** @return the value of storage for given time and state index */
+	private double getValueOfStorage(int timeIndex, int stateIndex) {
+		return timeIndex < numberOfTimeSteps ? bestValue[timeIndex][stateIndex] : 0;
 	}
 
 	@Override

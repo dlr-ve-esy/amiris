@@ -58,7 +58,8 @@ public class GenericDeviceTest {
 	private GenericDevice createGenericDevice(double chargingPowerInMW, double dischargingPowerInMW,
 			double chargingEfficiency, double dischargingEfficiency, double energyContentUpperLimitInMWH,
 			double energyContentLowerLimitInMWH, double selfDischargeRatePerHour, double netInflowPowerInMW,
-			double currentEnergyContentInMWH, double variableCostInEURperMWH, double maximumShiftTimeInHours, int prologing) {
+			double currentEnergyContentInMWH, double variableCostInEURperMWH, double maximumShiftTimeInHours, int prologing,
+			double penaltyCostInEURperMWH) {
 		try {
 			when(parameterDataMock.getTimeSeries(GenericDevice.PARAM_CHARGING_POWER))
 					.thenReturn(createSeries(chargingPowerInMW));
@@ -80,6 +81,8 @@ public class GenericDeviceTest {
 					.thenReturn(createSeries(variableCostInEURperMWH));
 			when(parameterDataMock.getDouble(GenericDevice.PARAM_SHIFT_TIME)).thenReturn(maximumShiftTimeInHours);
 			when(parameterDataMock.getInteger(GenericDevice.PARAM_ENABLE_PROLONGING)).thenReturn(prologing);
+			when(parameterDataMock.getTimeSeries(GenericDevice.PARAM_PENALTY_COST))
+					.thenReturn(createSeries(penaltyCostInEURperMWH));
 			return new GenericDevice(parameterDataMock);
 		} catch (MissingDataException e) {
 			throw new RuntimeException();
@@ -98,78 +101,78 @@ public class GenericDeviceTest {
 	@Test
 	public void getEnergyContentUpperLimitInMWH_returnsConfiguredValue() {
 		double targetValue = 42.;
-		device = createGenericDevice(0, 0, 0, 0, targetValue, 0, 0, 0, 0, 0, 0, 0);
+		device = createGenericDevice(0, 0, 0, 0, targetValue, 0, 0, 0, 0, 0, 0, 0, 0);
 		assertEquals(targetValue, device.getEnergyContentUpperLimitInMWH(defaultTime), 1E-12);
 	}
 
 	@Test
 	public void getEnergyContentLowerLimitInMWH_returnsConfiguredValue() {
 		double targetValue = 42.;
-		device = createGenericDevice(0, 0, 0, 0, 0, targetValue, 0, 0, 0, 0, 0, 0);
+		device = createGenericDevice(0, 0, 0, 0, 0, targetValue, 0, 0, 0, 0, 0, 0, 0);
 		assertEquals(targetValue, device.getEnergyContentLowerLimitInMWH(defaultTime), 1E-12);
 	}
 
 	@Test
 	public void transition_noSelfDischargeFullEfficiencyNoInflow_correctNewEnergyContent() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 0, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 0, 0, 0);
 		device.transition(defaultTime, 50, oneHour);
 		assertEquals(50, device.getCurrentInternalEnergyInMWH(), 1E-12);
 	}
 
 	@Test
 	public void transition_noSelfDischargeFullEfficiencyNoInflowQuarterHour_correctNewEnergyContent() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 0, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 0, 0, 0);
 		device.transition(defaultTime, 100, quarterHour);
 		assertEquals(25, device.getCurrentInternalEnergyInMWH(), 1E-12);
 	}
 
 	@Test
 	public void transition_noSelfDischargeFullEfficiencyWithInflow_correctNewEnergyContent() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 10, 0, 0, 0, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 10, 0, 0, 0, 0, 0);
 		device.transition(defaultTime, 200, twoHours);
 		assertEquals(220, device.getCurrentInternalEnergyInMWH(), 1E-12);
 	}
 
 	@Test
 	public void transition_noSelfDischargeImperfectEfficiencyNoInflow_correctNewEnergyContent() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0., 0, 0, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0., 0, 0, 0, 0, 0, 0);
 		device.transition(defaultTime, 100, oneHour);
 		assertEquals(50, device.getCurrentInternalEnergyInMWH(), 1E-12);
 
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0., 0, 100, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0., 0, 100, 0, 0, 0, 0);
 		device.transition(defaultTime, -80, oneHour);
 		assertEquals(0, device.getCurrentInternalEnergyInMWH(), 1E-12);
 	}
 
 	@Test
 	public void transition_withSelfDischargeFullEfficiencyNoInflow_correctNewEnergyContent() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0.1, 0, 100, 0, 0, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0.1, 0, 100, 0, 0, 0, 0);
 		device.transition(defaultTime, 0, twoHours);
 		assertEquals(81, device.getCurrentInternalEnergyInMWH(), 1E-12);
 
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0.1, 0, 100, 0, 0, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0.1, 0, 100, 0, 0, 0, 0);
 		device.transition(defaultTime, 100, twoHours);
 		assertEquals(181, device.getCurrentInternalEnergyInMWH(), 1E-12);
 	}
 
 	@Test
 	public void transition_withSelfDischargeImperfectEfficiencyWithInflow_correctNewEnergyContent() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 10, 100, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 10, 100, 0, 0, 0, 0);
 		device.transition(defaultTime, 0, twoHours);
 		assertEquals(101, device.getCurrentInternalEnergyInMWH(), 1E-12);
 
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 10, 100, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 10, 100, 0, 0, 0, 0);
 		device.transition(defaultTime, -40, twoHours);
 		assertEquals(51, device.getCurrentInternalEnergyInMWH(), 1E-12);
 
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 10, 100, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 10, 100, 0, 0, 0, 0);
 		device.transition(defaultTime, 20, twoHours);
 		assertEquals(111, device.getCurrentInternalEnergyInMWH(), 1E-12);
 	}
 
 	@Test
 	public void transition_chargingPowerExceeded_returnsFixedEnergyDeltas() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, 50, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, 50, 0, 0, 0, 0);
 		double result = device.transition(defaultTime, 300, oneHour);
 		assertEquals(100., result, 1E-12);
 		assertEquals(100., device.getCurrentInternalEnergyInMWH(), 1E-12);
@@ -178,7 +181,7 @@ public class GenericDeviceTest {
 
 	@Test
 	public void transition_dischargingPowerExceeded_returnsFixedEnergyDeltas() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, 250, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, 250, 0, 0, 0, 0);
 		double result = device.transition(defaultTime, -120, oneHour);
 		assertEquals(-100, result, 1E-12);
 		assertEquals(125., device.getCurrentInternalEnergyInMWH(), 1E-12);
@@ -187,7 +190,7 @@ public class GenericDeviceTest {
 
 	@Test
 	public void transition_upperEnergyLimitExceeded_returnsFixedEnergyDeltas() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, 475, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, 475, 0, 0, 0, 0);
 		double result = device.transition(defaultTime, 150, oneHour);
 		assertEquals(50, result, 1E-12);
 		assertEquals(500., device.getCurrentInternalEnergyInMWH(), 1E-12);
@@ -196,7 +199,7 @@ public class GenericDeviceTest {
 
 	@Test
 	public void transition_lowerEnergyLimitExceeded_returnsFixedEnergyDeltas() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, -450, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0, 0, -450, 0, 0, 0, 0);
 		double result = device.transition(defaultTime, -75, oneHour);
 		assertEquals(-40, result, 1E-12);
 		assertEquals(-500., device.getCurrentInternalEnergyInMWH(), 1E-12);
@@ -205,21 +208,21 @@ public class GenericDeviceTest {
 
 	@Test
 	public void transition_negativeSelfDischarge_logsError() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 0, -450, 0, 0, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0.1, 0, -450, 0, 0, 0, 0);
 		device.transition(defaultTime, 100, oneHour);
 		logChecker.assertLogsContain(GenericDevice.ERR_NEGATIVE_SELF_DISCHARGE);
 	}
 
 	@Test
 	public void transition_updatesCurrentShiftTime() {
-		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0., 0, 0, 0, 10, 0);
+		device = createGenericDevice(100, 100, 0.5, 0.8, 500, -500, 0., 0, 0, 0, 10, 0, 0);
 		device.transition(defaultTime, 100, oneHour);
 		assertEquals(oneHour.getSteps(), device.getCurrentShiftTimeInSteps());
 	}
 
 	@Test
 	public void transition_toZero_resetsCurrentShiftTime() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0, 0);
 		device.transition(defaultTime, 100, oneHour);
 		device.transition(defaultTime, -100, oneHour);
 		assertEquals(0, device.getCurrentShiftTimeInSteps());
@@ -227,28 +230,39 @@ public class GenericDeviceTest {
 
 	@Test
 	public void transition_counterShift_reinitialisesCurrentShiftTime() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0);
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0, 0);
 		device.transition(defaultTime, 25, quarterHour);
 		device.transition(defaultTime, -100, oneHour);
 		assertEquals(oneHour.getSteps(), device.getCurrentShiftTimeInSteps());
 	}
 
 	@Test
-	public void transition_exceedsMaximumShiftTimeNoProlonging_logsWarningNoCost() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 0.1, 0);
+	public void transition_exceedsMaximumShiftTimeNoProlonging_logsWarningPenaltyCost() {
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 0.1, 0, 1.);
 		device.transition(defaultTime, 25, quarterHour);
 		logChecker.assertLogsContain(GenericDevice.WARN_SHIFT_TIME_EXCEEDED);
-		assertEquals(0, device.getLastProlongingCostInEUR(), 1E-13);
+		assertEquals(25, device.getLastProlongingCostInEUR(), 1E-13);
 	}
 
 	@Test
-	public void transition_exceedsMaximumShiftTimeWithProlonging_reinitialisesShiftTime() {
-		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 1, 1);
+	public void transition_exceedsMaximumShiftTimeNoValidProlonging_reinitialisesShiftTimeAndApplyPenalty() {
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 1, 1, 3);
 		device.transition(defaultTime, 25, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		assertEquals(quarterHour.getSteps(), device.getCurrentShiftTimeInSteps());
-		assertEquals(2 * 25 * 10, device.getLastProlongingCostInEUR(), 1E-10);
+		assertEquals(3 * 25, device.getLastProlongingCostInEUR(), 1E-10);
+	}
+
+	@Test
+	public void transition_exceedsMaximumShiftTimeWithValidProlonging_reinitialisesShiftTime() {
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 1, 1, 3);
+		device.transition(defaultTime, 12, quarterHour);
+		device.transition(defaultTime, 0, quarterHour);
+		device.transition(defaultTime, 0, quarterHour);
+		device.transition(defaultTime, 0, quarterHour);
+		assertEquals(quarterHour.getSteps(), device.getCurrentShiftTimeInSteps());
+		assertEquals(10 * 2 * 12, device.getLastProlongingCostInEUR(), 1E-10);
 	}
 }

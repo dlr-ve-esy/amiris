@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.states;
 
+import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.dlr.gitlab.fame.time.TimeSpan;
@@ -36,11 +37,11 @@ public class StateDiscretiser {
 	}
 
 	public void setBoundaries(double[] energyBoundaries, long maxShiftTimeInSteps) {
-		energyStateOffset = energyToCeilIndex(energyBoundaries[0], 0.);
+		energyStateOffset = -energyToCeilIndex(energyBoundaries[0], 0.);
 		final int highestStep = energyToFloorIndex(energyBoundaries[1], 0.);
-		lowestLevelEnergyInMWH = energyStateOffset * energyResolutionInMWH;
-		numberOfEnergyStates = highestStep - energyStateOffset + 1;
-		numberOfTimeStates = maxShiftTimeInSteps > 0 ? (int) (maxShiftTimeInSteps / timeResolution.getSteps()) + 1 : 1;
+		lowestLevelEnergyInMWH = -energyStateOffset * energyResolutionInMWH;
+		numberOfEnergyStates = highestStep + energyStateOffset + 1;
+		numberOfTimeStates = maxShiftTimeInSteps > 0 ? (int) (maxShiftTimeInSteps / timeResolution.getSteps()) : 1;
 		allocateStates();
 	}
 
@@ -58,7 +59,7 @@ public class StateDiscretiser {
 	}
 
 	private void allocateStates() {
-		allStates = new int[getNumberOfStates()];
+		allStates = new int[getNumberOfExistingStates()];
 		allStates[0] = energyStateOffset;
 		int arrayIndex = 1;
 		for (int time = 1; time < numberOfTimeStates; time++) {
@@ -72,7 +73,7 @@ public class StateDiscretiser {
 		}
 	}
 
-	public int getNumberOfStates() {
+	private int getNumberOfExistingStates() {
 		if (numberOfTimeStates == 1) {
 			return numberOfEnergyStates;
 		} else {
@@ -94,7 +95,7 @@ public class StateDiscretiser {
 	}
 
 	public double energyIndexToEnergy(int energyIndex) {
-		return energyIndex * energyResolutionInMWH - lowestLevelEnergyInMWH;
+		return energyIndex * energyResolutionInMWH + lowestLevelEnergyInMWH;
 	}
 
 	public int[] getAllAvailableStates() {
@@ -125,7 +126,7 @@ public class StateDiscretiser {
 				followUpShiftTime = currentShiftTime + 1;
 				if (followUpShiftTime >= numberOfTimeStates) {
 					double energyToBalanceInMWH = energyIndexToEnergy(currentEnergyIndex);
-					if (currentEnergyIndex > energyStateOffset) {
+					if (energyToBalanceInMWH > 0.) {
 						double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
 						if (energyIndexToEnergy(energyIndex) > (1 - downshiftShareForBalance) * currentUpshiftEnergyLimitInMWH) {
 							continue;
@@ -143,6 +144,13 @@ public class StateDiscretiser {
 			}
 			followUpStates[arrayIndex] = followUpShiftTime * numberOfEnergyStates + energyIndex;
 			arrayIndex++;
+		}
+		if (arrayIndex < followUpStates.length) {
+			if (arrayIndex > 0) {
+				return Arrays.copyOfRange(followUpStates, 0, arrayIndex - 1);
+			} else {
+				return new int[0];
+			}	
 		}
 		return followUpStates;
 	}
@@ -184,5 +192,15 @@ public class StateDiscretiser {
 	/** @return corresponding shift time index for given state index */
 	public int calcShiftTimeIndexFromStateIndex(int stateIndex) {
 		return stateIndex / numberOfEnergyStates;
+	}
+
+	/** @return number of all states including those that are technically not valid, i.e.
+	 *         <ul>
+	 *         <li>states with energy level equal to zero, but shift time above zero</li>
+	 *         <li>states with energy level not equal to zero, but shift time zero</li>
+	 *         </ul>
+	 */
+	public int getStateCount() {
+		return numberOfEnergyStates * numberOfTimeStates;
 	}
 }

@@ -59,9 +59,9 @@ public class EnergyAndTimeStateManager implements StateManager {
 		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTimeInSteps());
 		raiseOnSelfDischarge();
 		raiseOnWaterValues();
-		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getNumberOfStates()];
-		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getNumberOfStates()];
-		zeroValues = new double[stateDiscretiser.getNumberOfStates()];
+		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getStateCount()];
+		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getStateCount()];
+		zeroValues = new double[stateDiscretiser.getStateCount()];
 	}
 
 	private void raiseOnSelfDischarge() {

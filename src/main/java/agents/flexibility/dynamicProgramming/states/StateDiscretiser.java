@@ -150,7 +150,7 @@ public class StateDiscretiser {
 				return Arrays.copyOfRange(followUpStates, 0, arrayIndex - 1);
 			} else {
 				return new int[0];
-			}	
+			}
 		}
 		return followUpStates;
 	}

@@ -3075,6 +3075,9 @@ AgentTypes:
               STATE_OF_CHARGE:
                 MetaData:
                   description: "Represent energy states of an electricity storage device"
+              ENERGY_AND_TIME:
+                MetaData:
+                  description: "Represent energy states and current shifting time of a device in two dimensions"
           PlanningHorizonInHours:
             MetaData:
               description: "Foresight time length in hours. Must be smaller or equal to that of the contracted Forecaster."

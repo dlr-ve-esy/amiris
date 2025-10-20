@@ -162,7 +162,8 @@ public class StateDiscretiser {
 		return finalTime == 1 && (Math.signum(offsettedInitialEnergyState) == Math.signum(offsettedFinalEnergyState));
 	}
 
-	/** @return closest valid energy index corresponding to given energy level */
+	/** @param energyAmountInMWH for which to retrieve nearest energy index
+	 * @return closest valid energy index corresponding to given energy level */
 	public int energyToNearestEnergyIndex(double energyAmountInMWH) {
 		int nearestIndex = (int) Math.round(energyAmountInMWH / energyResolutionInMWH) + energyStateOffset;
 		int correctedIndex = Math.max(0, Math.min(nearestIndex, numberOfEnergyStates - 1));
@@ -172,24 +173,30 @@ public class StateDiscretiser {
 		return correctedIndex;
 	}
 
-	/** @return closest valid shift time index corresponding to given shift time in steps */
+	/** @param shiftTimeInSteps for which to retrieve nearest shift time index
+	 * @return closest valid shift time index corresponding to given shift time in steps */
 	public int roundToNearestShiftTimeIndex(long shiftTimeInSteps) {
 		int atLeast = (int) (shiftTimeInSteps / timeResolution.getSteps());
 		int increase = (int) (((shiftTimeInSteps % timeResolution.getSteps()) * 2) / timeResolution.getSteps());
 		return atLeast + increase;
 	}
 
-	/** @return state index derived from given energy level and shift time indices */
+	/** @param energyLevelIndex to evaluate
+	 * @param shiftTimeIndex to evaluate
+	 * @return state index derived from given energy level and shift time indices */
 	public int getStateIndex(int energyLevelIndex, int shiftTimeIndex) {
 		return shiftTimeIndex * numberOfEnergyStates + energyLevelIndex;
 	}
 
-	/** @return energy delta in MWh from initial to final state */
+	/** @param initialStateIndex to evaluate
+	 * @param finalStateIndex to evaluate
+	 * @return energy delta in MWh from initial to final state */
 	public double calcEnergyDeltaInMWH(int initialStateIndex, int finalStateIndex) {
 		return getEnergyIndexDelta(initialStateIndex, finalStateIndex) * energyResolutionInMWH;
 	}
 
-	/** @return corresponding shift time index for given state index */
+	/** @param stateIndex from which to derive shift time
+	 * @return corresponding shift time index for given state index */
 	public int calcShiftTimeIndexFromStateIndex(int stateIndex) {
 		return stateIndex / numberOfEnergyStates;
 	}

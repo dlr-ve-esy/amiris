@@ -56,7 +56,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		deviceCache.setPeriod(startingPeriod);
 		stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, startingPeriod.getDuration());
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
-		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTimeInSteps());
+		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTime());
 		raiseOnSelfDischarge();
 		raiseOnWaterValues();
 		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getStateCount()];
@@ -82,7 +82,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		deviceCache.prepareFor(time);
 		currentOptimisationTimeIndex = StateManager.getCurrentOptimisationTimeIndex(time, startingPeriod);
 		cacheTransitions();
-		stateDiscretiser.setShiftEnergyLimits(deviceCache.getMaxNetDischargingEnergyInMWH(),
+		stateDiscretiser.setShiftEnergyDeltaLimits(deviceCache.getMaxNetDischargingEnergyInMWH(),
 				deviceCache.getMaxNetChargingEnergyInMWH());
 	}
 
@@ -103,7 +103,8 @@ public class EnergyAndTimeStateManager implements StateManager {
 	/** @return calculated value of transition */
 	private double calcEnergyValueFor(int initialStateIndex, int finalStateIndex) {
 		double externalEnergyDeltaInMWH = deviceCache.simulateTransition(
-				stateDiscretiser.energyIndexToEnergy(initialStateIndex), stateDiscretiser.energyIndexToEnergy(finalStateIndex));
+				stateDiscretiser.energyIndexToEnergyInMWH(initialStateIndex),
+				stateDiscretiser.energyIndexToEnergyInMWH(finalStateIndex));
 		return assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
 	}
 

@@ -12,6 +12,9 @@ import de.dlr.gitlab.fame.time.TimeSpan;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class StateDiscretiser {
+	static final String ERR_INVALID_ENERGY_RESOLUTION = "Energy resolution must be a positive value but was: ";
+	static final String ERR_INVALID_TIME_RESOLUTION = "Time resolution must be positive value but was: ";
+	static final String ERR_INVERTED_ENERGY_LIMITS = ": Minimum energy content larger than maximum energy content: ";
 	static final String WARN_OUT_OF_BOUNDS = "Detected energy levels outside of feasible bounds.";
 	private static final Logger logger = LoggerFactory.getLogger(StateDiscretiser.class);
 
@@ -24,6 +27,7 @@ public class StateDiscretiser {
 	private int numberOfTimeStates;
 	private int energyStateOffset;
 	private double lowestLevelEnergyInMWH;
+	private boolean considerTimeConstraint;
 
 	/** Indices of all technically possible states ignoring impossible states (e.g. states out of balance with zero shift time) */
 	private int[] allStates;
@@ -37,7 +41,15 @@ public class StateDiscretiser {
 	 * @param energyResolutionInMWH energy delta between two neighbouring energy states
 	 * @param timeResolution time delta between two neighbouring time states */
 	public StateDiscretiser(double energyResolutionInMWH, TimeSpan timeResolution) {
+		if (energyResolutionInMWH <= 0) {
+			logger.error(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
+			throw new RuntimeException(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
+		}
 		this.energyResolutionInMWH = energyResolutionInMWH;
+		if (timeResolution.getSteps() < 1) {
+			logger.error(ERR_INVALID_TIME_RESOLUTION + timeResolution);
+			throw new RuntimeException(ERR_INVALID_TIME_RESOLUTION + timeResolution);
+		}
 		this.timeResolution = timeResolution;
 	}
 
@@ -45,15 +57,25 @@ public class StateDiscretiser {
 	 * 
 	 * @param energyBoundariesInMWH array of two doubles values representing minimum and maximum energy content of the associated
 	 *          device
-	 * @param maxShiftTime maximum allowed time span for the shift time */
+	 * @param maxShiftTime maximum allowed time span for the shift time; use 0 if only energy states shall be used */
 	public void setBoundaries(double[] energyBoundariesInMWH, TimeSpan maxShiftTime) {
+		assertLimitsNotInverted(energyBoundariesInMWH);
 		energyStateOffset = -energyToCeilIndex(energyBoundariesInMWH[0], 0.);
 		final int highestStep = energyToFloorIndex(energyBoundariesInMWH[1], 0.);
 		lowestLevelEnergyInMWH = -energyStateOffset * energyResolutionInMWH;
 		numberOfEnergyStates = highestStep + energyStateOffset + 1;
 		final long maxShiftTimeSteps = maxShiftTime.getSteps();
-		numberOfTimeStates = maxShiftTimeSteps > 0 ? (int) (maxShiftTimeSteps / timeResolution.getSteps()) : 1;
+		considerTimeConstraint = maxShiftTimeSteps > 0;
+		numberOfTimeStates = maxShiftTimeSteps > 0 ? (int) (maxShiftTimeSteps / timeResolution.getSteps()) + 1 : 1;
 		updateListOfStates();
+	}
+
+	/** @throws RuntimeException if lower limit exceeds upper limit */
+	private void assertLimitsNotInverted(double[] energyBoundariesInMWH) {
+		if (energyBoundariesInMWH[0] > energyBoundariesInMWH[1]) {
+			logger.error(energyBoundariesInMWH[0] + ERR_INVERTED_ENERGY_LIMITS + energyBoundariesInMWH[1]);
+			throw new RuntimeException(energyBoundariesInMWH[0] + ERR_INVERTED_ENERGY_LIMITS + energyBoundariesInMWH[1]);
+		}
 	}
 
 	/** @return next lower index corresponding to given energy level */
@@ -71,7 +93,16 @@ public class StateDiscretiser {
 
 	/** Allocates and assign {@link #allStates} */
 	private void updateListOfStates() {
-		allStates = new int[getNumberOfExistingStates()];
+		if (considerTimeConstraint) {
+			allocateEnergyAndTimeStates();
+		} else {
+			allocateEnergyStates();
+		}
+	}
+
+	/** Updates list of all states - use only, if {@link #considerTimeConstraint} applies */
+	private void allocateEnergyAndTimeStates() {
+		allStates = new int[(numberOfEnergyStates - 1) * (numberOfTimeStates - 1) + 1];
 		allStates[0] = energyStateOffset;
 		int arrayIndex = 1;
 		for (int time = 1; time < numberOfTimeStates; time++) {
@@ -85,13 +116,11 @@ public class StateDiscretiser {
 		}
 	}
 
-	/*** @return number of technically possible states within limits for energy and shift time, ignoring impossible states (e.g.
-	 *         states out of balance with zero shift time) */
-	private int getNumberOfExistingStates() {
-		if (numberOfTimeStates == 1) {
-			return numberOfEnergyStates;
-		} else {
-			return (numberOfEnergyStates - 1) * (numberOfTimeStates - 1) + 1;
+	/** Updates list of all states - use only, if time states are disregarded */
+	private void allocateEnergyStates() {
+		allStates = new int[numberOfEnergyStates];
+		for (int energyIndex = 0; energyIndex < numberOfEnergyStates; energyIndex++) {
+			allStates[energyIndex] = energyIndex;
 		}
 	}
 
@@ -104,7 +133,7 @@ public class StateDiscretiser {
 	}
 
 	/** Sets maximum energy delta for shifts in down and up direction that can be achieved by the associated device within a time
-	 * span matching {@link #timeResolution}.
+	 * span matching {@link #timeResolution}. Required only if <b>time constraints</b> are considered.
 	 * 
 	 * @param currentDownshiftEnergyLimitInMWH maximum energy delta for shifting down in MWh
 	 * @param currentUpshiftEnergyLimitInMWH maximum energy delta for shifting up in MWh */
@@ -151,16 +180,25 @@ public class StateDiscretiser {
 	 * considering given minimum and maximum of the follow-up energy content in MWh.
 	 * 
 	 * @param initialStateIndex <b>time-and-energy state</b> index of the initial state
-	 * @param lowestEnergyContentInMWH minimum energy content in MWh of the final state considering the initial state's energy
-	 * @param highestEnergyContentInMWH maximum energy content in MWh of the final state considering the initial state's energy
+	 * @param lowestNextEnergyInMWH minimum energy content in MWh of the final state considering the initial state's energy
+	 * @param highestNextEnergyInMWH maximum energy content in MWh of the final state considering the initial state's energy
 	 * @return all state indices that could follow the given initial state */
-	public int[] getFollowUpStates(int initialStateIndex, double lowestEnergyContentInMWH,
-			double highestEnergyContentInMWH) {
-		int lowestEnergyIndex = energyToCeilIndex(lowestEnergyContentInMWH, lowestLevelEnergyInMWH);
-		int highestEnergyIndex = energyToFloorIndex(highestEnergyContentInMWH, lowestLevelEnergyInMWH);
+	public int[] getFollowUpStates(int initialStateIndex, double lowestNextEnergyInMWH, double highestNextEnergyInMWH) {
+		final int lowestEnergyIndex = energyToCeilIndex(lowestNextEnergyInMWH, lowestLevelEnergyInMWH);
+		final int highestEnergyIndex = energyToFloorIndex(highestNextEnergyInMWH, lowestLevelEnergyInMWH);
+		if (considerTimeConstraint) {
+			return addEnergyAndTimeFollowUps(lowestEnergyIndex, highestEnergyIndex, initialStateIndex);
+		} else {
+			return addEnergyFollowUps(lowestEnergyIndex, highestEnergyIndex);
+		}
+	}
+
+	/** Set follow up state indices considering energy and shift time constraints */
+	private int[] addEnergyAndTimeFollowUps(int lowestEnergyIndex, int highestEnergyIndex,
+			int initialStateIndex) {
+		int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
 		int currentEnergyIndex = initialStateIndex % numberOfEnergyStates;
 		int currentShiftTime = initialStateIndex / numberOfEnergyStates;
-		int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
 		int arrayIndex = 0;
 		int followUpShiftTime;
 		for (int energyIndex = lowestEnergyIndex; energyIndex <= highestEnergyIndex; energyIndex++) {
@@ -197,6 +235,17 @@ public class StateDiscretiser {
 			} else {
 				return new int[0];
 			}
+		}
+		return followUpStates;
+	}
+
+	/** Set follow up state indices considering only energy indices due to lack of shift time constraints */
+	private int[] addEnergyFollowUps(int lowestEnergyIndex, int highestEnergyIndex) {
+		int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
+		int arrayIndex = 0;
+		for (int energyIndex = lowestEnergyIndex; energyIndex <= highestEnergyIndex; energyIndex++) {
+			followUpStates[arrayIndex] = energyIndex;
+			arrayIndex++;
 		}
 		return followUpStates;
 	}
@@ -263,7 +312,7 @@ public class StateDiscretiser {
 		return stateIndex / numberOfEnergyStates;
 	}
 
-	/** Returns including those that are technically not valid, i.e.
+	/** Returns <b>including</b> those that are technically not valid, i.e.
 	 * <ul>
 	 * <li>states with energy level equal to zero, but shift time above zero</li>
 	 * <li>states with energy level not equal to zero, but shift time zero</li>

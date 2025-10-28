@@ -214,28 +214,28 @@ public class StateDiscretiser {
 		if (energyIndex == energyStateOffset) {
 			return 0;
 		} else if (Math.signum(energyIndex - energyStateOffset) == Math.signum(currentEnergyIndex - energyStateOffset)) {
-			int followUpShiftTime = currentShiftTime + 1;
+			final int followUpShiftTime = currentShiftTime + 1;
 			if (followUpShiftTime >= numberOfTimeStates) {
-				double energyToBalanceInMWH = energyIndexToEnergyInMWH(currentEnergyIndex);
-				if (energyToBalanceInMWH > 0.) {
-					double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
-					if (energyIndexToEnergyInMWH(energyIndex) > (1 - downshiftShareForBalance)
-							* currentUpshiftEnergyLimitInMWH) {
-						return -1;
-					}
-				} else {
-					double upshiftShareForBalance = Math.min(1., -energyToBalanceInMWH / currentUpshiftEnergyLimitInMWH);
-					if (energyIndexToEnergyInMWH(energyIndex) < (1 - upshiftShareForBalance)
-							* currentDownshiftEnergyLimitInMWH) {
-						return -1;
-					}
-				}
-				return 1;
+				return isProlongableTransition(currentEnergyIndex, energyIndex) ? 1 : -1;
 			} else {
 				return followUpShiftTime;
 			}
 		} else {
 			return 1;
+		}
+	}
+
+	/** @return true if provided energy transition could be achieved with a prolonging action under current energy shift
+	 *         constraints */
+	private boolean isProlongableTransition(int currentEnergyIndex, int energyIndex) {
+		final double energyToBalanceInMWH = energyIndexToEnergyInMWH(currentEnergyIndex);
+		final double targetEnergyInMWH = energyIndexToEnergyInMWH(energyIndex);
+		if (energyToBalanceInMWH > 0.) {
+			double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
+			return targetEnergyInMWH <= (1 - downshiftShareForBalance) * currentUpshiftEnergyLimitInMWH;
+		} else {
+			double upshiftShareForBalance = Math.min(1., -energyToBalanceInMWH / currentUpshiftEnergyLimitInMWH);
+			return targetEnergyInMWH >= (1 - upshiftShareForBalance) * currentDownshiftEnergyLimitInMWH;
 		}
 	}
 

@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.states;
 
-import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import de.dlr.gitlab.fame.time.TimeSpan;
+import util.Util;
 
 /** Handles discretisation of states with respect to a device's energy (State of Charge), and time out of balance (shift time).
  * 
@@ -55,8 +55,7 @@ public class StateDiscretiser {
 
 	/** Sets boundaries for energy and time
 	 * 
-	 * @param energyBoundariesInMWH array of two doubles values representing minimum and maximum energy content of the associated
-	 *          device
+	 * @param energyBoundariesInMWH two doubles values representing minimum and maximum energy content of the associated device
 	 * @param maxShiftTime maximum allowed time span for the shift time; use 0 if only energy states shall be used */
 	public void setBoundaries(double[] energyBoundariesInMWH, TimeSpan maxShiftTime) {
 		assertLimitsNotInverted(energyBoundariesInMWH);
@@ -124,26 +123,14 @@ public class StateDiscretiser {
 		}
 	}
 
-	/** Returns all indices of technically possible states ignoring impossible states (e.g. states out of balance with zero shift
-	 * time)
+	/** Returns indices of technically possible states ignoring impossible states, e.g., states out of balance with zero shift time.
 	 * 
 	 * @return all indices of technically possible states */
 	public int[] getAllAvailableStates() {
 		return allStates;
 	}
 
-	/** Sets maximum energy delta for shifts in down and up direction that can be achieved by the associated device within a time
-	 * span matching {@link #timeResolution}. Required only if <b>time constraints</b> are considered.
-	 * 
-	 * @param currentDownshiftEnergyLimitInMWH maximum energy delta for shifting down in MWh
-	 * @param currentUpshiftEnergyLimitInMWH maximum energy delta for shifting up in MWh */
-	public void setShiftEnergyDeltaLimits(double currentDownshiftEnergyLimitInMWH,
-			double currentUpshiftEnergyLimitInMWH) {
-		this.currentDownshiftEnergyLimitInMWH = currentDownshiftEnergyLimitInMWH;
-		this.currentUpshiftEnergyLimitInMWH = currentUpshiftEnergyLimitInMWH;
-	}
-
-	/** Returns number of discretisation steps equivalent to given energy delta in MWh (rounded down)
+	/** Returns number of discretisation steps equivalent to given energy delta in MWh (rounded down).
 	 * 
 	 * @param energyDeltaInMWH positive energy delta in MWh
 	 * @return number of discretisation steps equivalent to given energy delta in MWh (rounded down) */
@@ -176,6 +163,17 @@ public class StateDiscretiser {
 		return (finalStateIndex % numberOfEnergyStates - initialStateIndex % numberOfEnergyStates);
 	}
 
+	/** Sets maximum energy delta for shifts in down and up direction that can be achieved by the associated device within a time
+	 * span matching {@link #timeResolution}. Required only if <b>time constraints</b> are considered.
+	 * 
+	 * @param currentDownshiftEnergyLimitInMWH maximum energy delta for shifting down in MWh
+	 * @param currentUpshiftEnergyLimitInMWH maximum energy delta for shifting up in MWh */
+	public void setShiftEnergyDeltaLimits(double currentDownshiftEnergyLimitInMWH,
+			double currentUpshiftEnergyLimitInMWH) {
+		this.currentDownshiftEnergyLimitInMWH = currentDownshiftEnergyLimitInMWH;
+		this.currentUpshiftEnergyLimitInMWH = currentUpshiftEnergyLimitInMWH;
+	}
+
 	/** Returns <b>time-and-energy state</b> indices of states that could follow the given initial <b>time-and-energy state</b>,
 	 * considering given minimum and maximum of the follow-up energy content in MWh.
 	 * 
@@ -196,47 +194,49 @@ public class StateDiscretiser {
 	/** Set follow up state indices considering energy and shift time constraints */
 	private int[] addEnergyAndTimeFollowUps(int lowestEnergyIndex, int highestEnergyIndex,
 			int initialStateIndex) {
-		int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
-		int currentEnergyIndex = initialStateIndex % numberOfEnergyStates;
-		int currentShiftTime = initialStateIndex / numberOfEnergyStates;
+		final int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
+		final int currentEnergyIndex = initialStateIndex % numberOfEnergyStates;
+		final int currentShiftTime = initialStateIndex / numberOfEnergyStates;
 		int arrayIndex = 0;
-		int followUpShiftTime;
 		for (int energyIndex = lowestEnergyIndex; energyIndex <= highestEnergyIndex; energyIndex++) {
-			if (energyIndex == energyStateOffset) {
-				followUpShiftTime = 0;
-			} else if (Math.signum(energyIndex - energyStateOffset) == Math.signum(currentEnergyIndex - energyStateOffset)) {
-				followUpShiftTime = currentShiftTime + 1;
-				if (followUpShiftTime >= numberOfTimeStates) {
-					double energyToBalanceInMWH = energyIndexToEnergyInMWH(currentEnergyIndex);
-					if (energyToBalanceInMWH > 0.) {
-						double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
-						if (energyIndexToEnergyInMWH(energyIndex) > (1 - downshiftShareForBalance)
-								* currentUpshiftEnergyLimitInMWH) {
-							continue;
-						}
-					} else {
-						double upshiftShareForBalance = Math.min(1., -energyToBalanceInMWH / currentUpshiftEnergyLimitInMWH);
-						if (energyIndexToEnergyInMWH(energyIndex) < (1 - upshiftShareForBalance)
-								* currentDownshiftEnergyLimitInMWH) {
-							continue;
-						}
+			final int followUpShiftTime = calcNextShiftTime(currentShiftTime, currentEnergyIndex, energyIndex);
+			if (followUpShiftTime >= 0) {
+				followUpStates[arrayIndex] = followUpShiftTime * numberOfEnergyStates + energyIndex;
+				arrayIndex++;
+			}
+		}
+		return Util.truncateIntArray(followUpStates, arrayIndex);
+	}
+
+	/** @return next shift time for given current shift time, as well as current and next energy index; returns -1 if state cannot
+	 *         be reached within shift time and prolonging constraints */
+	private int calcNextShiftTime(int currentShiftTime, int currentEnergyIndex, int energyIndex) {
+		if (energyIndex == energyStateOffset) {
+			return 0;
+		} else if (Math.signum(energyIndex - energyStateOffset) == Math.signum(currentEnergyIndex - energyStateOffset)) {
+			int followUpShiftTime = currentShiftTime + 1;
+			if (followUpShiftTime >= numberOfTimeStates) {
+				double energyToBalanceInMWH = energyIndexToEnergyInMWH(currentEnergyIndex);
+				if (energyToBalanceInMWH > 0.) {
+					double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
+					if (energyIndexToEnergyInMWH(energyIndex) > (1 - downshiftShareForBalance)
+							* currentUpshiftEnergyLimitInMWH) {
+						return -1;
 					}
-					followUpShiftTime = 1;
+				} else {
+					double upshiftShareForBalance = Math.min(1., -energyToBalanceInMWH / currentUpshiftEnergyLimitInMWH);
+					if (energyIndexToEnergyInMWH(energyIndex) < (1 - upshiftShareForBalance)
+							* currentDownshiftEnergyLimitInMWH) {
+						return -1;
+					}
 				}
+				return 1;
 			} else {
-				followUpShiftTime = 1;
+				return followUpShiftTime;
 			}
-			followUpStates[arrayIndex] = followUpShiftTime * numberOfEnergyStates + energyIndex;
-			arrayIndex++;
+		} else {
+			return 1;
 		}
-		if (arrayIndex < followUpStates.length) {
-			if (arrayIndex > 0) {
-				return Arrays.copyOfRange(followUpStates, 0, arrayIndex - 1);
-			} else {
-				return new int[0];
-			}
-		}
-		return followUpStates;
 	}
 
 	/** Set follow up state indices considering only energy indices due to lack of shift time constraints */

@@ -5,6 +5,8 @@ package agents.flexibility.dynamicProgramming.states;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static testUtils.Exceptions.assertThrowsMessage;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -106,9 +108,95 @@ public class StateDiscretiserTest {
 	}
 
 	@Test
-	public void getFollowUpStates_energyOnly_returnExpected() {
+	public void getFollowUpStates_energyOnly_returnsExpected() {
 		initDiscretiser(3, 10, -4, 10, 0);
 		assertArrayEquals(new int[] {0, 1, 2, 3}, discretiser.getFollowUpStates(0, -3., 6.));
 		assertArrayEquals(new int[] {1, 2}, discretiser.getFollowUpStates(0, -1, 5.5));
+	}
+
+	@Test
+	public void getFollowUpStates_energyAndTimeNoProlonging_returnsExpected() {
+		initDiscretiser(1, 10, -3, 5, 20);
+		discretiser.setShiftEnergyDeltaLimits(-2, 2);
+		assertArrayEquals(new int[] {10, 11, 3, 13, 14}, discretiser.getFollowUpStates(3, -2., 2.));
+		assertArrayEquals(new int[] {18, 19, 20, 3, 13}, discretiser.getFollowUpStates(11, -3., 1.));
+	}
+
+	@Test
+	public void getFollowUpStates_energyAndTimeProlonging_returnsExpected() {
+		initDiscretiser(1, 10, -3, 5, 20);
+		discretiser.setShiftEnergyDeltaLimits(-2, 2);
+		assertArrayEquals(new int[] {11, 3, 13}, discretiser.getFollowUpStates(20, -3., 1.));
+		assertArrayEquals(new int[] {11, 3, 13}, discretiser.getFollowUpStates(22, -1., 3.));
+		assertArrayEquals(new int[] {3}, discretiser.getFollowUpStates(19, -3., 0.));
+		assertArrayEquals(new int[] {3}, discretiser.getFollowUpStates(23, 0., 4.));
+		assertArrayEquals(new int[] {}, discretiser.getFollowUpStates(18, -3., -1.));
+		assertArrayEquals(new int[] {}, discretiser.getFollowUpStates(24, 1., 5.));
+	}
+
+	@Test
+	public void isProlonged_notProlonged_returnsFalse() {
+		initDiscretiser(1, 10, -3, 5, 20);
+		assertFalse(discretiser.isProlonged(13, 22));
+		assertFalse(discretiser.isProlonged(13, 24));
+		assertFalse(discretiser.isProlonged(3, 11));
+		assertFalse(discretiser.isProlonged(3, 10));
+		assertFalse(discretiser.isProlonged(20, 13));
+		assertFalse(discretiser.isProlonged(22, 11));
+	}
+
+	@Test
+	public void isProlonged_prolonged_returnsTrue() {
+		initDiscretiser(1, 10, -3, 5, 20);
+		assertTrue(discretiser.isProlonged(22, 13));
+		assertTrue(discretiser.isProlonged(22, 14));
+		assertTrue(discretiser.isProlonged(20, 11));
+		assertTrue(discretiser.isProlonged(20, 10));
+	}
+
+	@ParameterizedTest
+	@CsvSource(
+			value = {"-100:0", "-6:0", "-4.9:0", "-3:1", "-2:1", "-1.1:2", "0:2", "1:2", "1.3:3", "9:6", "10:6", "11:6",
+					"20:6"},
+			delimiter = ':')
+	public void energyToNearestEnergyIndex_returnsExpected(double energy, int expected) {
+		initDiscretiser(2.5, 10, -6, 11, 0);
+		assertEquals(expected, discretiser.energyToNearestEnergyIndex(energy));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"0:0", "4:0", "5:1", "11:1", "13:1", "15:2", "45:5", "54:5"}, delimiter = ':')
+	public void roundToNearestShiftTimeIndex_returnsExpected(int shift, int expected) {
+		initDiscretiser(1, 10, 0, 0, 50);
+		assertEquals(expected, discretiser.roundToNearestShiftTimeIndex(shift));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"3:0:3", "5:1:14", "4:2:22", "6:3:33", "2:4:38", "8:5:53"}, delimiter = ':')
+	public void getStateIndex_returnsExpected(int energyIndex, int timeIndex, int expected) {
+		initDiscretiser(1, 10, -3, 5, 50);
+		assertEquals(expected, discretiser.getStateIndex(energyIndex, timeIndex));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"13:11:-2.", "11:13:2.", "11:22:2.", "26:13:-4.", "26:27:-8.", "3:12:0.", "49:13:0."},
+			delimiter = ':')
+	public void calcEnergyDeltaInMWH_returnsExpected(int initialState, int finalState, double expected) {
+		initDiscretiser(1, 10, -3, 5, 50);
+		assertEquals(expected, discretiser.calcEnergyDeltaInMWH(initialState, finalState));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"3:0", "0:0", "8:0", "11:1", "26:2", "27:3", "49:5"}, delimiter = ':')
+	public void calcShiftTimeIndexFromStateIndex_returnsExpected(int state, int expected) {
+		initDiscretiser(1, 10, -3, 5, 50);
+		assertEquals(expected, discretiser.calcShiftTimeIndexFromStateIndex(state));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"-3.5:3.5:10:14", "-4:0:25:15", "0:6.2:5:7", "-2:5:49:40", "-3:2:66:42"}, delimiter = ':')
+	public void getStateCount_returnsExpected(double lowerEnergy, double upperEnergy, long duration, int expected) {
+		initDiscretiser(1, 10, lowerEnergy, upperEnergy, duration);
+		assertEquals(expected, discretiser.getStateCount());
 	}
 }

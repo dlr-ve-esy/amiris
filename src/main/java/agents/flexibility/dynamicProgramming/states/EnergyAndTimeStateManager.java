@@ -25,7 +25,6 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private final AssessmentFunction assessmentFunction;
 	private final double planningHorizonInHours;
 	private final double energyResolutionInMWH;
-	private final WaterValues waterValues;
 
 	private StateDiscretiser stateDiscretiser;
 	private int numberOfTimeSteps;
@@ -46,19 +45,20 @@ public class EnergyAndTimeStateManager implements StateManager {
 		this.assessmentFunction = assessmentFunction;
 		this.planningHorizonInHours = planningHorizonInHours;
 		this.energyResolutionInMWH = energyResolutionInMWH;
-		this.waterValues = waterValues;
+		if (waterValues.hasData()) {
+			new RuntimeException(ERR_WATER_VALUES + Type.ENERGY_AND_TIME);
+		}
 	}
 
 	@Override
 	public void initialise(TimePeriod startingPeriod) {
-		this.numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		this.startingPeriod = startingPeriod;
 		deviceCache.setPeriod(startingPeriod);
 		stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, startingPeriod.getDuration());
+		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
 		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTime());
 		raiseOnSelfDischarge();
-		raiseOnWaterValues();
 		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getStateCount()];
 		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getStateCount()];
 		zeroValues = new double[stateDiscretiser.getStateCount()];
@@ -67,12 +67,6 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private void raiseOnSelfDischarge() {
 		if (StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod)) {
 			new RuntimeException(ERR_SELF_DISCHARGE + Type.ENERGY_AND_TIME);
-		}
-	}
-
-	private void raiseOnWaterValues() {
-		if (waterValues.hasData()) {
-			new RuntimeException(ERR_WATER_VALUES + Type.ENERGY_AND_TIME);
 		}
 	}
 

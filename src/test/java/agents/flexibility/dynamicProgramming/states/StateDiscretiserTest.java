@@ -133,7 +133,7 @@ public class StateDiscretiserTest {
 		assertArrayEquals(new int[] {}, discretiser.getFollowUpStates(18, -3., -1.));
 		assertArrayEquals(new int[] {}, discretiser.getFollowUpStates(24, 1., 5.));
 	}
-	
+
 	@Test
 	public void getFollowUpStates_energyAndTimeProlongingNotAllowed_returnsExpected() {
 		initDiscretiser(1, 10, -3, 5, 20, false);

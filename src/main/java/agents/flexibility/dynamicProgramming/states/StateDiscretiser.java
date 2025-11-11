@@ -28,6 +28,7 @@ public class StateDiscretiser {
 	private int energyStateOffset;
 	private double lowestLevelEnergyInMWH;
 	private boolean considerTimeConstraint;
+	private boolean allowProlonging;
 
 	/** Indices of all technically possible states ignoring impossible states (e.g. states out of balance with zero shift time) */
 	private int[] allStates;
@@ -39,8 +40,10 @@ public class StateDiscretiser {
 	/** Instantiates a new {@link StateDiscretiser}
 	 * 
 	 * @param energyResolutionInMWH energy delta between two neighbouring energy states
-	 * @param timeResolution time delta between two neighbouring time states */
-	public StateDiscretiser(double energyResolutionInMWH, TimeSpan timeResolution) {
+	 * @param timeResolution time delta between two neighbouring time states
+	 * @param allowProlonging whether prolonging is feasible */
+	public StateDiscretiser(double energyResolutionInMWH, TimeSpan timeResolution, boolean allowProlonging) {
+		this.allowProlonging = allowProlonging;
 		if (energyResolutionInMWH <= 0) {
 			logger.error(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
 			throw new RuntimeException(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
@@ -216,6 +219,9 @@ public class StateDiscretiser {
 		} else if (Math.signum(energyIndex - energyStateOffset) == Math.signum(currentEnergyIndex - energyStateOffset)) {
 			final int followUpShiftTime = currentShiftTime + 1;
 			if (followUpShiftTime >= numberOfTimeStates) {
+				if (!allowProlonging) {
+					return -1;
+				}
 				return isProlongableTransition(currentEnergyIndex, energyIndex) ? 1 : -1;
 			} else {
 				return followUpShiftTime;

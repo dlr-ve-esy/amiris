@@ -28,13 +28,11 @@ These tools are recommended when working with AMIRIS:
 
 # Install and Run AMIRIS
 
-After you have met the technical requirements as described above, choose one of the two options to run AMIRIS using AMIRIS-Py:
+After you have met the technical requirements as described above, **choose one of the following** installation guides for AMIRIS: 
 
-- **Beginner**: In case you are new to Python, follow the [Step-by-Step Guide](./Get-Started/StepByStep.md).
-- **Experienced Python user**: We suggest to use the [Quickstart Guide](./Get-Started/QuickStart.md) to get your first simulation result in less than 5 minutes using `amirispy`.
-
-You could run AMIRIS also without AMIRIS-Py by using [FAME-Io](Get-Started/FameioSetup.md) directly.
-This is a slightly less convenient way, but might be necessary when you modify and build AMIRIS (see [below](#build-amiris)).
+- **[Quickstart Guide](./Get-Started/QuickStart.md)**: Get your first simulation result in less than 5 minutes using `amirispy`.
+- **[Step-by-Step Guide](./Get-Started/StepByStep.md)**: Follow this guide if you want additional explanations on environment setup.
+- **[All-the-Details Guide](Get-Started/FameioSetup.md)**: Gain full control over all model execution parameters by using the `fameio` package instead of the `amirispy` wrapper. Not recommended for beginners!
 
 # Results
 
@@ -42,18 +40,19 @@ Congratulations, you successfully ran your first simulation with AMIRIS! Check t
 
 # Run your first real-world simulation
 
-The [`Simple`](https://gitlab.com/dlr-ve/esy/amiris/examples/-/tree/dev/Simple) scenario example is intended to achieve a fast setup - it is not based on a real-world energy system.
-Switch to the [examples](https://gitlab.com/dlr-ve/esy/amiris/examples) folder `Germany2019` to investigate market dynamics closer to a real-world electricity system.
+The [`Simple`](https://gitlab.com/dlr-ve/esy/amiris/examples/-/tree/dev/demo/Simple) scenario example is intended to achieve a fast setup - it is not based on a real-world energy system.
+In the [backtest](https://gitlab.com/dlr-ve/esy/amiris/examples/-/tree/dev/backtest) folder you find multiple scenarios to investigate market dynamics closer to a real-world electricity system.
 Run another simulation and check the results.
 
 # Experiment
 
 You may ask yourself, "how would a higher carbon price impact market dynamics"? 
-To find out, open the `scenario.yaml` configuration file in a text editor and search for the agent `CarbonMarket`. 
-Now replace the link under `Co2Prices` with your value, for example
+To find out, navigate to the example that you would like to modify, e.g., in the folder `backtest/Germany2018/`.
+Open the file `MarketsAndForecast.yaml` in the subfolder `agents`.
+Search for the agent `CarbonMarket` and replace the `Co2Prices` with your value, for example
 
 ```
-Co2Prices: 100
+Co2Prices: 200
 ```
 
 Rerun the simulation and observe the impact of your changes on the electricity prices.

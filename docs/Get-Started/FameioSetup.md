@@ -74,11 +74,11 @@ Clone the [AMIRIS-Examples](https://gitlab.com/dlr-ve/esy/amiris/examples) proje
     git clone https://gitlab.com/dlr-ve/esy/amiris/examples.git
 ```
 
-The examples folder contains multiple different scenario setups.
+The examples folder contains multiple different scenario setups in folders `demo` and `backtest`.
 Now, compile a binary input file from the Germany2019 example scenario:
 
 1. Open your Python-enabled shell and activate your environment (called "amirisEnv" here): `conda activate amirisEnv`
-2. Change directory to the "Simple" folder: `cd examples/Simple/`
+2. Change directory to the "Simple" folder: `cd examples/demo/Simple/`
 3. Execute `makeFameRunConfig -f scenario.yaml`
 
 This will compile all agents, their data and configured behaviour into a single binary file "config.pb" in the same folder.
@@ -87,18 +87,18 @@ This will compile all agents, their data and configured behaviour into a single 
 
 Let's run AMIRIS with a previously compiled binary input "config.pb".
 If you haven't installed AMIRIS using AMIRIS-Py you need to download AMIRIS first, see e.g. [here](./Precompiled.md).
-To run AMIRIS open a console, navigate to the folder where you installed AMIRIS binaries to, e.g. `cd ../../` if you are still in the "Simple" folder.
+To run AMIRIS open a console, navigate to the folder where you installed AMIRIS binaries to, e.g. `cd ../../../` if you are still in the "Simple" folder.
 Then execute:
 
 ```
-java -jar "amiris-core_x.y.z-jar-with-dependencies.jar" --input-file examples/Simple/config.pb
+java -jar "amiris-core_x.y.z-jar-with-dependencies.jar" --input-file examples/demo/Simple/config.pb
 ```
 
 Its components are:
 
 1. `java` fires up the installed java runtime environment
 2. `-jar "amiris-core_x.y.z-jar-with-dependencies.jar"` tells Java to load the pre-built AMIRIS executable archive; "x.y.z" represents the version of AMIRIS (e.g. 3.3.0).
-3. `--file examples/Simple/config.pb` tells the FameRunner to load the given config file and read its simulation setup. Since this setup explicitly refers to AMIRIS classes, FAME will load these classes and feed them with the input data provided in the config file.
+3. `--file examples/demo/Simple/config.pb` tells the FameRunner to load the given config file and read its simulation setup. Since this setup explicitly refers to AMIRIS classes, FAME will load these classes and feed them with the input data provided in the config file.
 
 Running AMIRIS should create the result file "output.pb" in the current folder.
 

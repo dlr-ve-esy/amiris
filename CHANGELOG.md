@@ -4,11 +4,16 @@ SPDX-License-Identifier: CC0-1.0 -->
 # Changelog
 
 ## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - TBA
+### Changed
+- docs: Improve get-started section based on user feedback #210 (@dlr-cjs)
 
 ### Added
 - GenericFlexibility: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
+
+### Fixed
+- docs: Update Paths to example scenarios #217 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_

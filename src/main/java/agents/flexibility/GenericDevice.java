@@ -156,7 +156,7 @@ public class GenericDevice {
 			} else {
 				currentShiftTimeInSteps += duration.getSteps();
 			}
-			if (currentShiftTimeInSteps >= maximumShiftTimeInSteps) {
+			if (currentShiftTimeInSteps > maximumShiftTimeInSteps) {
 				logger.warn(WARN_SHIFT_TIME_EXCEEDED + (currentShiftTimeInSteps - maximumShiftTimeInSteps));
 				currentShiftTimeInSteps = duration.getSteps();
 				lastProlongingCostInEUR = finalEnergyContentInMWH * getPenaltyCostInEURperMWH(time);

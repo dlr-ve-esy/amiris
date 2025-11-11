@@ -11,6 +11,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
@@ -236,10 +238,11 @@ public class GenericDeviceTest {
 		assertEquals(oneHour.getSteps(), device.getCurrentShiftTimeInSteps());
 	}
 
-	@Test
-	public void transition_exceedsMaximumShiftTimeNoProlonging_logsWarningPenaltyCost() {
+	@ParameterizedTest
+	@ValueSource(doubles = {25, -25})
+	public void transition_exceedsMaximumShiftTimeNoProlonging_logsWarningPenaltyCost(double chargedEnergy) {
 		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 0.1, 0, 1.);
-		device.transition(defaultTime, 25, quarterHour);
+		device.transition(defaultTime, chargedEnergy, quarterHour);
 		logChecker.assertLogsContain(GenericDevice.WARN_SHIFT_TIME_EXCEEDED);
 		assertEquals(25, device.getLastProlongingCostInEUR(), 1E-13);
 	}
@@ -248,6 +251,7 @@ public class GenericDeviceTest {
 	public void transition_exceedsMaximumShiftTimeNoValidProlonging_reinitialisesShiftTimeAndApplyPenalty() {
 		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 1, 1, 3);
 		device.transition(defaultTime, 25, quarterHour);
+		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);

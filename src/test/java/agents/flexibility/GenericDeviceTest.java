@@ -251,6 +251,7 @@ public class GenericDeviceTest {
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
+		device.transition(defaultTime, 0, quarterHour);
 		assertEquals(quarterHour.getSteps(), device.getCurrentShiftTimeInSteps());
 		assertEquals(3 * 25, device.getLastProlongingCostInEUR(), 1E-10);
 	}

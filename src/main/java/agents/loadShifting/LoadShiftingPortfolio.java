@@ -59,8 +59,8 @@ public class LoadShiftingPortfolio {
 		energyLimitDownInMWH = input.getDouble("EnergyLimitDownInMWH");
 		energyResolutionInMWH = input.getDouble("EnergyResolutionInMWH");
 		setEnergyShiftStorageLevelInMWH(input.getDouble("InitialEnergyLevelInMWH"));
-		setCurrentShiftTimeInHours(input.getInteger("InitialShiftTimeInHours"));
 		maximumShiftTimeInHours = input.getInteger("MaximumShiftTimeInHours");
+		setCurrentShiftTimeInHours(input.getInteger("InitialShiftTimeInHours"));
 		variableShiftCostsInEURPerMWH = input.getTimeSeries("VariableShiftCostsInEURPerMWH");
 		baselineLoadSeries = input.getTimeSeries("BaselineLoadTimeSeries");
 		baselinePeakLoadInMW = input.getDouble("BaselinePeakLoadInMW");

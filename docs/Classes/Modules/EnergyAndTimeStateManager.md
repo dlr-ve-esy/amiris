@@ -1,0 +1,63 @@
+# In short
+
+`EnergyAndTimeStateManager` covers states of a [GenericDevice](./GenericDevice.md) along two dimensions, representing its energy content (state of charge) and time out of balance (shift time).
+
+# Details
+
+## Assumptions
+
+Properties of the connected `GenericDevice` are assumed to be constant during the time steps.
+Thus, the time discretisation of the TimeSeries properties of a `GenericDevice` should match (or be an integer multiple of) the time resolution of the dispatch optimisation.
+
+The usage of [WaterValues](./WaterValues.md) and self discharge are not compatible with an `EnergyAndTimeStateManager`.
+If they are parameterized for the connected [StateManagerBuilder](./StateManagerBuilder.md) or [GenericDevice](./GenericDevice.md), this will raise an error.
+
+## Operations
+
+### TimeSeries analysis
+
+When `EnergyAndTimeStateManager`'s `initialise()` method is called, it will analyse the properties of the connected `GenericDevice` and, based on the requested energy resolution, determine how many discretisation steps are required along the time and energy dimensions.
+
+### State calculations
+
+States in `EnergyStateAndTimeManager` are two-dimensional.
+See [StateDiscretiser](./StateDiscretiser.md) for an in-depth description of how states are defined and which state transitions are valid.
+
+An `EnergyStateAndTimeManager` will always require a full state list.
+
+* `useStateList()` will return `true`
+* `getInitialStates()` and `getFinalStates()` will return the full list of all feasible states
+
+Note that using the full state list comes at the expense of a higher speed for the [Optimiser](./Optimiser.md).
+
+### Caching
+
+`EnergyAndTimeStateManager` will cache all transition values for a given time step during `prepareFor()`.
+`EnergyAndTimeStateManager` pre-caches the properties of its `GenericDevice` using a [GenericDeviceCache](./GenericDeviceCache.md) at any given time step.
+**Warning**: If the `GenericDevice`'s lower or upper energy content limit is not constant, the algorithm will not consider changes in the number of states at the end of its planning interval.
+This can lead to imperfect planning results and the `GenericDevice` might temporarily operate outside of its (changed) energy limits.
+`EnergyStateAndTimeManager` will ensure that no energy is lost or gained due to this behaviour and will correct its state along with its normal dispatch.
+An according warning will be raised in this case.
+
+See also [StateManager](./StateManager.md).
+
+### Dispatch scheduling
+
+There may be situations, where an energy state does not exactly match the energy content of a [GenericDevice](./GenericDevice.md).
+See [EnergyStateManager](./EnergyStateManager.md) on how the correction is performed.
+
+A similar correction is not needed for the time out of balance or shift time, as only integer values are allowed here
+and no deviations may occur.
+
+# Input from file
+
+See [StateManagerBuilder](./StateManagerBuilder.md)
+
+# See also
+
+* [StateManager](./StateManager.md)
+* [StateDiscretiser](./StateDiscretiser.md)
+* [GenericDevice](./GenericDevice.md)
+* [GenericDeviceCache](./GenericDeviceCache.md)
+* [Optimiser](./Optimiser.md)
+* [WaterValues](./WaterValues.md)

@@ -21,6 +21,7 @@ It can also return a list of all TimeStamps to which these time steps correspond
 Since the dynamic programming algorithm steps though time consecutively, and each time step contains multiple calls to `StateManager`, its computation performance is improved by caching data of subsequent calculations at the same time step using the `prepareFor()` method.
 At any prepared time, `StateManager` can tell which initial state IDs are available using `getInitialStates()`.
 Depending on the result of `useStateList()`, this will either return a full list of all states, or only the first and the last state to iterate in between.
+Note 
 Based on a given initial state ID, `StateManager` can also tell which state IDs that can be reached at the prepared time without violating restrictions from the connected `GenericDevice` using `getFinalStates()`.
 Again, depending on the result of `useStateList()`, this will either return a full list of the state IDs or only the first and the last state to iterate in between.
 For any propose transition from state ID `i` to state ID `f` at the prepared time, `StateManager` can calculate the value of the state transition utilising its configured [AssessmentFunction](./AssessmentFunction.md) by using `getTransitionValueFor()`.
@@ -39,6 +40,7 @@ See [StateManagerBuilder](./StateManagerBuilder.md)
 # Child classes
 
 * [StateOfCharge](./EnergyStateManager.md)
+* [EnergyAndTime](./EnergyAndTimeStateManager.md)
 
 # See also
 

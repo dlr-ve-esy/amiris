@@ -59,6 +59,7 @@ These required input parameters are `TimeSeries`:
 * `VariableCostInEURperMWH`: variable cost for operating a flexibility device applied to both, charging and discharging energy amounts at grid interaction level in EUR/MWh; defaults to 0 (specified in schema).
 * `MaximumShiftTimeInHours`: maximum allowed time for the flexibility device to be in an unbalanced state, e.g. maximum time for load shifting, in hours; no limit in case of 0 or negative values; defaults to -1 (specified in schema).
 * `EnableProlonging`: if positive, enable prolonged shifts of flexibility device beyond maximum shift time; defaults to 1 (specified in schema); ignored in case of unlimited shift time.
+* `PenaltyCostInEURperMWH`: Penalty cost for operating a flexibility device outside of maximum shift time; cost is imposed in dynamic programming planning algorithm in order to prevent infeasible states.
 
 In addition, a scalar double parameter exists:
 

@@ -1,6 +1,6 @@
 # In short
 
-`EnergyAndTimeStateManager` covers states of a [GenericDevice](./GenericDevice.md) along two dimensions, representing its energy content (state of charge) and time out of balance (shift time).
+`EnergyAndTimeStateManager` is a [StateManager](./StateManager.md) that covers states of a [GenericDevice](./GenericDevice.md) along two dimensions, representing its energy content (state of charge) and time out of balance (shift time).
 
 # Details
 
@@ -10,7 +10,7 @@ Properties of the connected `GenericDevice` are assumed to be constant during th
 Thus, the time discretisation of the TimeSeries properties of a `GenericDevice` should match (or be an integer multiple of) the time resolution of the dispatch optimisation.
 
 The usage of [WaterValues](./WaterValues.md) and self discharge are not compatible with an `EnergyAndTimeStateManager`.
-If they are parameterized for the connected [StateManagerBuilder](./StateManagerBuilder.md) or [GenericDevice](./GenericDevice.md), this will raise an error.
+If they are parameterised for the connected [StateManagerBuilder](./StateManagerBuilder.md) or [GenericDevice](./GenericDevice.md), this will raise an error.
 
 ## Operations
 
@@ -24,11 +24,12 @@ States in `EnergyStateAndTimeManager` are two-dimensional.
 See [StateDiscretiser](./StateDiscretiser.md) for an in-depth description of how states are defined and which state transitions are valid.
 
 An `EnergyStateAndTimeManager` will always require a full state list.
+Hence,
 
 * `useStateList()` will return `true`
 * `getInitialStates()` and `getFinalStates()` will return the full list of all feasible states
 
-Note that using the full state list comes at the expense of a higher speed for the [Optimiser](./Optimiser.md).
+Note that using the full state list comes at the expense of a lower speed for the [Optimiser](./Optimiser.md).
 
 ### Caching
 
@@ -56,6 +57,7 @@ See [StateManagerBuilder](./StateManagerBuilder.md)
 # See also
 
 * [StateManager](./StateManager.md)
+* [EnergyStateManager](./EnergyStateManager.md)
 * [StateDiscretiser](./StateDiscretiser.md)
 * [GenericDevice](./GenericDevice.md)
 * [GenericDeviceCache](./GenericDeviceCache.md)

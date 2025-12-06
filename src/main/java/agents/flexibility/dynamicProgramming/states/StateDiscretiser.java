@@ -126,6 +126,17 @@ public class StateDiscretiser {
 		}
 	}
 
+	/** Sets maximum energy delta for shifts in down and up direction that can be achieved by the associated device within a time
+	 * span matching {@link #timeResolution}. Required only if <b>time constraints</b> are considered.
+	 * 
+	 * @param currentDownshiftEnergyLimitInMWH maximum energy delta for shifting down in MWh
+	 * @param currentUpshiftEnergyLimitInMWH maximum energy delta for shifting up in MWh */
+	public void setShiftEnergyDeltaLimits(double currentDownshiftEnergyLimitInMWH,
+			double currentUpshiftEnergyLimitInMWH) {
+		this.currentDownshiftEnergyLimitInMWH = currentDownshiftEnergyLimitInMWH;
+		this.currentUpshiftEnergyLimitInMWH = currentUpshiftEnergyLimitInMWH;
+	}
+
 	/** Returns indices of technically possible states ignoring impossible states, e.g., states out of balance with zero shift time.
 	 * 
 	 * @return all indices of technically possible states */
@@ -164,17 +175,6 @@ public class StateDiscretiser {
 	 * @return final - initial <b>energy index</b> */
 	public int getEnergyIndexDelta(int initialStateIndex, int finalStateIndex) {
 		return (finalStateIndex % numberOfEnergyStates - initialStateIndex % numberOfEnergyStates);
-	}
-
-	/** Sets maximum energy delta for shifts in down and up direction that can be achieved by the associated device within a time
-	 * span matching {@link #timeResolution}. Required only if <b>time constraints</b> are considered.
-	 * 
-	 * @param currentDownshiftEnergyLimitInMWH maximum energy delta for shifting down in MWh
-	 * @param currentUpshiftEnergyLimitInMWH maximum energy delta for shifting up in MWh */
-	public void setShiftEnergyDeltaLimits(double currentDownshiftEnergyLimitInMWH,
-			double currentUpshiftEnergyLimitInMWH) {
-		this.currentDownshiftEnergyLimitInMWH = currentDownshiftEnergyLimitInMWH;
-		this.currentUpshiftEnergyLimitInMWH = currentUpshiftEnergyLimitInMWH;
 	}
 
 	/** Returns <b>time-and-energy state</b> indices of states that could follow the given initial <b>time-and-energy state</b>,

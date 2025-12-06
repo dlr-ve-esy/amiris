@@ -43,6 +43,13 @@ _Feasible dynamic programming states considering time-variant upper and lower en
 * Grid-connected energy storage: Parameters `MaximumShiftTimeInHours` and `EnableProlonging` are not applicable. It should be combined with [StateManager](./StateManager.md) of type `STATE_OF_CHARGE`.
 * Load shifting portfolio: Parameters `MaximumShiftTimeInHours` and `EnableProlonging` apply. It should be combined with [StateManager](./StateManager.md) of type `ENERGY_AND_TIME`.
 
+### Load Shifting
+
+If used for load shifting and `EnableProlonging` set to true, `GenericDevice` ensures that prolonging of load shifts is performed correctly, i.e. it ensures shifts to happen within power bounds.
+It is assumed that `GenericDevice` represents not a single physical unit, but rather a portfolio of multiple units that can be shifted independently.
+Thus, prolonging actions shift energy from one part of the portfolio to another part.
+It is assumed, that each part of the portfolio contributes equally to the total power and energy limits of the `GenericDevice`, and that all specific technical parameters are identical.
+
 # Input from file
 
 `GenericDevice` defines a set of input parameters, which can be used to define the required inputs for Agents that control such a device.
@@ -58,8 +65,8 @@ These required input parameters are `TimeSeries`:
 * `NetInflowPowerInMW`: _net_ inflow into the associated flexibility device in MW; positive values are inflows, negative values are outflows; defaults to 0 (specified in schema).
 * `VariableCostInEURperMWH`: variable cost for operating a flexibility device applied to both, charging and discharging energy amounts at grid interaction level in EUR/MWh; defaults to 0 (specified in schema).
 * `MaximumShiftTimeInHours`: maximum allowed time for the flexibility device to be in an unbalanced state, e.g. maximum time for load shifting, in hours; no limit in case of 0 or negative values; defaults to -1 (specified in schema).
-* `EnableProlonging`: if positive, enable prolonged shifts of flexibility device beyond maximum shift time; defaults to 1 (specified in schema); ignored in case of unlimited shift time.
-* `PenaltyCostInEURperMWH`: Penalty cost for operating a flexibility device outside of maximum shift time; cost is imposed in dynamic programming planning algorithm in order to prevent infeasible states.
+* `EnableProlonging`: if positive, enables prolonged shifts of flexibility device beyond maximum shift time; defaults to 1 (specified in schema); ignored in case of unlimited shift time.
+* `PenaltyCostInEURperMWH`: Penalty cost for operating a flexibility device outside of maximum shift time; costs are imposed if, caused by not-awarded bids, the GenericDevice cannot return to a balanced state in time.
 
 In addition, a scalar double parameter exists:
 

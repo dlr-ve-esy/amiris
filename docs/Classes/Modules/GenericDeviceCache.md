@@ -24,12 +24,9 @@ Once the concrete time to cache for is then set using `prepareFor()`, `GenericDe
 * determine the upper and lower energy content limits: `getEnergyContentUpperLimitInMWH()`, `getEnergyContentLowerLimitInMWH()`
 * determine the maximum / minimum SOC reachable within the time step starting from a given SOC: `getMaxTargetEnergyContentInMWH()`, `getMinTargetEnergyContentInMWH()`
 * determine the maximum energy delta for charging / discharging: `getMaxNetChargingEnergyInMWH()`, `getMaxNetDischargingEnergyInMWH()`
+* determine the specific variable cost of device operation: `getVariableCostInEURperMWH()`,
 * simulate a transition between two SOC: `simulateTransition()`
  
-The `GenericDeviceCache`, if used for load shifting, also ensures that prolonging of load shifts is performed correctly in case it is allowed. 
-I.e. it ensures shifts to happen within power bounds.
-See [GenericDevice](./GenericDevice.md) for further information on prolonging.
-
 # See also
 
 * [EnergyStateManager](./EnergyStateManager.md)

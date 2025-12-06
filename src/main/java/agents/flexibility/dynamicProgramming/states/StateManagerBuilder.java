@@ -23,6 +23,8 @@ public class StateManagerBuilder {
 	enum Type {
 		/** Energy states of a device are represented in one dimension */
 		STATE_OF_CHARGE,
+		/** Energy states and current shifting time of a device are represented in two dimensions */
+		ENERGY_AND_TIME
 	}
 
 	public static final String ERR_NOT_IMPLEMENTED = "StateManager is not implemented: ";
@@ -33,6 +35,9 @@ public class StateManagerBuilder {
 		switch (type) {
 			case STATE_OF_CHARGE:
 				return new EnergyStateManager(device, assessment, input.getDouble("PlanningHorizonInHours"),
+						input.getDouble("EnergyResolutionInMWH"), new WaterValues(input.getOptionalGroupList("WaterValues")));
+			case ENERGY_AND_TIME:
+				return new EnergyAndTimeStateManager(device, assessment, input.getDouble("PlanningHorizonInHours"),
 						input.getDouble("EnergyResolutionInMWH"), new WaterValues(input.getOptionalGroupList("WaterValues")));
 			default:
 				throw new RuntimeException(ERR_NOT_IMPLEMENTED + type);

@@ -32,9 +32,11 @@ Internal states or decision logics of agents
       * [EnsureDispatch](./Modules/EnsureDispatch.md)
       * [StorageContentValue](./Modules/StorageContentValue.md)
     * States
+      * [EnergyAndTimeStateManager](./Modules/EnergyAndTimeStateManager.md)
+      * [EnergyStateManager](./Modules/EnergyStateManager.md)
+      * [StateDiscretiser](./Modules/StateDiscretiser.md)
       * [StateManager](./Modules/StateManager.md)
       * [StateManagerBuilder](./Modules/StateManagerBuilder.md)
-      * [EnergyStateManager](./Modules/EnergyStateManager.md)
       * [WaterValues](./Modules/WaterValues.md)
     * [Optimiser](./Modules/Optimiser.md)
 * Forecast

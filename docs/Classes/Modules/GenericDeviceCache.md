@@ -24,8 +24,9 @@ Once the concrete time to cache for is then set using `prepareFor()`, `GenericDe
 * determine the upper and lower energy content limits: `getEnergyContentUpperLimitInMWH()`, `getEnergyContentLowerLimitInMWH()`
 * determine the maximum / minimum SOC reachable within the time step starting from a given SOC: `getMaxTargetEnergyContentInMWH()`, `getMinTargetEnergyContentInMWH()`
 * determine the maximum energy delta for charging / discharging: `getMaxNetChargingEnergyInMWH()`, `getMaxNetDischargingEnergyInMWH()`
+* determine the specific variable cost of device operation: `getVariableCostInEURperMWH()`,
 * simulate a transition between two SOC: `simulateTransition()`
-
+ 
 # See also
 
 * [EnergyStateManager](./EnergyStateManager.md)

@@ -24,6 +24,15 @@ Depending on the result of `useStateList()`, this will either return a full list
 Based on a given initial state ID, `StateManager` can also tell which state IDs that can be reached at the prepared time without violating restrictions from the connected `GenericDevice` using `getFinalStates()`.
 Again, depending on the result of `useStateList()`, this will either return a full list of the state IDs or only the first and the last state to iterate in between.
 For any propose transition from state ID `i` to state ID `f` at the prepared time, `StateManager` can calculate the value of the state transition utilising its configured [AssessmentFunction](./AssessmentFunction.md) by using `getTransitionValueFor()`.
+`StateManager` can `analyseAvailableEnergyLevels()` to assess which minimum lower and maximum upper energy levels occur during planning time.
+
+It also offers the following static utility routines:
+
+* `getTimeByIndex()` to return the first time of the i-th time interval in the planning horizon,
+* `hasSelfDischarge()` to check whether self discharge occurs during the planning horizon,
+* `getCurrentOptimisationTimeIndex()`, to return the number of time shifts of the starting period to reach the given time period,
+* `calcNextEnergyInMWH()`, to return the next energy level based on the current one and a planned transition,
+* `calcSpecificValueInEURperMWH` to return the specific monetary value of a transition.
 
 The dynamic programming [Optimiser](./Optimiser.md) will store the best available transition for each initial state using `updateBestFinalState()`.
 All best follow-up states for all available initial states and time steps are thus stored in `StateManager`.
@@ -39,6 +48,7 @@ See [StateManagerBuilder](./StateManagerBuilder.md)
 # Child classes
 
 * [StateOfCharge](./EnergyStateManager.md)
+* [EnergyAndTime](./EnergyAndTimeStateManager.md)
 
 # See also
 

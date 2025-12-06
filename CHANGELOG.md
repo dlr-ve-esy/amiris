@@ -11,6 +11,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - GenericFlexibility: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
+- CI: also check compatibility with JDK 25
 
 ### Fixed
 - docs: Update Paths to example scenarios #217 (@dlr-cjs)

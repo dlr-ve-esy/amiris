@@ -24,6 +24,7 @@ public class GenericDeviceCache {
 	private double maxNetChargingEnergyInMWH;
 	private double maxNetDischargingEnergyInMWH;
 	private double netInflowEnergyInMWH;
+	private double variableCostInEURperMWH;
 
 	/** Instantiates a new {@link GenericDeviceCache} for given device
 	 * 
@@ -57,6 +58,7 @@ public class GenericDeviceCache {
 		maxNetDischargingEnergyInMWH = (netInflowPowerInMW
 				- device.getExternalDischargingPowerInMW(time) / dischargingEfficiency) * intervalDurationInHours;
 		netInflowEnergyInMWH = netInflowPowerInMW * intervalDurationInHours;
+		variableCostInEURperMWH = device.getVariableCostInEURperMWH(time);
 	}
 
 	/** @throws RuntimeException if {@link #intervalDurationInHours} is not set */
@@ -151,5 +153,12 @@ public class GenericDeviceCache {
 	 * @return maximum negative net energy delta */
 	public double getMaxNetDischargingEnergyInMWH() {
 		return maxNetDischargingEnergyInMWH;
+	}
+
+	/** Returns the variable cost of a device at currently cached time
+	 * 
+	 * @return variable cost of a device at currently cached time */
+	public double getVariableCostInEURperMWH() {
+		return variableCostInEURperMWH;
 	}
 }

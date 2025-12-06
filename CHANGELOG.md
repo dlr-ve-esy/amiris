@@ -8,6 +8,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - docs: Improve get-started section based on user feedback #210 (@dlr-cjs)
 
 ### Added
+- GenericFlexibility: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
 

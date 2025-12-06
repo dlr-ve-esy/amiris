@@ -27,7 +27,7 @@ public class GenericDevice {
 	static final String ERR_EXCEED_UPPER_ENERGY_LIMIT = " Upper energy limit exceeded by MWh: ";
 	static final String ERR_EXCEED_LOWER_ENERGY_LIMIT = " Lower energy limit exceeded by MWh: ";
 	static final String ERR_NEGATIVE_SELF_DISCHARGE = "Energy out of nothing: negative self discharge occured at time: ";
-	static final String WARN_SHIFT_TIME_EXCEEDED = "Maximum shift time exceeded by seconds: ";
+	static final String WARN_SHIFT_TIME_EXCEEDED = "Maximum shift time exceeded. Is reset at the expense of penalty cost. Was exceeded by seconds: ";
 	static final double TOLERANCE = 1E-3;
 
 	static final String PARAM_CHARGING_POWER = "GrossChargingPowerInMW";
@@ -42,6 +42,7 @@ public class GenericDevice {
 	static final String PARAM_VARIABLE_COST = "VariableCostInEURperMWH";
 	static final String PARAM_SHIFT_TIME = "MaximumShiftTimeInHours";
 	static final String PARAM_ENABLE_PROLONGING = "EnableProlonging";
+	static final String PARAM_PENALTY_COST = "PenaltyCostInEURperMWH";
 
 	private static Logger logger = LoggerFactory.getLogger(GenericDevice.class);
 	private TimeSeries externalChargingPowerInMW;
@@ -53,6 +54,7 @@ public class GenericDevice {
 	private TimeSeries selfDischargeRatePerHour;
 	private TimeSeries netInflowPowerInMW;
 	private TimeSeries variableCostInEURperMWH;
+	private TimeSeries penaltyCostInEURperMWH;
 	private double currentEnergyContentInMWH;
 	private long maximumShiftTimeInSteps;
 	private long currentShiftTimeInSteps;
@@ -65,7 +67,7 @@ public class GenericDevice {
 					Make.newSeries(PARAM_CHARGING_EFFICIENCY), Make.newSeries(PARAM_DISCHARGING_EFFICIENCY),
 					Make.newSeries(PARAM_UPPER_LIMIT), Make.newSeries(PARAM_LOWER_LIMIT), Make.newSeries(PARAM_SELF_DISCHARGE),
 					Make.newSeries(PARAM_INFLOW), Make.newDouble(PARAM_INITIAL_ENERGY), Make.newSeries(PARAM_VARIABLE_COST),
-					Make.newDouble(PARAM_SHIFT_TIME), Make.newInt(PARAM_ENABLE_PROLONGING))
+					Make.newDouble(PARAM_SHIFT_TIME), Make.newInt(PARAM_ENABLE_PROLONGING), Make.newSeries(PARAM_PENALTY_COST))
 			.buildTree();
 
 	/** Instantiates new {@link GenericDevice}
@@ -85,6 +87,7 @@ public class GenericDevice {
 		variableCostInEURperMWH = input.getTimeSeries(PARAM_VARIABLE_COST);
 		maximumShiftTimeInSteps = (long) (new TimeSpan(1, Interval.HOURS).getSteps() * input.getDouble(PARAM_SHIFT_TIME));
 		enableProlonging = input.getInteger(PARAM_ENABLE_PROLONGING) >= 1;
+		penaltyCostInEURperMWH = input.getTimeSeries(PARAM_PENALTY_COST);
 	}
 
 	/** @return effective self discharge rate for given duration, considering exponential reduction over time */
@@ -146,7 +149,8 @@ public class GenericDevice {
 				currentShiftTimeInSteps = 0;
 			} else if (isChangeOfSign(initialEnergyContentInMWH, finalEnergyContentInMWH)) {
 				currentShiftTimeInSteps = duration.getSteps();
-			} else if (isProlongedShift(initialEnergyContentInMWH, finalEnergyContentInMWH, duration) && enableProlonging) {
+			} else if (enableProlonging && isProlongedShift(initialEnergyContentInMWH, finalEnergyContentInMWH, duration)
+					&& isProlongingWithinPowerBounds(initialEnergyContentInMWH, finalEnergyContentInMWH, duration, time)) {
 				currentShiftTimeInSteps = duration.getSteps();
 				lastProlongingCostInEUR = 2 * initialEnergyContentInMWH * getVariableCostInEURperMWH(time);
 			} else {
@@ -154,6 +158,8 @@ public class GenericDevice {
 			}
 			if (currentShiftTimeInSteps > maximumShiftTimeInSteps) {
 				logger.warn(WARN_SHIFT_TIME_EXCEEDED + (currentShiftTimeInSteps - maximumShiftTimeInSteps));
+				currentShiftTimeInSteps = duration.getSteps();
+				lastProlongingCostInEUR = Math.abs(finalEnergyContentInMWH) * getPenaltyCostInEURperMWH(time);
 			}
 		}
 	}
@@ -188,6 +194,29 @@ public class GenericDevice {
 					(initialEnergyContent < -TOLERANCE && finalEnergyLevel < -TOLERANCE);
 		}
 		return false;
+	}
+
+	/** Check whether shift is feasible within power bounds
+	 * 
+	 * @param energyToBalanceInMWH equal to initial energy content
+	 * @param finalEnergyContentInMWH
+	 * @return whether shift is feasible within power bounds */
+	private boolean isProlongingWithinPowerBounds(double energyToBalanceInMWH, double finalEnergyContentInMWH,
+			TimeSpan duration, TimeStamp time) {
+		double maxNetChargingPowerInMW = getNetInflowInMW(time)
+				+ getExternalChargingPowerInMW(time) * getChargingEfficiency(time);
+		double maxNetDischargingPowerInMW = getNetInflowInMW(time)
+				- getExternalDischargingPowerInMW(time) / getDischargingEfficiency(time);
+		double intervalDurationInHours = (double) duration.getSteps() / STEPS_PER_HOUR;
+		double currentUpshiftEnergyLimitInMWH = maxNetChargingPowerInMW * intervalDurationInHours;
+		double currentDownshiftEnergyLimitInMWH = maxNetDischargingPowerInMW * intervalDurationInHours;
+		if (energyToBalanceInMWH > 0) {
+			double downshiftShareForBalance = Math.min(1., energyToBalanceInMWH / -currentDownshiftEnergyLimitInMWH);
+			return finalEnergyContentInMWH <= (1 - downshiftShareForBalance) * currentUpshiftEnergyLimitInMWH;
+		} else {
+			double upshiftShareForBalance = Math.min(1., -energyToBalanceInMWH / currentUpshiftEnergyLimitInMWH);
+			return finalEnergyContentInMWH >= (1 - upshiftShareForBalance) * currentDownshiftEnergyLimitInMWH;
+		}
 	}
 
 	/** Returns internal energy delta or power equivalent of given external energy delta or power
@@ -319,6 +348,14 @@ public class GenericDevice {
 		return variableCostInEURperMWH.getValueLinear(time);
 	}
 
+	/** Returns penalty cost at given time
+	 * 
+	 * @param time at which to return the penalty cost
+	 * @return penalty cost at given time in EUR per MWh */
+	public double getPenaltyCostInEURperMWH(TimeStamp time) {
+		return penaltyCostInEURperMWH.getValueLinear(time);
+	}
+
 	/** Returns current shift time in steps
 	 * 
 	 * @return current shift time in steps */
@@ -326,10 +363,24 @@ public class GenericDevice {
 		return currentShiftTimeInSteps;
 	}
 
+	/** Returns maximum shift time; if 0, no shift time limit applies
+	 * 
+	 * @return maximum shift time span */
+	public TimeSpan getMaximumShiftTime() {
+		return new TimeSpan(maximumShiftTimeInSteps < 0 ? 0 : maximumShiftTimeInSteps);
+	}
+
 	/** Returns prolonging cost from last transition in EUR
 	 * 
 	 * @return prolonging cost from last transition in EUR */
 	public double getLastProlongingCostInEUR() {
 		return lastProlongingCostInEUR;
+	}
+
+	/** Returns true if prolonging is allowed
+	 * 
+	 * @return true if prolonging is allowed */
+	public boolean hasProlonging() {
+		return enableProlonging;
 	}
 }

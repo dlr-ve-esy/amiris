@@ -18,16 +18,6 @@ import de.dlr.gitlab.fame.time.TimePeriod;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public final class Optimiser {
-	static final String ERR_NO_FEASIBLE_SOLUTION = "No feasible transition found.";
-	static final String ERR_OPTIMISATION = "Optimisation failed for TimePeriod: ";
-
-	@SuppressWarnings("serial")
-	private class OptimisationError extends Exception {
-		public OptimisationError(String message) {
-			super(message);
-		}
-	}
-
 	/** Optimisation target */
 	public enum Target {
 		/** Maximise the value of a target function */
@@ -68,20 +58,16 @@ public final class Optimiser {
 			TimePeriod timePeriod = startingPeriod.shiftByDuration(step);
 			stateManager.prepareFor(timePeriod.getStartTime());
 			double[] bestValuesNextPeriod = stateManager.getBestValuesNextPeriod();
-			try {
-				if (stateManager.useStateList()) {
-					optimiseWithStateList(bestValuesNextPeriod);
-				} else {
-					optimiseWithBoundaries(bestValuesNextPeriod);
-				}
-			} catch (OptimisationError e) {
-				throw new RuntimeException(ERR_OPTIMISATION + timePeriod, e);
+			if (stateManager.useStateList()) {
+				optimiseWithStateList(bestValuesNextPeriod);
+			} else {
+				optimiseWithBoundaries(bestValuesNextPeriod);
 			}
 		}
 	}
 
 	/** Optimise using lists of initial and final state indices */
-	private void optimiseWithStateList(double[] bestValuesNextPeriod) throws OptimisationError {
+	private void optimiseWithStateList(double[] bestValuesNextPeriod) {
 		for (int initialStateIndex : stateManager.getInitialStates()) {
 			double bestAssessmentValue = initialAssessmentValue;
 			int bestFinalStateIndex = Integer.MIN_VALUE;
@@ -92,9 +78,6 @@ public final class Optimiser {
 					bestAssessmentValue = value;
 					bestFinalStateIndex = finalStateIndex;
 				}
-			}
-			if (bestFinalStateIndex == Integer.MIN_VALUE) {
-				throw new OptimisationError(ERR_NO_FEASIBLE_SOLUTION);
 			}
 			stateManager.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);
 		}
@@ -110,7 +93,7 @@ public final class Optimiser {
 	}
 
 	/** Optimise using lowest and highest state index */
-	private void optimiseWithBoundaries(double[] bestValuesNextPeriod) throws OptimisationError {
+	private void optimiseWithBoundaries(double[] bestValuesNextPeriod) {
 		int[] initialBoundaries = stateManager.getInitialStates();
 		for (int initialStateIndex = initialBoundaries[0]; initialStateIndex <= initialBoundaries[1]; initialStateIndex++) {
 			double bestAssessmentValue = initialAssessmentValue;
@@ -123,9 +106,6 @@ public final class Optimiser {
 					bestAssessmentValue = value;
 					bestFinalStateIndex = finalStateIndex;
 				}
-			}
-			if (bestFinalStateIndex == Integer.MIN_VALUE) {
-				throw new OptimisationError(ERR_NO_FEASIBLE_SOLUTION);
 			}
 			stateManager.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);
 		}

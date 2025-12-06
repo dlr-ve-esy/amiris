@@ -6,7 +6,6 @@ package agents.flexibility.dynamicProgramming.assessment;
 import java.util.ArrayList;
 import java.util.TreeMap;
 import agents.flexibility.GenericDevice;
-import agents.flexibility.GenericDeviceCache;
 import communications.message.PointInTime;
 import communications.portable.Sensitivity;
 import communications.portable.Sensitivity.InterpolationType;

@@ -4,6 +4,7 @@
 package util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -168,5 +169,26 @@ public final class Util {
 		public Y getSecondItem() {
 			return secondItem;
 		}
+	}
+
+	/** Returns first entries of given integer array up to given new length
+	 * <ul>
+	 * <li>if new length matches or exceeds length of given array, the original array is returned</li>
+	 * <li>if new length is Zero or negative, an array of length Zero is returned</li>
+	 * <li>in any other case, a new array is returned that contains the first length entries</li>
+	 * </ul>
+	 * 
+	 * @param array to be truncated
+	 * @param newLength of the truncated array
+	 * @return first entries of given array */
+	public static int[] truncateIntArray(int[] array, int newLength) {
+		if (newLength < array.length) {
+			if (newLength <= 0) {
+				return new int[0];
+			} else {
+				return Arrays.copyOfRange(array, 0, newLength);
+			}
+		}
+		return array;
 	}
 }

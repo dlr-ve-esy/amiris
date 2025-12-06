@@ -12,6 +12,7 @@ Builds [StateManager](./StateManager.md) from given input parameters
 # Available Types
 
 * `STATE_OF_CHARGE`: Energy states of a device are represented in one dimension, see [EnergyStateManager](./EnergyStateManager.md)
+* `ENERGY_AND_TIME`: Represent energy states and current shifting time of a device in two dimensions, see [EnergyAndTimeStateManager](EnergyAndTimeStateManager.md)
 
 # See also
 

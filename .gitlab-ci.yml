@@ -110,6 +110,9 @@ compatibility:jdk21:
   extends: .compatibility
   image: maven:3-eclipse-temurin-21
 
+compatibility:jdk25:
+  extends: .compatibility
+  image: maven:3-eclipse-temurin-25
 
 # Package AMIRIS & build javadoc
 deploy:jdk11:

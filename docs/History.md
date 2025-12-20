@@ -7,11 +7,8 @@ See a short overview of AMIRIS's history below.
 timeline
   accTitle: AMIRIS development history and milestones
   accDescr: Timeline showing the AMIRIS development history and its milestones
-  title: AMIRIS History
-  
+ 
   2008: Development of AMIRIS begins.
-```
-
   2009: 
   2010: An early version of AMIRIS is drafted.
   2011:
@@ -34,4 +31,5 @@ timeline
   2025: 30 external user of AMIRIS are confirmed.
       : AMIRIS and its accompanying [tools](https://gitlab.com/dlr-ve/esy/amiris) account for a total of 50 releases.
       : AMIRIS v4.0 is [published](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/tags/v4.0.0)
-      : 6th Ph.D. thesis with AMIRIS has been defended.
+      : 6th Ph.D. thesis with AMIRIS has been defended.  
+```

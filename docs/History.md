@@ -9,17 +9,17 @@ timeline
   accDescr: Timeline showing the AMIRIS development history and its milestones
  
   2008: Development of AMIRIS begins.
-  2009:
+  2009:   
   2010: An early version of AMIRIS is drafted.
-  2011:
-  2012:
-  2013:
-  2014:
-  2015:
-  2016:
+  2011:   
+  2012:   
+  2013:   
+  2014:   
+  2015:   
+  2016:   
   2017: Development of the FAME.
   2018: AMIRIS has 10 contributors.
-  2019:
+  2019:   
   2020: AMIRIS is ported to FAME.
   2021: AMIRIS has 15 contributors.
       : AMIRIS v1.0 is published under Apache 2.0 license.

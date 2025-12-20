@@ -4,7 +4,7 @@ AMIRIS is developed for more than 15 years.
 See a short overview of AMIRIS's history below.
 
 ```mermaid
-timeline
+graph TL
   accTitle: AMIRIS development history and milestones
   accDescr: Timeline showing the AMIRIS development history and its milestones
   title: AMIRIS History

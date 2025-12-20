@@ -4,13 +4,13 @@ AMIRIS is developed for more than 15 years.
 See a short overview of AMIRIS's history below.
 
 ```mermaid
-graph TL
+timeline
   accTitle: AMIRIS development history and milestones
   accDescr: Timeline showing the AMIRIS development history and its milestones
   title: AMIRIS History
   
   2008: Development of AMIRIS begins.
-  2009
+  2009: 
   2010: An early version of AMIRIS is drafted.
   2011:
   2012:

@@ -9,7 +9,7 @@ timeline
   accDescr: Timeline showing the AMIRIS development history and its milestones
  
   2008: Development of AMIRIS begins.
-  2009: 
+  2009:
   2010: An early version of AMIRIS is drafted.
   2011:
   2012:

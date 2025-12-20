@@ -16,6 +16,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 ### Fixed
 - docs: Update Paths to example scenarios #217 (@dlr-cjs)
 - LoadShiftingTrader: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
+- FlexibilityAssessor: Fix improper formatted warning messages #204 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_

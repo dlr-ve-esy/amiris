@@ -17,7 +17,6 @@ import util.TimedDataMap;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class FlexibilityAssessor {
-	static final String WARN_MISSING_REGISTRATION = "Agent with ID %s was not registered with SensitivityForecaster; it is recommended that all clients register, or none.";
 	static final String WARN_INFEASIBLE_WEIGHT = "Weight of initial estimate must not be smaller than 1 but was: ";
 	private static Logger logger = LoggerFactory.getLogger(FlexibilityAssessor.class);
 
@@ -54,7 +53,7 @@ public class FlexibilityAssessor {
 	/** Ensure given weight is at least one, else log a warning */
 	private int getFeasibleWeight(int weight) {
 		if (weight < 1) {
-			logger.warn(WARN_INFEASIBLE_WEIGHT, weight);
+			logger.warn(WARN_INFEASIBLE_WEIGHT + weight);
 		}
 		return Math.max(1, weight);
 	}
@@ -146,9 +145,6 @@ public class FlexibilityAssessor {
 			}
 		}
 		if (previousSummandsWeight < 1.) {
-			if (!maxEnergyDeltaPerClient.isEmpty()) {
-				logger.warn(WARN_MISSING_REGISTRATION, clientId);
-			}
 			return new double[] {1.0, 1.0};
 		}
 		return new double[] {sum, previousSummandsWeight};

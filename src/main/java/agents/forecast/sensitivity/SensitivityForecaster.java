@@ -27,7 +27,7 @@ import util.TimedDataMap;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class SensitivityForecaster extends MarketForecaster implements SensitivityForecastProvider {
-	static final String ERR_UNREGISTERED = "Client '%s' is not registered at SensitivityForecaster '%s'. Add `ForecastRegistration` contract before `SensitivityRequest`.";
+	static final String ERR_UNREGISTERED = "Client '%d' is not registered at SensitivityForecaster '%s'. Add `ForecastRegistration` contract before `SensitivityRequest`.";
 
 	@Input private static final Tree parameters = Make.newTree().add(Make.newGroup("MultiplierEstimation").optional()
 			.add(Make.newDouble("IgnoreAwardFactor").optional()

@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.markets.meritOrder;
@@ -8,9 +8,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static testUtils.Exceptions.assertThrowsMessage;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Test;
 import agents.markets.meritOrder.MeritOrderKernel.MeritOrderClearingException;
 import agents.markets.meritOrder.books.DemandOrderBook;
+import agents.markets.meritOrder.books.OrderBook;
 import agents.markets.meritOrder.books.OrderBookItem;
 import agents.markets.meritOrder.books.SupplyOrderBook;
 
@@ -53,31 +57,76 @@ public class MeritOrderKernelTest {
 	}
 
 	@Test
-	public void clearMarketSimple_positiveDemandAndSupply_returnsCut() throws MeritOrderClearingException {
-		SupplyOrderBook supplyBook = mock(SupplyOrderBook.class);
-		DemandOrderBook demandBook = mock(DemandOrderBook.class);
-		ArrayList<OrderBookItem> supplyItems = mockBookItemsPowerAndPrice(
-				new double[] {100, 0}, new double[] {21, Double.MAX_VALUE});
-		ArrayList<OrderBookItem> demandItems = mockBookItemsPowerAndPrice(
-				new double[] {50, 0}, new double[] {3000, -Double.MAX_VALUE});
-		when(supplyBook.getOrderBookItems()).thenReturn(supplyItems);
-		when(demandBook.getOrderBookItems()).thenReturn(demandItems);
+	public void clearMarketSimple_noCutLessDemand_returnsVirtualCutSupplyPrice() throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100}, new double[] {21});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {50}, new double[] {3000});
 		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
-		assertEquals(21, result.marketPriceInEURperMWH, 1E-10);
-		assertEquals(50, result.tradedEnergyInMWH, 1E-10);
+		assertExpectedResult(result, 21, 50);
 	}
 
-	/** @return List of mocked {@link OrderBookItem}s create from given power and price value pairs */
-	private ArrayList<OrderBookItem> mockBookItemsPowerAndPrice(double[] powers, double[] prices) {
+	/** @return mocked {@link OrderBook} of given type created from given power and price value pairs; add virtual bid */
+	private <T extends OrderBook> T mockOrderBook(Class<T> type, double[] powers, double[] prices) {
+		T orderBook = mock(type);
+		List<Double> powersWithVirtualBid = new ArrayList<Double>(Arrays.asList(ArrayUtils.toObject(powers)));
+		powersWithVirtualBid.add(0.0);
+
+		List<Double> pricesWithVirtualBid = new ArrayList<Double>(Arrays.asList(ArrayUtils.toObject(prices)));
+		pricesWithVirtualBid.add(type == SupplyOrderBook.class ? Double.MAX_VALUE : -Double.MAX_VALUE);
+
+		ArrayList<OrderBookItem> supplyItems = mockBookItemsPowerAndPrice(powersWithVirtualBid, pricesWithVirtualBid);
+		when(orderBook.getOrderBookItems()).thenReturn(supplyItems);
+		return orderBook;
+	}
+
+	/** @return List of mocked {@link OrderBookItem}s created from given power and price value pairs */
+	private ArrayList<OrderBookItem> mockBookItemsPowerAndPrice(List<Double> powers, List<Double> prices) {
 		ArrayList<OrderBookItem> orderBookItems = new ArrayList<>();
 		double total = 0;
-		for (int index = 0; index < powers.length; index++) {
+		for (int index = 0; index < powers.size(); index++) {
 			OrderBookItem orderBookItem = mock(OrderBookItem.class);
-			when(orderBookItem.getCumulatedPowerUpperValue()).thenReturn(total + powers[index]);
-			when(orderBookItem.getOfferPrice()).thenReturn(prices[index]);
+			when(orderBookItem.getCumulatedPowerUpperValue()).thenReturn(total + powers.get(index));
+			when(orderBookItem.getOfferPrice()).thenReturn(prices.get(index));
 			orderBookItems.add(orderBookItem);
-			total += powers[index];
+			total += powers.get(index);
 		}
 		return orderBookItems;
+	}
+
+	/** Asserts that given clearing result is sufficiently close to expected values */
+	private void assertExpectedResult(ClearingDetails result, double priceInEURperMWH, double tradedEnergyInMWH) {
+		assertEquals(priceInEURperMWH, result.marketPriceInEURperMWH, 1E-10);
+		assertEquals(tradedEnergyInMWH, result.tradedEnergyInMWH, 1E-10);
+	}
+
+	@Test
+	public void clearMarketSimple_noCutMoreDemand_returnsVirtualCutDemandPrice() throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100}, new double[] {21});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {200}, new double[] {3000});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 3000, 100);
+	}
+
+	@Test
+	public void clearMarketSimple_CutAtSamePower_returnsHigherPrice() throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 50}, new double[] {21, 100});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 20}, new double[] {3000, 50});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 50, 100);
+	}
+
+	@Test
+	public void clearMarketSimple_DemandIsCut_returnsDemandPrice() throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {120, 20}, new double[] {21, 100});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 50}, new double[] {3000, 50});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 50, 120);
+	}
+
+	@Test
+	public void clearMarketSimple_HorizontalOverlap_returns() throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 30}, new double[] {21, 100});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 50}, new double[] {3000, 100});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 100, 130);
 	}
 }

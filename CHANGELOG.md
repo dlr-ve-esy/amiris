@@ -6,6 +6,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 ## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - TBA
 ### Changed
 - docs: Improve get-started section based on user feedback #210 (@dlr-cjs)
+- tests: improved unit tests for merit order kernel #218 (@dlr-cjs)
 
 ### Added
 - GenericFlexibility: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)

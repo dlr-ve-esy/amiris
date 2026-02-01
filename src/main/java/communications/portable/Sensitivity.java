@@ -149,14 +149,15 @@ public class Sensitivity implements Portable {
 	@Override
 	public void populate(ComponentProvider provider) {
 		multiplier = provider.nextDouble();
-		demandPowers = readArray(provider, provider.nextInt());
-		demandValues = readArray(provider, provider.nextInt());
-		supplyPowers = readArray(provider, provider.nextInt());
-		supplyValues = readArray(provider, provider.nextInt());
+		demandPowers = readArray(provider);
+		demandValues = readArray(provider);
+		supplyPowers = readArray(provider);
+		supplyValues = readArray(provider);
 	}
 
-	/** @return array with given length read from given provider */
-	private final double[] readArray(ComponentProvider provider, int length) {
+	/** @return array from given provider assuming it was stored using {@link #storeDoubleArray(ComponentCollector, double[])} */
+	private final double[] readArray(ComponentProvider provider) {
+		int length = provider.nextInt();
 		double[] array = new double[length];
 		for (int i = 0; i < length; i++) {
 			array[i] = provider.nextDouble();

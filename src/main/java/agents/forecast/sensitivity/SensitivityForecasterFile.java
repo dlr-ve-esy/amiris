@@ -79,7 +79,7 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 		}
 		Sensitivity nextSensitivity = nextForecasts.firstEntry().getValue();
 		nextSensitivity.setInterpolationType(InterpolationType.DIRECT);
-		double nextPriceInEURperMWH = nextSensitivity.getValue(0);
+		double nextPriceInEURperMWH = nextSensitivity.getValue(1.0);
 		store(OutputFields.ElectricityPriceForecastInEURperMWH, nextPriceInEURperMWH);
 	}
 
@@ -89,10 +89,10 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 		return nextForecasts.get(time);
 	}
 
-	/** @return freshly built {@link Sensitivity} of type {@link CostInsensitive} with multiplier Zero */
+	/** @return freshly built {@link Sensitivity} of type {@link CostInsensitive} with multiplier One */
 	private Sensitivity buildSensitivityFor(TimeStamp time) {
 		CostInsensitive costInsensitive = new CostInsensitive();
 		costInsensitive.setPrice(priceForecasts.getValueLinear(time));
-		return new Sensitivity(costInsensitive, 0.);
+		return new Sensitivity(costInsensitive, 1.0);
 	}
 }

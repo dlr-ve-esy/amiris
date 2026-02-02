@@ -18,6 +18,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public interface MarketCouplingClient extends AgentAbility {
 	@Product
 	public static enum Products {
+		/** Transmission capacities and bids for forecasts */
+		TransmissionAndBidForecasts,
 		/** Transmission capacities and bids from local exchange */
 		TransmissionAndBids
 	}

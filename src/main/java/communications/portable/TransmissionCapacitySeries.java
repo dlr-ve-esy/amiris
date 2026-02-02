@@ -22,6 +22,7 @@ public class TransmissionCapacitySeries implements Portable {
 
 	/** Create new {@link TransmissionCapacitySeries}
 	 * 
+	 * @param originMarketZone market zone which is the origin of the transmission capacities
 	 * @param transmissionCapacities to be sent */
 	public TransmissionCapacitySeries(String originMarketZone, HashMap<String, TimeSeries> transmissionCapacities) {
 		this.originMarketZone = originMarketZone;

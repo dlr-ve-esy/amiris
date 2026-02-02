@@ -45,6 +45,7 @@ public class CouplingData implements Portable, Cloneable {
 
 	@Override
 	public void addComponentsTo(ComponentCollector collector) {
+		collector.storeComponents(clearingTime);
 		collector.storeComponents(demandOrderBook);
 		collector.storeComponents(supplyOrderBook);
 		collector.storeComponents(transmissionBook);
@@ -54,6 +55,7 @@ public class CouplingData implements Portable, Cloneable {
 
 	@Override
 	public void populate(ComponentProvider provider) {
+		clearingTime = provider.nextComponent(TimeStamp.class);
 		demandOrderBook = provider.nextComponent(DemandOrderBook.class);
 		supplyOrderBook = provider.nextComponent(SupplyOrderBook.class);
 		transmissionBook = provider.nextComponent(TransmissionBook.class);

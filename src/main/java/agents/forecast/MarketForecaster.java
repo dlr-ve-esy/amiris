@@ -103,7 +103,7 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 		/** Send out transmission data and bids for (multiple) market coupling events */
 		call(this::sendCouplingData).on(MarketCouplingClient.Products.TransmissionAndBidForecasts);
 		/** Digest resolved market couplings and clear market */
-		call(this::clearMarketCoupled).onAndUse((MarketCoupling.Products.MarketCouplingResult));
+		call(this::clearMarketCoupled).onAndUse((MarketCoupling.Products.MarketCouplingForecastResult));
 		/** On outgoing merit order forecasts: provide merit order results to clients */
 		call(this::sendMeritOrderForecast).on(DamForecastProvider.Products.MeritOrderForecast)
 				.use(DamForecastClient.Products.MeritOrderForecastRequest);

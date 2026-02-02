@@ -14,6 +14,7 @@ import de.dlr.gitlab.fame.data.TimeSeries;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems, Milena Sipovac */
 public class TransmissionCapacitySeries implements Portable {
+	private String originMarketZone;
 	private HashMap<String, TimeSeries> transmissionCapacities;
 
 	/** required for {@link Portable}s */
@@ -22,13 +23,15 @@ public class TransmissionCapacitySeries implements Portable {
 	/** Create new {@link TransmissionCapacitySeries}
 	 * 
 	 * @param transmissionCapacities to be sent */
-	public TransmissionCapacitySeries(HashMap<String, TimeSeries> transmissionCapacities) {
+	public TransmissionCapacitySeries(String originMarketZone, HashMap<String, TimeSeries> transmissionCapacities) {
+		this.originMarketZone = originMarketZone;
 		this.transmissionCapacities = transmissionCapacities;
 	}
 
 	@Override
 	public void addComponentsTo(ComponentCollector collector) {
 		collector.storeInts(transmissionCapacities.size());
+		collector.storeStrings(originMarketZone);
 		for (Entry<String, TimeSeries> entry : transmissionCapacities.entrySet()) {
 			collector.storeStrings(entry.getKey());
 			collector.storeTimeSeries(entry.getValue());
@@ -37,6 +40,7 @@ public class TransmissionCapacitySeries implements Portable {
 
 	@Override
 	public void populate(ComponentProvider provider) {
+		originMarketZone = provider.nextString();
 		int numberOfElements = provider.nextInt();
 		transmissionCapacities = new HashMap<>(numberOfElements);
 		for (int index = 0; index < numberOfElements; index++) {
@@ -47,5 +51,10 @@ public class TransmissionCapacitySeries implements Portable {
 	/** @return transmission capacity timeseries of sender's market zone to other market zones */
 	public HashMap<String, TimeSeries> getCapacities() {
 		return transmissionCapacities;
+	}
+
+	/** @return market zone of the sender */
+	public String getOriginMarketZone() {
+		return originMarketZone;
 	}
 }

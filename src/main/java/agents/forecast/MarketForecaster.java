@@ -70,6 +70,8 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 	private final TreeMap<TimeStamp, MarketClearingResult> calculatedForecastContainer = new TreeMap<>();
 	/** The last time a forecast was stored */
 	private TimeStamp lastStoredForecastAt = null;
+
+	private String originMarketZone;
 	/** Transmission capacities of forecasted day-ahead market to its connected neighbours */
 	private HashMap<String, TimeSeries> transmissionCapacities;
 
@@ -102,6 +104,7 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 		var capacitySeries = CommUtils.getExactlyOneEntry(input)
 				.getFirstPortableItemOfType(TransmissionCapacitySeries.class);
 		transmissionCapacities = capacitySeries.getCapacities();
+		originMarketZone = capacitySeries.getOriginMarketZone();
 	}
 
 	/** Requests bid forecast for all future hours within forecast period

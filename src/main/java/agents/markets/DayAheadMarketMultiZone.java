@@ -12,7 +12,6 @@ import agents.markets.meritOrder.books.SupplyOrderBook;
 import agents.markets.meritOrder.books.TransferOrderBook;
 import agents.markets.meritOrder.books.TransmissionBook;
 import communications.message.AwardData;
-import communications.message.TransmissionCapacity;
 import communications.portable.CouplingData;
 import communications.portable.TransmissionCapacitySeries;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
@@ -26,7 +25,6 @@ import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
 import de.dlr.gitlab.fame.data.TimeSeries;
-import de.dlr.gitlab.fame.logging.Logging;
 import de.dlr.gitlab.fame.service.output.Output;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -127,7 +125,8 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 
 	/** Forward transmission capacity timeseries with other agents */
 	private void shareTransmissionCapacities(ArrayList<Message> input, List<Contract> contracts) {
-		TransmissionCapacitySeries transmissionCapacitySeries = new TransmissionCapacitySeries(transmissionCapacities);
+		TransmissionCapacitySeries transmissionCapacitySeries = new TransmissionCapacitySeries(ownMarketZone,
+				transmissionCapacities);
 		for (Contract contract : contracts) {
 			fulfilNext(contract, transmissionCapacitySeries);
 		}
@@ -151,40 +150,15 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 	private void provideTransmissionAndBids(ArrayList<Message> input, List<Contract> contracts) {
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 
-		TransmissionBook transmissionBook = new TransmissionBook(ownMarketZone);
-		for (String targetRegion : transmissionCapacities.keySet()) {
-			transmissionBook.add(getTransmissionCapacity(targetRegion, now()));
-		}
+		TransmissionBook transmissionBook = MarketCouplingClient.buildTransmissionBook(ownMarketZone,
+				transmissionCapacities, now());
+
 		MarketClearingResult result = marketClearing.clear(supplyBook.clone(), demandBook.clone(), getClearingEventId());
 		store(OutputFields.PreCouplingElectricityPriceInEURperMWH, result.getMarketPriceInEURperMWH());
 		store(OutputFields.PreCouplingTotalAwardedPowerInMW, result.getTradedEnergyInMWH());
 		store(OutputFields.PreCouplingDispatchSystemCostInEUR, result.getSystemCostTotalInEUR());
 
 		fulfilNext(contract, new CouplingData(demandBook, supplyBook, transmissionBook));
-	}
-
-	/** Returns the TransmissionCapacity for a given target Region and a given TimeStamp
-	 * 
-	 * @param targetRegion given target Region
-	 * @param time given TimeStamp
-	 * @return TransmissionCapacity for a given target Region and TimeStamp */
-	private TransmissionCapacity getTransmissionCapacity(String targetRegion, TimeStamp time) {
-		double amount = getTransmissionCapacityAmount(targetRegion, time);
-		TransmissionCapacity transmissionCapacity = new TransmissionCapacity(targetRegion, amount);
-		return transmissionCapacity;
-	}
-
-	/** Returns the TransmissionCapacityAmount for a given target Region and a given TimeStamp
-	 * 
-	 * @param targetRegion given target Region
-	 * @param time given TimeStamp
-	 * @return transmission capacity amount for a given target Region and TimeStamp */
-	private double getTransmissionCapacityAmount(String targetRegion, TimeStamp time) {
-		TimeSeries transmissionCapacityOverTime = transmissionCapacities.get(targetRegion);
-		if (transmissionCapacityOverTime == null) {
-			throw Logging.logFatalException(logger, TIME_SERIES_MISSING + targetRegion);
-		}
-		return transmissionCapacityOverTime.getValueEarlierEqual(time);
 	}
 
 	/** Clears the local market and sends the Awards to the contracted Trader Agents. Depending on whether this EnergyExchange is

@@ -80,7 +80,7 @@ public class MarketCoupling extends Agent {
 		demandBalancer = new DemandBalancer(minEffectiveDemandOffset);
 
 		call(this::clearCoupledMarkets).on(Products.MarketCouplingResult)
-				.use(DayAheadMarketMultiZone.Products.TransmissionAndBids);
+				.use(MarketCouplingClient.Products.TransmissionAndBids);
 	}
 
 	/** Action for the joint clearing of coupled markets

@@ -33,7 +33,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 /** Energy exchange performs local market clearing for day-ahead energy market.
  * 
  * @author Christoph Schimeczek, A. Achraf El Ghazi, Felix Nitsch, Johannes Kochems */
-public class DayAheadMarketMultiZone extends DayAheadMarket {
+public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCouplingClient {
 	static final String MARKET_ZONE_MISSING = "Each Transmission requires a connected market zone.";
 	static final String TIME_SERIES_MISSING = "No transmission capacity specified for market zone: ";
 	static final String ERR_CLEARING_FAILED = ": Market clearing failed due to: ";
@@ -41,11 +41,9 @@ public class DayAheadMarketMultiZone extends DayAheadMarket {
 	/** Products of {@link DayAheadMarketMultiZone}s */
 	@Product
 	public static enum Products {
-		/** Transmission capacities and bids from local exchange */
-		TransmissionAndBids,
 		/** Transmission capacity time series */
 		TransmissionCapacities,
-	};
+	}
 
 	@Output
 	private static enum OutputFields {
@@ -104,7 +102,7 @@ public class DayAheadMarketMultiZone extends DayAheadMarket {
 
 		call(this::shareTransmissionCapacities).on(Products.TransmissionCapacities);
 		call(this::digestBids).onAndUse(DayAheadMarketTrader.Products.Bids);
-		call(this::provideTransmissionAndBids).on(Products.TransmissionAndBids);
+		call(this::provideTransmissionAndBids).on(MarketCouplingClient.Products.TransmissionAndBids);
 		call(this::clearMarket).on(DayAheadMarket.Products.Awards).use(MarketCoupling.Products.MarketCouplingResult);
 	}
 

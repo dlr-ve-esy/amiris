@@ -141,7 +141,7 @@ AgentTypes:
               isAbout: [{name: "energy transfer", "@id": "OEO_00000253"}, {name: "maximum value", "@id": "OEO_00010256"}]
       GateClosureInfoOffsetInSeconds: *DAM_A_GateClosureInfoOffset
     Products:
-      TransmissionAndBids: &DAM_P_TransmissionAndBids
+      TransmissionAndBids: &MarketCouplingClient_P_TransmissionAndBids
         MetaData:
           description: "Transmission capacities and bids from exchange in local market zone."
       Awards: *DAM_P_Awards
@@ -1121,6 +1121,7 @@ AgentTypes:
       ForecastRequest: &MarketForecaster_P_ForecastRequest
         MetaData:
           description: "A request for a (perfect foresight) bid prognosis."
+      TransmissionAndBids: *MarketCouplingClient_P_TransmissionAndBids
       MeritOrderForecast: &DamForecastProvider_P_MeritOrderForecast
         MetaData:
           description: "Perfect foresight merit-order forecast for a specific market clearing event"
@@ -1151,6 +1152,7 @@ AgentTypes:
       ForecastPeriodInHours: *MarketForecaster_A_ForecastPeriod
     Products:
       ForecastRequest: *MarketForecaster_P_ForecastRequest
+      TransmissionAndBids: *MarketCouplingClient_P_TransmissionAndBids
       MeritOrderForecast: *DamForecastProvider_P_MeritOrderForecast
     Outputs:
       AwardedEnergyForecastInMWH: *MarketForecaster_O_AwardedEnergyForecast
@@ -1166,6 +1168,7 @@ AgentTypes:
       ForecastPeriodInHours: *MarketForecaster_A_ForecastPeriod
     Products:
       ForecastRequest: *MarketForecaster_P_ForecastRequest
+      TransmissionAndBids: *MarketCouplingClient_P_TransmissionAndBids
       PriceForecast: *DamForecastProvider_P_PriceForecast
     Outputs:
       AwardedEnergyForecastInMWH: *MarketForecaster_O_AwardedEnergyForecast
@@ -1299,10 +1302,11 @@ AgentTypes:
               unit: 1
               isAbout: [{name: "time span", "@id": "OEO_00030035"}]
     Products:
+      ForecastRequest: *MarketForecaster_P_ForecastRequest
+      TransmissionAndBids: *MarketCouplingClient_P_TransmissionAndBids
       SensitivityForecast: &SensitivityForecastProvider_P_SensitivityForecast
         MetaData:
           description: "Forecast of a market clearing sensitivity; type of sensitivity depends on the registered needs of the client"
-      ForecastRequest: *MarketForecaster_P_ForecastRequest
       MeritOrderForecast: *DamForecastProvider_P_MeritOrderForecast
       PriceForecast: *DamForecastProvider_P_PriceForecast
     Outputs:

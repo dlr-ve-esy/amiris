@@ -43,4 +43,9 @@ public class TransmissionCapacitySeries implements Portable {
 			transmissionCapacities.put(provider.nextString(), provider.nextTimeSeries());
 		}
 	}
+
+	/** @return transmission capacity timeseries of sender's market zone to other market zones */
+	public HashMap<String, TimeSeries> getCapacities() {
+		return transmissionCapacities;
+	}
 }

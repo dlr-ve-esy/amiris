@@ -40,6 +40,7 @@ Energy system actors represented in AMIRIS
     * [MeritOrderForecaster](./Agents/MeritOrderForecaster.md)
     * [PriceForecaster](./Agents/PriceForecaster.md)
     * [SensitivityForecaster](./Agents/SensitivityForecaster.md)
+    * [SensitivityForecasterFile](./Agents/SensitivityForecasterFile.md)
   * [PriceForecasterFile](./Agents/PriceForecasterFile.md)
   * [PriceForecasterApi](./Agents/PriceForecasterApi.md)
 * Policy Agents

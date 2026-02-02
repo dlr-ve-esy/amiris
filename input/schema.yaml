@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+# SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
 #
 # SPDX-License-Identifier: Apache-2.0
 Metadata:
@@ -1172,7 +1172,7 @@ AgentTypes:
 
   PriceForecasterFile:
     Attributes:
-      PriceForecastsInEURperMWH:
+      PriceForecastsInEURperMWH: &PriceForecasterFile_A_PriceForecasts
         AttributeType: time_series
         Mandatory: true
         List: false
@@ -1304,7 +1304,19 @@ AgentTypes:
       AwardedEnergyForecastInMWH: *MarketForecaster_O_AwardedEnergyForecast
       ElectricityPriceForecastInEURperMWH: *MarketForecaster_O_ElectricityPriceForecast
     MetaData:
-      description: "Forecaster that provides forcasts for sensitivies of the kind demanded by its clients."
+      description: "Forecaster that provides forecasts for sensitivities of the kind demanded by its clients."
+      subject: [{name: "forecast", "@id": "OEO_00010411"}, {name: "agent", "@id": "OEO_00000051"}]
+      keywords: ["electricity", "market", "forecast"]
+
+  SensitivityForecasterFile:
+    Attributes:
+      PriceForecastsInEURperMWH: *PriceForecasterFile_A_PriceForecasts
+    Products:
+      SensitivityForecast: *SensitivityForecastProvider_P_SensitivityForecast
+    Outputs:
+      ElectricityPriceForecastInEURperMWH: *MarketForecaster_O_ElectricityPriceForecast
+    MetaData:
+      description: "Forecaster that provides forecasts in sensitivity format - but are actually insensitive to merit order changes, since they are static and read from file."
       subject: [{name: "forecast", "@id": "OEO_00010411"}, {name: "agent", "@id": "OEO_00000051"}]
       keywords: ["electricity", "market", "forecast"]
 

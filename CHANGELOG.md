@@ -12,6 +12,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - GenericFlexibility: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
+- agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
 - CI: also check compatibility with JDK 25
 - docs: add content milestones to `History.md` #198 (@dlr-cjs)
 

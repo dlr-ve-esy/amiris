@@ -2,22 +2,22 @@
 
 `SensitivityForecasterFile` is an implementation of [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md).
 It provides forecasts in the format of a merit order sensitivity.
-These forecasts, however, are insensitive to merit order changes since the forecasts are read from file.
+However, these forecasts are insensitive to merit order changes since they are read from a file.
 `SensitivityForecasterFile` is thus similar to [PriceForecasterFile](./PriceForecasterFile.md), but can be used with [GenericFlexibilityTraders](./GenericFlexibilityTrader.md) that employ a [PriceTaker](../Modules/MaxProfitPriceTaker.md) [AssessmentFunction](../Modules/AssessmentFunction.md).
 
 # Details
 
-`SensitivityForecasterFile` will read price forecasts from file and convert them to (actually insensitive) [Sensitivities](../Comms/Sensitivity.md).
+`SensitivityForecasterFile` reads price forecasts from a file and converts them to [Sensitivities](../Comms/Sensitivity.md) (which are actually insensitive).
 
 Sending a `ForecastRegistration` message to `SensitivityForecasterFile` is optional.
-However, it is recommended to do so, because if a `GenericFlexibilityTraders` with an `AssessmentFunction` that requires a sensitivity to price changes registers to a `SensitivityForecasterFile` agent, an error is thrown to indicate their incompatibility.
-`NetAward` messages are not digested by `SensitivityForecasterFile`.
-Thus, the only mandatory type of message to be sent to `SensitivityForecasterFile` is `SensitivityRequest` to receive the forecasts.
+However, it is recommended, because if a `GenericFlexibilityTrader` with an `AssessmentFunction` that requires an _actual sensitivity_ to price changes registers with a `SensitivityForecasterFile` agent, an error will be thrown to indicate their incompatibility.
+`NetAward` messages are not processed by `SensitivityForecasterFile`.
+Therefore, the only mandatory message type to be sent to `SensitivityForecasterFile` is `SensitivityRequest` to receive the forecasts.
 
 ## Assumptions
 
-Flexibility agents **should register** at the `SensitivityForecaster` but **should not send** their actual market awards.
-It is assumed that the clients employ a strategy that is not actively exploiting the merit-order sensitivity, but use them as "as-is-price-forecasts", like, the [MaxProfitPriceTaker](../Modules/MaxProfitPriceTaker.md) strategy for example.
+Flexibility agents **should register** with the `SensitivityForecaster`, but **should not send** their actual market awards.
+It is assumed that the clients employ a strategy that does not actively exploit the merit-order sensitivity, but uses it as an "as-is-price-forecasts", for example, the [MaxProfitPriceTaker](../Modules/MaxProfitPriceTaker.md) strategy.
 
 # Dependencies
 

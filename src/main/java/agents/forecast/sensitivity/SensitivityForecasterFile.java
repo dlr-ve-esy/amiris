@@ -94,7 +94,7 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 		return cachedForecasts.get(time);
 	}
 
-	/** @return freshly built {@link Sensitivity} of type {@link CostInsensitive} with multiplier One */
+	/** @return freshly built {@link Sensitivity} of type {@link CostInsensitive} with multiplier 1.0 */
 	private Sensitivity buildSensitivityFor(TimeStamp time) {
 		CostInsensitive costInsensitive = new CostInsensitive();
 		costInsensitive.setPrice(priceForecasts.getValueLinear(time));

@@ -1304,7 +1304,7 @@ AgentTypes:
       AwardedEnergyForecastInMWH: *MarketForecaster_O_AwardedEnergyForecast
       ElectricityPriceForecastInEURperMWH: *MarketForecaster_O_ElectricityPriceForecast
     MetaData:
-      description: "Forecaster that provides forecasts for sensitivies of the kind demanded by its clients."
+      description: "Forecaster that provides forecasts for sensitivities of the kind demanded by its clients."
       subject: [{name: "forecast", "@id": "OEO_00010411"}, {name: "agent", "@id": "OEO_00000051"}]
       keywords: ["electricity", "market", "forecast"]
 
@@ -1316,7 +1316,7 @@ AgentTypes:
     Outputs:
       ElectricityPriceForecastInEURperMWH: *MarketForecaster_O_ElectricityPriceForecast
     MetaData:
-      description: "Forecaster that provides forecasts in sensivity format - but are actually insensitive to merit order changes since they are static and read from file."
+      description: "Forecaster that provides forecasts in sensitivity format - but are actually insensitive to merit order changes, since they are static and read from file."
       subject: [{name: "forecast", "@id": "OEO_00010411"}, {name: "agent", "@id": "OEO_00000051"}]
       keywords: ["electricity", "market", "forecast"]
 

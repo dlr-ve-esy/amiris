@@ -14,6 +14,7 @@ import agents.markets.meritOrder.books.TransmissionBook;
 import communications.message.AwardData;
 import communications.message.TransmissionCapacity;
 import communications.portable.CouplingData;
+import communications.portable.TransmissionCapacitySeries;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
@@ -42,6 +43,8 @@ public class DayAheadMarketMultiZone extends DayAheadMarket {
 	public static enum Products {
 		/** Transmission capacities and bids from local exchange */
 		TransmissionAndBids,
+		/** Transmission capacity time series */
+		TransmissionCapacities,
 	};
 
 	@Output
@@ -99,12 +102,13 @@ public class DayAheadMarketMultiZone extends DayAheadMarket {
 			loadTransmissionCapacities(input.getGroupList("Transmission"));
 		}
 
+		call(this::shareTransmissionCapacities).on(Products.TransmissionCapacities);
 		call(this::digestBids).onAndUse(DayAheadMarketTrader.Products.Bids);
 		call(this::provideTransmissionAndBids).on(Products.TransmissionAndBids);
 		call(this::clearMarket).on(DayAheadMarket.Products.Awards).use(MarketCoupling.Products.MarketCouplingResult);
 	}
 
-	/** Loads all transmission capacity time-series and stores them with the corresponding target market zones as key
+	/** Loads all transmission capacity timeseries and stores them with the corresponding target market zones as key
 	 * 
 	 * @param transmissions list of all available transmission time-series with the current market as origin of supply */
 	private void loadTransmissionCapacities(List<ParameterData> transmissions) {
@@ -120,6 +124,14 @@ public class DayAheadMarketMultiZone extends DayAheadMarket {
 			} catch (MissingDataException e) {
 				logger.error(TIME_SERIES_MISSING + targetRegion);
 			}
+		}
+	}
+
+	/** Forward transmission capacity timeseries with other agents */
+	private void shareTransmissionCapacities(ArrayList<Message> input, List<Contract> contracts) {
+		TransmissionCapacitySeries transmissionCapacitySeries = new TransmissionCapacitySeries(transmissionCapacities);
+		for (Contract contract : contracts) {
+			fulfilNext(contract, transmissionCapacitySeries);
 		}
 	}
 

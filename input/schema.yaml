@@ -146,6 +146,11 @@ AgentTypes:
           description: "Transmission capacities and bids from exchange in local market zone."
       Awards: *DAM_P_Awards
       GateClosureInfo: *DAM_P_GateClosureInfo
+      TransmissionCapacities:
+        MetaData:
+          description: "Net transfer capacities over time of supply from own to all connected market zones"
+          unit: MW
+          isAbout: [{name: "energy transfer", "@id": "OEO_00000253"}, {name: "maximum value", "@id": "OEO_00010256"}]          
     Outputs:
       TotalAwardedPowerInMW: *DAM_O_TotalAwardedPower
       ElectricityPriceInEURperMWH: *DAM_O_ElectricityPrice

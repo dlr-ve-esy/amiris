@@ -13,6 +13,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
 - agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
+- DayAheadMarketMultiZone: Add Product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
 - CI: also check compatibility with JDK 25
 - docs: add content milestones to `History.md` #198 (@dlr-cjs)
 

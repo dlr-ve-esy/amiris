@@ -6,10 +6,11 @@ package agents.forecast.sensitivity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+import agents.markets.DayAheadMarket;
+import communications.message.ClearingTimes;
 import communications.message.ForecastClientRegistration;
 import communications.message.PointInTime;
 import communications.portable.Sensitivity;
-import communications.portable.Sensitivity.InterpolationType;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
 import de.dlr.gitlab.fame.agent.input.Input;
@@ -39,7 +40,7 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 	}
 
 	private final TimeSeries priceForecasts;
-	private final TreeMap<TimeStamp, Sensitivity> nextForecasts = new TreeMap<>();
+	private final TreeMap<TimeStamp, Sensitivity> cachedForecasts = new TreeMap<>();
 
 	/** Creates new {@link SensitivityForecasterFile}
 	 * 
@@ -50,9 +51,17 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 		ParameterData input = parameters.join(dataProvider);
 		priceForecasts = input.getTimeSeries("PriceForecastsInEURperMWH");
 
+		call(this::writeForecast).onAndUse(DayAheadMarket.Products.GateClosureInfo);
 		call(this::registerClients).onAndUse(SensitivityForecastClient.Products.ForecastRegistration);
 		call(this::sendSensitivityForecast).on(Products.SensitivityForecast)
 				.use(SensitivityForecastClient.Products.SensitivityRequest);
+	}
+
+	/** Write out electricity price forecast at next clearing time */
+	private void writeForecast(ArrayList<Message> input, List<Contract> contracts) {
+		ClearingTimes clearingTimes = CommUtils.getExactlyOneEntry(input).getDataItemOfType(ClearingTimes.class);
+		TimeStamp nextClearingTime = clearingTimes.getTimes().get(0);
+		store(OutputFields.ElectricityPriceForecastInEURperMWH, priceForecasts.getValueLinear(nextClearingTime));
 	}
 
 	/** Check registration message of clients that they required the correct type of {@link ForecastType} */
@@ -68,25 +77,21 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 
 	/** Send sensitivity forecast to clients for all times they requested */
 	private void sendSensitivityForecast(ArrayList<Message> messages, List<Contract> contracts) {
-		nextForecasts.headMap(now()).clear();
+		cachedForecasts.headMap(now()).clear();
 		for (Contract contract : contracts) {
 			ArrayList<Message> requests = CommUtils.extractMessagesFrom(messages, contract.getReceiverId());
 			for (Message message : requests) {
-				TimeStamp time = message.getDataItemOfType(PointInTime.class).validAt;
-				Sensitivity sensitivity = getCostInsensitiveSensitivity(time);
-				fulfilNext(contract, sensitivity, new PointInTime(time));
+				TimeStamp requestedTime = message.getDataItemOfType(PointInTime.class).validAt;
+				Sensitivity sensitivity = getCostInsensitiveSensitivity(requestedTime);
+				fulfilNext(contract, sensitivity, new PointInTime(requestedTime));
 			}
 		}
-		Sensitivity nextSensitivity = nextForecasts.firstEntry().getValue();
-		nextSensitivity.setInterpolationType(InterpolationType.DIRECT);
-		double nextPriceInEURperMWH = nextSensitivity.getValue(1.0);
-		store(OutputFields.ElectricityPriceForecastInEURperMWH, nextPriceInEURperMWH);
 	}
 
 	/** @return {@link Sensitivity} - either stored in map or freshly calculated */
 	private Sensitivity getCostInsensitiveSensitivity(TimeStamp time) {
-		nextForecasts.computeIfAbsent(time, t -> buildSensitivityFor(t));
-		return nextForecasts.get(time);
+		cachedForecasts.computeIfAbsent(time, t -> buildSensitivityFor(t));
+		return cachedForecasts.get(time);
 	}
 
 	/** @return freshly built {@link Sensitivity} of type {@link CostInsensitive} with multiplier One */

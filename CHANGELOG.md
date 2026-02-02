@@ -1,4 +1,4 @@
-<!-- SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: CC0-1.0 -->
 # Changelog
@@ -9,19 +9,20 @@ SPDX-License-Identifier: CC0-1.0 -->
 - tests: improved unit tests for merit order kernel #218 (@dlr-cjs)
 
 ### Added
-- GenericFlexibility: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
+- `GenericFlexibilityTrader`: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
 - agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
-- DayAheadMarketMultiZone: Add Product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- `DayAheadMarketMultiZone`: Add Product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
 - add new Ability `MarketCouplingClient` to enable market coupling interactions also from forecasters  #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- `MarketForecaster`: add ability to interact with `MarketCoupling` #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
 - CI: also check compatibility with JDK 25
 - docs: add content milestones to `History.md` #198 (@dlr-cjs)
 
 ### Fixed
 - docs: Update Paths to example scenarios #217 (@dlr-cjs)
-- LoadShiftingTrader: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
-- FlexibilityAssessor: Fix improper formatted warning messages #204 (@dlr-cjs)
+- `LoadShiftingTrader`: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
+- `FlexibilityAssessor`: Fix improper formatted warning messages #204 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_

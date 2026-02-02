@@ -6,6 +6,7 @@ package agents.markets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import agents.markets.meritOrder.MarketClearing;
 import agents.markets.meritOrder.MarketClearingResult;
 import agents.markets.meritOrder.books.DemandOrderBook;
 import agents.markets.meritOrder.books.SupplyOrderBook;
@@ -138,7 +139,7 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 	 * @param input messages specifying the trader bids
 	 * @param contracts with the Trader Agent's */
 	private void digestBids(ArrayList<Message> input, List<Contract> contracts) {
-		marketClearing.fillOrderBooksWithTraderBids(input, supplyBook, demandBook);
+		MarketClearing.fillOrderBooksWithTraderBids(input, supplyBook, demandBook);
 	}
 
 	/** Builds a CouplingRequest and sends it to the contracted MarketCoupling Agent. The CouplingRequest contains: the local
@@ -158,7 +159,7 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 		store(OutputFields.PreCouplingTotalAwardedPowerInMW, result.getTradedEnergyInMWH());
 		store(OutputFields.PreCouplingDispatchSystemCostInEUR, result.getSystemCostTotalInEUR());
 
-		fulfilNext(contract, new CouplingData(demandBook, supplyBook, transmissionBook));
+		fulfilNext(contract, new CouplingData(now(), demandBook, supplyBook, transmissionBook));
 	}
 
 	/** Clears the local market and sends the Awards to the contracted Trader Agents. Depending on whether this EnergyExchange is

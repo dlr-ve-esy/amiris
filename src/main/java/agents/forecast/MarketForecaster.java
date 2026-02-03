@@ -164,8 +164,11 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 		}
 	}
 
-	/** Use received forecasted Bids to either clear the market directly (if no market coupling is used), or store order books for
-	 * later interaction with MarketCoupling */
+	/** Uses received forecasted Bids to either clear the market directly (if no market coupling is used), or store order books for
+	 * later interaction with {@link MarketCoupling}
+	 * 
+	 * @param messages bid forecasts from connected Traders - may belong to multiple TimeStamps
+	 * @param __ unused */
 	private void digestForecastBids(ArrayList<Message> messages, List<Contract> __) {
 		TreeMap<TimeStamp, ArrayList<Message>> messagesByTimeStamp = sortMessagesByBidTimeStamp(messages);
 		if (transmissionCapacities == null || transmissionCapacities.isEmpty()) {
@@ -202,7 +205,11 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 		return messageByTimeStamp;
 	}
 
-	private void sendCouplingData(ArrayList<Message> messages, List<Contract> contracts) {
+	/** If market coupling is active: Uses previously stored order books to send them to the connected {@link MarketCoupling} agent.
+	 * 
+	 * @param __ unused
+	 * @param contracts single contract with a {@link MarketCoupling} agent */
+	private void sendCouplingData(ArrayList<Message> __, List<Contract> contracts) {
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 		for (Entry<TimeStamp, SupplyOrderBook> entry : supplyOrderBooks.entrySet()) {
 			TimeStamp requestedTime = entry.getKey();
@@ -211,9 +218,16 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 			fulfilNext(contract,
 					new CouplingData(requestedTime, demandOrderBooks.get(requestedTime), entry.getValue(), transmissionBook));
 		}
+		demandOrderBooks.clear();
+		supplyOrderBooks.clear();
 	}
 
-	private void clearMarketCoupled(ArrayList<Message> messages, List<Contract> contracts) {
+	/** If market coupling is active: Uses order books received from {@link MarketCoupling} to clear the market and store the
+	 * cleared market for later use.
+	 * 
+	 * @param messages incoming market coupling data
+	 * @param __ not used */
+	private void clearMarketCoupled(ArrayList<Message> messages, List<Contract> __) {
 		for (Message message : messages) {
 			CouplingData coupledData = message.getFirstPortableItemOfType(CouplingData.class);
 			TimeStamp clearingTime = coupledData.getClearingTime();

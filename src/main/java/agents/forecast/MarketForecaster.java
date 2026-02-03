@@ -87,7 +87,6 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 	/** Creates a {@link MarketForecaster}
 	 * 
 	 * @param dataProvider provides input from config file
-	 * @param doesnotexist fail
 	 * @throws MissingDataException if any required data is not provided */
 	public MarketForecaster(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);

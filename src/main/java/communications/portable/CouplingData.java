@@ -30,6 +30,7 @@ public class CouplingData implements Portable, Cloneable {
 
 	/** Create a CouplingData object
 	 * 
+	 * @param clearingTime at which the supply, demand and transmissions are valid
 	 * @param demandOrderBook of the demand bids
 	 * @param supplyOrderBook of the supply bids
 	 * @param transmissionBook of the transmission capacities */

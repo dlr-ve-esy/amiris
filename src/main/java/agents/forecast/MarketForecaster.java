@@ -87,6 +87,7 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 	/** Creates a {@link MarketForecaster}
 	 * 
 	 * @param dataProvider provides input from config file
+	 * @param doesnotexist fail
 	 * @throws MissingDataException if any required data is not provided */
 	public MarketForecaster(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
@@ -112,7 +113,10 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 				.use(DamForecastClient.Products.PriceForecastRequest);
 	}
 
-	/** Receive transmission capacities to other markets from connected {@link DayAheadMarketMultiZone} */
+	/** Receive transmission capacities to other markets from connected {@link DayAheadMarketMultiZone}
+	 * 
+	 * @param input single message from connected day-ahead market with transmission capacities to neighbouring zones
+	 * @param __ not used */
 	private void receiveTransmissionCapacities(ArrayList<Message> input, List<Contract> __) {
 		var capacitySeries = CommUtils.getExactlyOneEntry(input)
 				.getFirstPortableItemOfType(TransmissionCapacitySeries.class);
@@ -172,23 +176,35 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 	private void digestForecastBids(ArrayList<Message> messages, List<Contract> __) {
 		TreeMap<TimeStamp, ArrayList<Message>> messagesByTimeStamp = sortMessagesByBidTimeStamp(messages);
 		if (transmissionCapacities == null || transmissionCapacities.isEmpty()) {
-			for (Entry<TimeStamp, ArrayList<Message>> entry : messagesByTimeStamp.entrySet()) {
-				TimeStamp requestedTime = entry.getKey();
-				ArrayList<Message> bidsAtRequestedTime = entry.getValue();
-				String clearingId = this + " " + now();
-				MarketClearingResult marketClearingResult = marketClearing.clear(bidsAtRequestedTime, clearingId);
-				calculatedForecastContainer.put(requestedTime, marketClearingResult);
-			}
+			clearMarketUsingSentBidForecasts(messagesByTimeStamp);
 		} else {
-			for (Entry<TimeStamp, ArrayList<Message>> entry : messagesByTimeStamp.entrySet()) {
-				TimeStamp requestedTime = entry.getKey();
-				ArrayList<Message> bidsAtRequestedTime = entry.getValue();
-				SupplyOrderBook supplyBook = new SupplyOrderBook();
-				DemandOrderBook demandBook = new DemandOrderBook();
-				MarketClearing.fillOrderBooksWithTraderBids(bidsAtRequestedTime, supplyBook, demandBook);
-				demandOrderBooks.put(requestedTime, demandBook);
-				supplyOrderBooks.put(requestedTime, supplyBook);
-			}
+			cacheOrderBooks(messagesByTimeStamp);
+		}
+	}
+
+	/** Iterates time stamp at which the bid forecast messages are valid, clears the market for each time stamp, and saves the
+	 * clearing result to {@link #calculatedForecastContainer} */
+	private void clearMarketUsingSentBidForecasts(TreeMap<TimeStamp, ArrayList<Message>> bidMessagesByTimeStamp) {
+		for (Entry<TimeStamp, ArrayList<Message>> entry : bidMessagesByTimeStamp.entrySet()) {
+			TimeStamp requestedTime = entry.getKey();
+			ArrayList<Message> bidsAtRequestedTime = entry.getValue();
+			String clearingId = this + " " + now();
+			MarketClearingResult marketClearingResult = marketClearing.clear(bidsAtRequestedTime, clearingId);
+			calculatedForecastContainer.put(requestedTime, marketClearingResult);
+		}
+	}
+
+	/** Iterates time stamp at which the bid forecast messages are valid, assigns them to an order book for demand and supply for
+	 * each time stamp, and caches these order books for later use */
+	private void cacheOrderBooks(TreeMap<TimeStamp, ArrayList<Message>> bidMessagesByTimeStamp) {
+		for (Entry<TimeStamp, ArrayList<Message>> entry : bidMessagesByTimeStamp.entrySet()) {
+			TimeStamp requestedTime = entry.getKey();
+			ArrayList<Message> bidsAtRequestedTime = entry.getValue();
+			SupplyOrderBook supplyBook = new SupplyOrderBook();
+			DemandOrderBook demandBook = new DemandOrderBook();
+			MarketClearing.fillOrderBooksWithTraderBids(bidsAtRequestedTime, supplyBook, demandBook);
+			demandOrderBooks.put(requestedTime, demandBook);
+			supplyOrderBooks.put(requestedTime, supplyBook);
 		}
 	}
 

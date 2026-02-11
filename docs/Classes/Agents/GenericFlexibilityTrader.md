@@ -2,7 +2,7 @@
 
 `GenericFlexibilityTrader` is a [Trader](./Trader.md) that operates a [GenericDevice](../Modules/GenericDevice.md) of flexibility.
 It can use different dispatch optimisation strategies, state managers, and operation assessments functions.
-Optimisation is based on dynamic programming and executed by an [Optimiser](../Modules/Optimiser.md).
+Optimisation utilises dynamic programming, is executed by an [Optimiser](../Modules/Optimiser.md) and requires forecasts from a  [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md).
 The Optimiser finds the best dispatch while the resulting [BidSchedule](../Modules/BidSchedule.md) is used to trade at a connected [DayAheadMarket](./DayAheadMarket.md).
 
 # Details
@@ -16,7 +16,7 @@ It also utilises a [BidScheduler](../Modules/BidScheduler.md) to create a corres
 
 Class structure of the dynamic programming implementation used by `GenericFlexibilityTrader`.
 
-`GenericFlexibilityTrader` is a [ForecastClient](../Abilities/DamForecastClient.md) and can thus request forecasts from [MarketForecasters](./MarketForecaster.md).
+`GenericFlexibilityTrader` is a [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md) and can thus request forecasts from a [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) such as [SensitivityForecasters](./SensitivityForecaster.md).
 
 # Dependencies
 
@@ -49,8 +49,8 @@ Class structure of the dynamic programming implementation used by `GenericFlexib
 
 `GenericFlexibilityTrader` has Contracts with:
 
-* [DayAheadMarket](./DayAheadMarket.md) receives `Bids` and returns `Awards`; sends `GateClosureInfo`
-* [MarketForecaster](./MarketForecaster.md) receives `MeritOrderForecastRequest` or `PriceForecastRequest` and sends `MeritOrderForecast` or `PriceForecast`
+* [DayAheadMarket](./DayAheadMarket.md) receives `Bids` and returns `Awards` and sends `GateClosureInfo`
+* [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) receives `SensitivityForecastRequests` and sends `SensitivityForecast`
 
 # Available Products
 
@@ -72,8 +72,8 @@ See [Dependencies](#dependencies)
 
 * [Trader](./Trader.md)
 * [DayAheadMarket](./DayAheadMarket.md)
-* [ForecastClient](../Abilities/DamForecastClient.md)
-* [SensitivityForecaster](./SensitivityForecaster.md)
+* [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md)
+* [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md)
 * [GenericDevice](../Modules/GenericDevice.md)
 * [Optimiser](../Modules/Optimiser.md)
 * [AssessmentFunction](../Modules/AssessmentFunction.md)

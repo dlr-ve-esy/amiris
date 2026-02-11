@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2024-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.markets;
@@ -30,7 +30,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * electricity prices aiming at minimising price differences between markets. Sends individual, coupled prices back to its client
  * markets.
  * 
- * @author A. Achraf El Ghazi, Felix Nitsch */
+ * @author A. Achraf El Ghazi, Felix Nitsch, Christoph Schimeczek, Johannes Kochems, Milena Sipovac */
 public class MarketCoupling extends Agent {
 	static final String MULTIPLE_REQUESTS = "Only one coupling request is allow per market, but multiple received from: ";
 	static final String NO_AGENT_FOR_ZONE = "No DayAheadMarket agent found for market zone: ";

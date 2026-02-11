@@ -10,3 +10,5 @@
 # See also
 
 * [MarketCoupling](../Agents/MarketCoupling.md)
+* [DayAheadMarketMultiZone](../Agents/DayAheadMarketMultiZone.md)
+* [MarketForecaster](../Agents/MarketForecaster.md)

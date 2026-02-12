@@ -169,6 +169,8 @@ public class EnergyAndTimeStateManager implements StateManager {
 		double[] externalEnergyDeltaInMWH = new double[schedulingSteps];
 		double[] internalEnergiesInMWH = new double[schedulingSteps];
 		double[] specificValuesInEURperMWH = new double[schedulingSteps];
+		double[] expectedElectricityPriceInEURperMWH = new double[schedulingSteps];
+
 		for (int timeIndex = 0; timeIndex < schedulingSteps; timeIndex++) {
 			TimeStamp time = StateManager.getTimeByIndex(startingPeriod, timeIndex);
 			deviceCache.prepareFor(time);
@@ -189,8 +191,13 @@ public class EnergyAndTimeStateManager implements StateManager {
 					- getValueOfStorage(timeIndex + 1, stateIndex);
 			specificValuesInEURperMWH[timeIndex] = StateManager.calcSpecificValueInEURperMWH(plannedEnergyDeltaInMWH,
 					rawValueDeltaInEUR);
+
+			assessmentFunction.prepareFor(time);
+			expectedElectricityPriceInEURperMWH[timeIndex] = assessmentFunction
+					.getElectricityPrice(externalEnergyDeltaInMWH[timeIndex]);
 		}
-		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH);
+		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH,
+				expectedElectricityPriceInEURperMWH);
 	}
 
 	/** @return the value of storage for given time and state index */

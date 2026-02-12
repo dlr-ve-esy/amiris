@@ -58,4 +58,10 @@ public interface AssessmentFunction {
 	default double getMultiplier() {
 		return 1.0;
 	}
+
+	/** Get the electricity price predicted for the given amount of dispatched energy
+	 * 
+	 * @param externalEnergyDeltaInMWH charging if positive, discharging when negative
+	 * @return predicted electricity price */
+	double getElectricityPrice(double externalEnergyDeltaInMWH);
 }

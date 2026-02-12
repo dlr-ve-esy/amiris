@@ -3213,6 +3213,11 @@ AgentTypes:
           description: "Multiplier applied to energy when planning dispatch to account for actions by other (competing) flexibility traders."
           unit: 1
           isAbout: [{name: "simultaneous with", "@id": "RO_0002082"}, {name: "net capacity factor", "@id": "OEO_00240016"}]
+      ElectricityPricePredictionInEURperMWH:
+        MetaData:
+          description: "Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch"
+          unit: EUR/MWh
+          isAbout: [{name: "assumption", "@id": "OEO_00000063"}, {name: "electricity price", "@id": "OEO_00020117"}]
     MetaData:
       description: "Trader that operates a generic flexibility device, e.g., a battery storage, pumped-hydro storage, load shifting, heat pumps..."
       subject: [{name: "flexibility", "@id": "OEO_00360007"}, {name: "trader", "@id": "OEO_00040005"}]

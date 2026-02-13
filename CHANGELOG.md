@@ -21,6 +21,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - LoadShiftingTrader: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
 - FlexibilityAssessor: Fix improper formatted warning messages #204 (@dlr-cjs)
 - MeritOrderKernel: Fix inconsistent clearing result on cut at same power #221 (@dlr-cjs)
+- license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_

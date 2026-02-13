@@ -166,11 +166,15 @@ public class BidSchedule {
 		return timeOfFirstElement;
 	}
 
-	/** Returns expected electricity price depending on the forecasted merit order and flexibility device dispatch
+	/** Returns expected electricity price depending on the forecasted merit order and flexibility device dispatch, if set. Returns
+	 * NaN in case no electricity price expectation values are set.
 	 * 
 	 * @param time must match schedule time element, use {@link #isApplicable(TimeStamp, double)} to check for validity
 	 * @return expected electricity price */
 	public double getExpectedElectricityPricesInEURperMWH(TimeStamp time) {
-		return expectedElectricityPricesInEURperMWH[calcElementInSchedule(time)];
+		if (expectedElectricityPricesInEURperMWH != null) {
+			return expectedElectricityPricesInEURperMWH[calcElementInSchedule(time)];
+		}
+		return Double.NaN;
 	}
 }

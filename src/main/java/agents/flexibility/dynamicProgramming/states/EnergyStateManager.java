@@ -238,9 +238,8 @@ public class EnergyStateManager implements StateManager {
 					- getValueOfStorage(timeIndex + 1, currentEnergyLevelIndex);
 			specificValuesInEURperMWH[timeIndex] = calcSpecificValue(plannedEnergyDeltaInMWH, rawValueDeltaInEUR);
 
-			assessmentFunction.prepareFor(time);
 			expectedElectricityPriceInEURperMWH[timeIndex] = assessmentFunction
-					.getElectricityPrice(externalEnergyDeltaInMWH[timeIndex]);
+					.getElectricityPriceAt(time, externalEnergyDeltaInMWH[timeIndex]);
 		}
 		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH,
 				expectedElectricityPriceInEURperMWH);

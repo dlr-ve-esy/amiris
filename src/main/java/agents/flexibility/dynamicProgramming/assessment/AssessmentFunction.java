@@ -59,9 +59,10 @@ public interface AssessmentFunction {
 		return 1.0;
 	}
 
-	/** Get the electricity price predicted for the given amount of dispatched energy
+	/** Get the electricity price predicted for the given amount of dispatched energy at the specified time
 	 * 
+	 * @param time at which to calculate the predicted electricity price
 	 * @param externalEnergyDeltaInMWH charging if positive, discharging when negative
 	 * @return predicted electricity price */
-	double getElectricityPrice(double externalEnergyDeltaInMWH);
+	double getElectricityPriceAt(TimeStamp time, double externalEnergyDeltaInMWH);
 }

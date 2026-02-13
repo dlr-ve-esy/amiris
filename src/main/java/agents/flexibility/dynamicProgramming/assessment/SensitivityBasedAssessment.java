@@ -16,8 +16,6 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public abstract class SensitivityBasedAssessment implements AssessmentFunction {
-	private static final double EPS = 1E-10;
-
 	private final TreeMap<TimeStamp, Sensitivity> sensitivityForecasts = new TreeMap<>();
 	protected Sensitivity currentSensitivity;
 	protected GenericDevice device;
@@ -72,23 +70,7 @@ public abstract class SensitivityBasedAssessment implements AssessmentFunction {
 	}
 
 	@Override
-	public double getElectricityPrice(double externalEnergyDeltaInMWH) {
-		double absMultiplier = Math.abs(currentSensitivity.getMultiplier());
-		double signOfEnergy = Math.signum(externalEnergyDeltaInMWH);
-		if (Math.abs(externalEnergyDeltaInMWH) < EPS) {
-			return currentSensitivity.getValue(EPS) / EPS / absMultiplier;
-		}
-		switch (getInterpolationType()) {
-			case DIRECT:
-				return signOfEnergy * currentSensitivity.getValue(externalEnergyDeltaInMWH) / externalEnergyDeltaInMWH
-						/ absMultiplier;
-			case CUMULATIVE:
-				double spotOnValue = currentSensitivity.getValue(externalEnergyDeltaInMWH);
-				double slightLessAbsoluteEnergy = externalEnergyDeltaInMWH - signOfEnergy * EPS;
-				double valueAtLessEnergy = currentSensitivity.getValue(slightLessAbsoluteEnergy);
-				return (spotOnValue - valueAtLessEnergy) / EPS / absMultiplier;
-			default:
-				throw new RuntimeException("Price calculation not implemented for InterpolationType:" + getInterpolationType());
-		}
+	public double getElectricityPriceAt(TimeStamp time, double externalEnergyDeltaInMWH) {
+		return sensitivityForecasts.get(time).getPriceInEURperMWH(externalEnergyDeltaInMWH);
 	}
 }

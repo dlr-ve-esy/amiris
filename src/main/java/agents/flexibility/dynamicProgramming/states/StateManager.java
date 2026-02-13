@@ -21,6 +21,7 @@ public interface StateManager {
 		public final double[] externalEnergyDeltasInMWH;
 		public final double[] initialInternalEnergiesInMWH;
 		public final double[] specificValuesInEURperMWH;
+		public final double[] assumedElectricityPriceInEURperMWH;
 
 		/** Instantiates new {@link DispatchSchedule}
 		 * 
@@ -28,10 +29,11 @@ public interface StateManager {
 		 * @param initialInternalEnergiesInMWH course of expected internal energy during dispatch
 		 * @param specificValuesInEURperMWH estimated specific value of the dispatch decision */
 		DispatchSchedule(double[] externalEnergyDeltasInMWH, double[] initialInternalEnergiesInMWH,
-				double[] specificValuesInEURperMWH) {
+				double[] specificValuesInEURperMWH, double[] assumedElectricityPriceInEURperMWH) {
 			this.externalEnergyDeltasInMWH = externalEnergyDeltasInMWH;
 			this.initialInternalEnergiesInMWH = initialInternalEnergiesInMWH;
 			this.specificValuesInEURperMWH = specificValuesInEURperMWH;
+			this.assumedElectricityPriceInEURperMWH = assumedElectricityPriceInEURperMWH;
 		}
 	}
 

@@ -19,6 +19,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 
 ### Fixed
 - docs: Update Paths to example scenarios #217 (@dlr-cjs)
+- Correct crash in `EnergyStateManager` due to missing offset in energy levels #225 (@dlr-cjs, @dlr_jk)
 - LoadShiftingTrader: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
 - FlexibilityAssessor: Fix improper formatted warning messages #204 (@dlr-cjs)
 - license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)

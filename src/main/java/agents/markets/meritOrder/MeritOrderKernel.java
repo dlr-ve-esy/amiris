@@ -47,6 +47,7 @@ public class MeritOrderKernel {
 
 		double lastSupplyPrice = 0;
 		double lastSupplyPower = 0;
+		double lastDemandPrice = 0;
 		double lastDemandPower = 0;
 
 		ensureOrderBookPositiveEnergy(supplyBids);
@@ -88,8 +89,9 @@ public class MeritOrderKernel {
 					return new ClearingDetails(lastDemandPower, supplyPrice, priceSettingDemandIdx, priceSettingSupplyIdx,
 							minPriceSettingDemand);
 				} else if (cutAtSamePower) {
-					// Consistent with virtual shift to the left of demand curve
-					// Price setting bids and price setting demand power of the price setting demand bid
+					// Return average price from
+					// a) the maximum of the awarded supply and the non-awarded demand bids
+					// b) the minimum if the non-awarded supply and the awarded demand bids
 					priceSettingDemandIdx = demandIndex;
 					priceSettingDemand = demandEntry;
 					priceSettingSupplyIdx = supplyIndex;
@@ -97,8 +99,9 @@ public class MeritOrderKernel {
 
 					minPriceSettingDemand = priceSettingDemand.getCumulatedPowerUpperValue()
 							- priceSettingSupply.getCumulatedPowerLowerValue();
-					return new ClearingDetails(lastSupplyPower, Math.max(demandPrice, lastSupplyPrice), priceSettingDemandIdx,
-							priceSettingSupplyIdx, minPriceSettingDemand);
+					double price = (Math.max(lastSupplyPrice, demandPrice) + Math.min(lastDemandPrice, supplyPrice)) / 2.;
+					return new ClearingDetails(lastSupplyPower, price, priceSettingDemandIdx, priceSettingSupplyIdx,
+							minPriceSettingDemand);
 				} else { // demandBlockIsCut
 					// Price setting bids and price setting demand power of the price setting demand bid
 					priceSettingDemandIdx = demandIndex;
@@ -124,6 +127,7 @@ public class MeritOrderKernel {
 						priceSettingSupplyIdx, minPriceSettingDemand);
 			} else { // No cut so far
 				if (supplyPower >= demandPower) {
+					lastDemandPrice = demandPrice;
 					lastDemandPower = demandPower;
 					demandIndex++;
 				}

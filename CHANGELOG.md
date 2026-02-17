@@ -1,4 +1,4 @@
-<!-- SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: CC0-1.0 -->
 # Changelog
@@ -21,6 +21,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - docs: Update Paths to example scenarios #217 (@dlr-cjs)
 - LoadShiftingTrader: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
 - FlexibilityAssessor: Fix improper formatted warning messages #204 (@dlr-cjs)
+- MeritOrderKernel: Fix inconsistent clearing result on cut at same power #221 (@dlr-cjs)
 - license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09

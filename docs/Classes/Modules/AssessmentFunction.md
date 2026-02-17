@@ -20,6 +20,8 @@ The `getMultiplier()` method returns the latest multiplier (see [FlexibilityAsse
 
 Once `prepareFor()` was called to set the specific time for assessments, `assessTransition()` can be called to assess the value of one or multiple transitions.
 
+`getElectricityPriceAt` will return the electricity price assumed by the AssessmentFunction at the given time and dispatched energy.
+
 # Input from file
 
 See [AssessmentFunctionBuilder](./AssessmentFunctionBuilder.md)

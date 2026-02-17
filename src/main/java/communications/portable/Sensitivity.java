@@ -14,6 +14,8 @@ import de.dlr.gitlab.fame.communication.transfer.Portable;
  * @author Johannes Kochems, Christoph Schimeczek */
 public class Sensitivity implements Portable {
 	static final String ERR_INTERPOLATION_TYPE = "Interpolation type not implemented: ";
+	static final String ERR_INTERPOLATION_TYPE_MISSING = "Cannot perform interpolation: InterpolationType was not set.";
+	static final double EPS = 1E-10;
 
 	/** Available types of interpolation used during value calculations */
 	public enum InterpolationType {
@@ -77,7 +79,7 @@ public class Sensitivity implements Portable {
 		this.interpolationType = interpolationType;
 	}
 
-	/** Returns sensitivity value for given requested energy delta
+	/** Returns sensitivity value for given requested energy delta; Returns NaN if requested energy delta exceeds merit order data
 	 * 
 	 * @param requestedEnergyInMWH demand &gt; 0; supply &lt; 0
 	 * @return sensitivity value */
@@ -107,6 +109,9 @@ public class Sensitivity implements Portable {
 
 	/** @return y-value interpolated for given position x on a line determined by (x1,y1) and (x2,y2) */
 	private double interpolateValue(double x1, double y1, double x2, double y2, double x) {
+		if (interpolationType == null) {
+			throw new RuntimeException(ERR_INTERPOLATION_TYPE_MISSING + interpolationType);
+		}
 		switch (interpolationType) {
 			case CUMULATIVE:
 				return y1 + (y2 - y1) / (x2 - x1) * (x - x1);
@@ -163,5 +168,39 @@ public class Sensitivity implements Portable {
 			array[i] = provider.nextDouble();
 		}
 		return array;
+	}
+
+	/** Returns price in EUR/MWh for given merit order segment at the requested energy delta
+	 * 
+	 * @param requestedEnergyInMWH demand &gt; 0; supply &lt; 0
+	 * @return price */
+	public double getPriceInEURperMWH(double requestedEnergyInMWH) {
+		double modifiedEnergy = multiplier * requestedEnergyInMWH;
+		if (modifiedEnergy > 0) {
+			return getPriceAddedDemand(modifiedEnergy);
+		} else if (modifiedEnergy < 0) {
+			return getPriceAddedSupply(-modifiedEnergy);
+		}
+		return getPriceAddedSupply(EPS);
+	}
+
+	/** @return price in EUR/MWh for given additional demand */
+	private double getPriceAddedDemand(double additionalDemandInMWH) {
+		for (int index = 1; index < demandPowers.length; index++) {
+			if (demandPowers[index] >= additionalDemandInMWH) {
+				return (demandValues[index] - demandValues[index - 1]) / (demandPowers[index] - demandPowers[index - 1]);
+			}
+		}
+		return Double.NaN;
+	}
+
+	/** @return price in EUR/MWh for given additional supply */
+	private double getPriceAddedSupply(double additionalSupplyInMWH) {
+		for (int index = 1; index < supplyPowers.length; index++) {
+			if (supplyPowers[index] >= additionalSupplyInMWH) {
+				return (supplyValues[index] - supplyValues[index - 1]) / (supplyPowers[index] - supplyPowers[index - 1]);
+			}
+		}
+		return Double.NaN;
 	}
 }

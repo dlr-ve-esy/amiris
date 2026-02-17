@@ -106,12 +106,44 @@ public class MeritOrderKernelTest {
 		assertExpectedResult(result, 3000, 100);
 	}
 
+	/** Cut at Same Power - Case 1: Previous supply is lower than next demand; Next supply is lower than previous demand */
 	@Test
-	public void clearMarketSimple_CutAtSamePower_returnsHigherPrice() throws MeritOrderClearingException {
-		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 50}, new double[] {21, 100});
-		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 20}, new double[] {3000, 50});
+	public void clearMarketSimple_CutAtSamePowerCase1_returnsAverageOfNextSupplyAndNextDemand()
+			throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 50}, new double[] {0, 80});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 20}, new double[] {100, 50});
 		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
-		assertExpectedResult(result, 50, 100);
+		assertExpectedResult(result, 65, 100);
+	}
+
+	/** Cut at Same Power - Case 2: Previous supply is higher than next demand; Next supply is lower than previous demand */
+	@Test
+	public void clearMarketSimple_CutAtSamePowerCase2_returnsAverageOfPreviousSupplyAndNextSupply()
+			throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 50}, new double[] {60, 80});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 20}, new double[] {100, 50});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 70, 100);
+	}
+
+	/** Cut at Same Power - Case 3: Previous supply is higher than next demand; Next supply is higher than previous demand */
+	@Test
+	public void clearMarketSimple_CutAtSamePowerCase3_returnsAverageOfPreviousSupplyAndPreviousDemand()
+			throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 50}, new double[] {60, 150});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 20}, new double[] {100, 50});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 80, 100);
+	}
+
+	/** Cut at Same Power - Case 4: Previous supply is lower than next demand; Next supply is higher than previous demand */
+	@Test
+	public void clearMarketSimple_CutAtSamePowerCase4_returnsAverageOfPreviousDemandAndNextDemand()
+			throws MeritOrderClearingException {
+		SupplyOrderBook supplyBook = mockOrderBook(SupplyOrderBook.class, new double[] {100, 50}, new double[] {0, 150});
+		DemandOrderBook demandBook = mockOrderBook(DemandOrderBook.class, new double[] {100, 20}, new double[] {100, 50});
+		ClearingDetails result = MeritOrderKernel.clearMarketSimple(supplyBook, demandBook);
+		assertExpectedResult(result, 75, 100);
 	}
 
 	@Test

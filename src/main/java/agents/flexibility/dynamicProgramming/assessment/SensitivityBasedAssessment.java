@@ -68,4 +68,9 @@ public abstract class SensitivityBasedAssessment implements AssessmentFunction {
 	public final double getMultiplier() {
 		return currentSensitivity.getMultiplier();
 	}
+
+	@Override
+	public double getElectricityPriceAt(TimeStamp time, double externalEnergyDeltaInMWH) {
+		return sensitivityForecasts.get(time).getPriceInEURperMWH(externalEnergyDeltaInMWH);
+	}
 }

@@ -59,7 +59,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		/** Total received money in EUR */
 		ReceivedMoneyInEUR,
 		OfferedChargePriceInEURperMWH, OfferedDischargePriceInEURperMWH, AwardedChargeEnergyInMWH,
-		AwardedDischargeEnergyInMWH, StoredEnergyInMWH, VariableCostsInEUR, DispatchMultiplier
+		AwardedDischargeEnergyInMWH, StoredEnergyInMWH, VariableCostsInEUR, DispatchMultiplier,
+		/** Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch */
+		ElectricityPricePredictionInEURperMWH
 	}
 
 	private static final TimeSpan OPERATION_PERIOD = new TimeSpan(1, Interval.HOURS);
@@ -141,7 +143,10 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 			excuteBeforeBidPreparation(targetTime);
 			Bid demandBid = prepareHourlyDemandBids(targetTime);
 			Bid supplyBid = prepareHourlySupplyBids(targetTime);
-			store(OutputColumns.OfferedEnergyInMWH, supplyBid.getEnergyAmountInMWH() - demandBid.getEnergyAmountInMWH());
+			double offeredEnergy = supplyBid.getEnergyAmountInMWH() - demandBid.getEnergyAmountInMWH();
+			store(OutputColumns.OfferedEnergyInMWH, offeredEnergy);
+			store(Outputs.ElectricityPricePredictionInEURperMWH,
+					bidSchedule.getExpectedElectricityPricesInEURperMWH(targetTime));
 			fulfilNext(contractToFulfil,
 					new BidsAtTime(targetTime, getId(), Arrays.asList(supplyBid), Arrays.asList(demandBid)));
 		}

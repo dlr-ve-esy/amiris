@@ -12,6 +12,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - `GenericFlexibilityTrader`: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
+- GenericFlexibilityTrader: Add output column `ElectricityPricePredictionInEURperMWH` #219 (@dlr-cjs, @jgower11)
 - agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
 - `DayAheadMarketMultiZone`: Add Product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
 - add new Ability `MarketCouplingClient` to enable market coupling interactions also from forecasters  #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
@@ -23,6 +24,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - docs: Update Paths to example scenarios #217 (@dlr-cjs)
 - `LoadShiftingTrader`: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
 - `FlexibilityAssessor`: Fix improper formatted warning messages #204 (@dlr-cjs)
+- `MeritOrderKernel`: Fix inconsistent clearing result on cut at same power #221 (@dlr-cjs)
 - license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09

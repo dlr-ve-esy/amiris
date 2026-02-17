@@ -90,8 +90,8 @@ public class MeritOrderKernel {
 							minPriceSettingDemand);
 				} else if (cutAtSamePower) {
 					// Return average price from
-					// a) the maximum of the awarded supply and the non-awarded load bids
-					// b) the minimum if the non-awarded supply and the awarded load bids
+					// a) the maximum of the awarded supply and the non-awarded demand bids
+					// b) the minimum if the non-awarded supply and the awarded demand bids
 					priceSettingDemandIdx = demandIndex;
 					priceSettingDemand = demandEntry;
 					priceSettingSupplyIdx = supplyIndex;

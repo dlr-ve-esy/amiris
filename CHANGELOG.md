@@ -1,4 +1,4 @@
-<!-- SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: CC0-1.0 -->
 # Changelog

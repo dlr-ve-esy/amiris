@@ -44,6 +44,7 @@ Class structure of the dynamic programming implementation used by `GenericFlexib
 * `AwardedDischargeEnergyInMWH`: Amount of actually sold energy in MWh
 * `StoredEnergyInMWH`: Energy stored in MWh at in the `GenericDevice` at the end of this time step
 * `VariableCostsInEUR`: Sum of variable costs in EUR that occurred in this time step
+* `ElectricityPricePredictionInEURperMWH`: Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch
 
 # Contracts
 
@@ -80,3 +81,9 @@ See [Dependencies](#dependencies)
 * [StateManager](../Modules/StateManager.md)
 * [BidScheduler](../Modules/BidScheduler.md)
 * [BidSchedule](../Modules/BidSchedule.md)
+
+# History
+
+## v4.1
+
+`GenericFlexibilityTrader` gained the output field `ElectricityPricePredictionInEURperMWH`.

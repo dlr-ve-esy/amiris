@@ -31,6 +31,7 @@ public class StorageContentValue implements BidScheduler {
 		bidSchedule.setRequestedEnergyPerPeriod(schedule.externalEnergyDeltasInMWH);
 		bidSchedule.setBidsScheduleInEURperMWH(biddingPricePerPeriodInEURperMWH);
 		bidSchedule.setExpectedInitialInternalEnergyScheduleInMWH(schedule.initialInternalEnergiesInMWH);
+		bidSchedule.setExpectedElectricityPricesInEURperMWH(schedule.assumedElectricityPriceInEURperMWH);
 		return bidSchedule;
 	}
 

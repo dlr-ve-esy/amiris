@@ -87,7 +87,7 @@ public class MarketClearing {
 	 * @param input unsorted messages containing demand and supply bids
 	 * @param supplyBook to be filled with supply bids
 	 * @param demandBook to be filled with demand bids */
-	public void fillOrderBooksWithTraderBids(ArrayList<Message> input, SupplyOrderBook supplyBook,
+	public static void fillOrderBooksWithTraderBids(ArrayList<Message> input, SupplyOrderBook supplyBook,
 			DemandOrderBook demandBook) {
 		demandBook.clear();
 		supplyBook.clear();

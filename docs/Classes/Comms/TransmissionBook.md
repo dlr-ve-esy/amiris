@@ -1,6 +1,6 @@
 # In Short
 
-Models available `TransmissionCapacity` s between energy exchanges (resp. energy market region).
+Models available `TransmissionCapacity` s between energy exchanges (respective energy market region).
 
 # See Also
 

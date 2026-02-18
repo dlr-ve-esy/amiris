@@ -24,9 +24,9 @@ Messages between agents
   * [Sensitivity](./Comms/Sensitivity.md)
   * [SupportData](./Comms/SupportData.md)
   * [TransmissionBook](./Comms/TransmissionBook.md)
+  * [TransmissionCapacitySeries](./Comms/TransmissionCapacitySeries.md)
   * [PredictionRequest](./Comms/PredictionRequest.md)
   * [PredictionResponse](./Comms/PredictionResponse.md)
-  * [InputVariable](./Comms/InputVariable.md)
 * JSONable
   * [InputVariable](./Comms/InputVariable.md)
   * [PredictionRequest](./Comms/PredictionRequest.md)

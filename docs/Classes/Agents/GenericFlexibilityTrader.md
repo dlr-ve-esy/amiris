@@ -1,6 +1,6 @@
 # 42 words
 
-`GenericFlexibilityTrader` is a [Trader](./Trader.md) that operates a [GenericDevice](../Modules/GenericDevice.md) of flexibility.
+`GenericFlexibilityTrader` (GFT) is a [Trader](./Trader.md) that operates a [GenericDevice](../Modules/GenericDevice.md) of flexibility.
 It can use different dispatch optimisation strategies, state managers, and operation assessments functions.
 Its dispatch optimisation utilises dynamic programming, is executed by an [Optimiser](../Modules/Optimiser.md) and requires forecasts from a  [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md).
 The Optimiser finds the best dispatch while the resulting [BidSchedule](../Modules/BidSchedule.md) is used to trade at a connected [DayAheadMarket](./DayAheadMarket.md).
@@ -16,7 +16,7 @@ It also utilises a [BidScheduler](../Modules/BidScheduler.md) to create a corres
 
 Class structure of the dynamic programming implementation used by `GenericFlexibilityTrader`.
 
-`GenericFlexibilityTrader` is a [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md) and can thus request forecasts from a [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) such as [SensitivityForecasters](./SensitivityForecaster.md).
+GFT is a [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md) and can thus request forecasts from a [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) such as [SensitivityForecasters](./SensitivityForecaster.md).
 
 # Dependencies
 
@@ -28,7 +28,7 @@ Class structure of the dynamic programming implementation used by `GenericFlexib
 
 # Input from file
 
-`GenericFlexibilityTrader` joins individual input groups of its submodules:
+GFT joins individual input groups of its submodules:
 
 * `Device`: see [GenericDevice](../Modules/GenericDevice.md#input-from-file)
 * `Assessment`: see [AssessmentFunction](../Modules/AssessmentFunctionBuilder.md#input-from-file)
@@ -48,10 +48,9 @@ Class structure of the dynamic programming implementation used by `GenericFlexib
 
 # Contracts
 
-`GenericFlexibilityTrader` has Contracts with:
-
-* [DayAheadMarket](./DayAheadMarket.md) receives `Bids` and returns `Awards` and sends `GateClosureInfo`
-* [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) receives `SensitivityForecastRequests` and sends `SensitivityForecast`
+* GFT receives `GateClosureInfo` from [DayAheadMarket](./DayAheadMarket.md).
+* GFT sends `Bids` to [DayAheadMarket](./DayAheadMarket.md) and receives `Awards`.
+* GFT send `SensitivityForecastRequest`s to [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) and receives `SensitivityForecast`s.
 
 # Available Products
 

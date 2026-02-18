@@ -117,7 +117,7 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 	 * @param input single message from connected day-ahead market with transmission capacities to neighbouring zones
 	 * @param __ not used */
 	private void receiveTransmissionCapacities(ArrayList<Message> input, List<Contract> __) {
-		var capacitySeries = CommUtils.getExactlyOneEntry(input)
+		TransmissionCapacitySeries capacitySeries = CommUtils.getExactlyOneEntry(input)
 				.getFirstPortableItemOfType(TransmissionCapacitySeries.class);
 		transmissionCapacities = capacitySeries.getCapacities();
 		originMarketZone = capacitySeries.getOriginMarketZone();

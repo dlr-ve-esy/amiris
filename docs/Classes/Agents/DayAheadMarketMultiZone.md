@@ -1,7 +1,7 @@
 # 42 words
 
-`DayAheadMarketMultiZone` (DAMMZ) is a type of [DayAheadMarket](./DayAheadMarket.md) which is connected to a [MarketCoupling](./MarketCoupling.md) agent.
-It digests the requested and offered energy from connected [DayAheadMarketTraders](../Abilities/DayAheadMarketTrader.md) and forwards the bids together with transmission capacities to the `MarketCoupling`.
+`DayAheadMarketMultiZone` (DAMMZ) is a type of [DayAheadMarket](./DayAheadMarket.md) which is connected to the [MarketCoupling](./MarketCoupling.md) agent.
+It digests the requested and offered energy from connected [DayAheadMarketTraders](../Abilities/DayAheadMarketTrader.md) and forwards the bids together with transmission capacities to the `MarketCoupling` agent.
 Based on the optimised transfers between market zones, `DayAheadMarketMultiZone` clears its own market.
 The award of the clearing is sent back to the `DayAheadMarketTraders`.
 
@@ -11,7 +11,7 @@ Based on the received [Bids](../Comms/BidsAtTime.md) from the DayAheadMarketTrad
 The books are sent to the market coupling agent where all linked markets are cleared together.
 After the coupling results are received, the total amount of awarded supply and demand energy is calculated and sent out as [Award](../Comms/AwardData.md) message for each contracted Agent.
 If an agent did not place a bid but is contracted for an award, the awarded energy will be Zero.
-To enable the [MarketForecaster](./MarketForecaster.md) to also consider market coupling, it can forward [TransmissionCapacities](../Comms/TransmissionCapacitySeries.md) to the `MarketForecaster`.
+To enable the [MarketForecaster](./MarketForecaster.md) to also consider market coupling, `DayAheadMarketMultiZone` can forward [TransmissionCapacities](../Comms/TransmissionCapacitySeries.md) to the `MarketForecaster`.
 
 # Dependencies
 
@@ -49,7 +49,7 @@ Additional to the outputs as in [DayAheadMarket](./DayAheadMarket.md):
 * `DayAheadMarketTraders` send their BidsAtTime to DAMZ
 * DAMZ send TransmissionAndBids to `MarketCoupling`
 * DAMZ receive MarketCouplingResult from `MarketCoupling`
-* DAMZ sends receive AwardData to `DayAheadMarketTraders`
+* DAMZ send AwardData to `DayAheadMarketTraders`
 
 see also [DayAheadMarket](./DayAheadMarket.md)
 

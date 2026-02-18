@@ -31,8 +31,8 @@ public class TransmissionCapacitySeries implements Portable {
 
 	@Override
 	public void addComponentsTo(ComponentCollector collector) {
-		collector.storeInts(transmissionCapacities.size());
 		collector.storeStrings(originMarketZone);
+                collector.storeInts(transmissionCapacities.size());
 		for (Entry<String, TimeSeries> entry : transmissionCapacities.entrySet()) {
 			collector.storeStrings(entry.getKey());
 			collector.storeTimeSeries(entry.getValue());

@@ -193,7 +193,7 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 		}
 	}
 
-	/** Iterates time stamp at which the bid forecast messages are valid, assigns them to an order book for demand and supply for
+	/** Iterates over time stamps at which the bid forecast messages are valid, assigns them to an order book for demand and supply for
 	 * each time stamp, and caches these order books for later use */
 	private void cacheOrderBooks(TreeMap<TimeStamp, ArrayList<Message>> bidMessagesByTimeStamp) {
 		for (Entry<TimeStamp, ArrayList<Message>> entry : bidMessagesByTimeStamp.entrySet()) {

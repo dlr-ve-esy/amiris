@@ -1126,7 +1126,7 @@ AgentTypes:
           description: "A request for a (perfect foresight) bid prognosis."
       TransmissionAndBidForecasts: &MarketCouplingClient_P_TransmissionAndBidForecasts
         MetaData:
-          description: "Transmission capacities and bids to be used in forecasting market coupling interactions."
+          description: "Transmission capacities and bids to be used in forecasting interactions involving market coupling."
       MeritOrderForecast: &DamForecastProvider_P_MeritOrderForecast
         MetaData:
           description: "Perfect foresight merit-order forecast for a specific market clearing event"

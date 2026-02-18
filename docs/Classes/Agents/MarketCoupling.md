@@ -5,7 +5,7 @@ It aims at maximising the overall welfare by minimising price spreads among the 
   
 # Details
 
-`MarketCoupling` receives `CouplingData` requests from [](../Abilities/MarketCouplingClient.md).
+`MarketCoupling` receives `CouplingData` requests from [MarketCouplingClient](../Abilities/MarketCouplingClient.md).
 If those are associated with a forecast clearing, `MarketCoupling` joins messages by their intended clearing time.
 Thus, it can process multiple market coupling events in one action.
 

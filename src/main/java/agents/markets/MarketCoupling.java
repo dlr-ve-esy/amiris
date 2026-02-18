@@ -39,7 +39,7 @@ public class MarketCoupling extends Agent {
 	/** Products of {@link MarketCoupling} */
 	@Product
 	public static enum Products {
-		/** Result of market coupling forecasts */
+		/** Result of the coupled market clearing forecasts */
 		MarketCouplingForecastResult,
 		/** Result of the market coupling */
 		MarketCouplingResult

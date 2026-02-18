@@ -1,6 +1,6 @@
 # In short
 
-`MarketCouplingClient` is a client to a [MarketCoupling](../Agents/MarketCoupling.md).
+`MarketCouplingClient` is a client to the [MarketCoupling](../Agents/MarketCoupling.md) agent.
 
 # Available Products
 

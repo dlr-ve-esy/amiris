@@ -69,7 +69,7 @@ Thus, a single `MarketForecaster` (or any of its child classes) is sufficient to
 
 * from DayAheadMarket: receive TransmissionCapacities and GateClosureInfo
 * to Trader: send ForecastRequest
-* from (static) Trader: receive BidsForecast
+* from (inflexible) Trader: receive BidsForecast
 * to MarketCoupling: send TransmissionAndBidForecasts
 * from MarketCoupling: receive MarketCouplingForecastResult
 * from (flexible) Trader: receive PriceForecastRequest and / or MeritOrderForecastRequest

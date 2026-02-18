@@ -1,6 +1,6 @@
 # In Short
 
-Specifies the net transfer capacities (NTC) over time from one electricity market zone (origin) to other market zone(s).
+Specifies the net transfer capacities (NTC) over time from one electricity market zone (origin) to other market zone(s) (target).
 
 # Details
 

@@ -2,7 +2,7 @@
 
 `GenericFlexibilityTrader` is a [Trader](./Trader.md) that operates a [GenericDevice](../Modules/GenericDevice.md) of flexibility.
 It can use different dispatch optimisation strategies, state managers, and operation assessments functions.
-Optimisation utilises dynamic programming, is executed by an [Optimiser](../Modules/Optimiser.md) and requires forecasts from a  [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md).
+Its dispatch optimisation utilises dynamic programming, is executed by an [Optimiser](../Modules/Optimiser.md) and requires forecasts from a  [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md).
 The Optimiser finds the best dispatch while the resulting [BidSchedule](../Modules/BidSchedule.md) is used to trade at a connected [DayAheadMarket](./DayAheadMarket.md).
 
 # Details

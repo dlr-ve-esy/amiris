@@ -88,7 +88,7 @@ see also [DamForecastProvider](../Abilities/DamForecastProvider.md) and [MarketC
 
 # Messages
 
-* [TransmissionCapacitySeries](../Comms/TransmissionCapacitySeries.md) sent as `TransmissionCapacities` from DayAheadMarket
+* [TransmissionCapacitySeries](../Comms/TransmissionCapacitySeries.md) received as `TransmissionCapacities` from DayAheadMarket
 * [ClearingTime](../Comms/ClearingTimes.md) received from DayAheadMarket as `GateClosureInfo` and  forwarded as `ForecastRequest` to connected Traders
 * [BidsAtTime](../Comms/BidsAtTime.md) received from connected Traders as their `BidsForecast`
 * [CouplingData](../Comms/CouplingData.md) sent as `TransmissionAndBidForecasts` to MarketCoupling and received from MarketCoupling as `MarketCouplingForecastResult`

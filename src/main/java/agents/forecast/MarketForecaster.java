@@ -181,7 +181,7 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 		}
 	}
 
-	/** Iterates time stamp at which the bid forecast messages are valid, clears the market for each time stamp, and saves the
+	/** Iterates over time stamps at which the bid forecast messages are valid, clears the market for each time stamp, and saves the
 	 * clearing result to {@link #calculatedForecastContainer} */
 	private void clearMarketUsingSentBidForecasts(TreeMap<TimeStamp, ArrayList<Message>> bidMessagesByTimeStamp) {
 		for (Entry<TimeStamp, ArrayList<Message>> entry : bidMessagesByTimeStamp.entrySet()) {

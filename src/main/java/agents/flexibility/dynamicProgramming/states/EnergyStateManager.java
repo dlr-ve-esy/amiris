@@ -75,6 +75,7 @@ public class EnergyStateManager implements StateManager {
 			minLowerLevel = lowerLevel < minLowerLevel ? lowerLevel : minLowerLevel;
 			maxUpperLevel = upperLevel > maxUpperLevel ? upperLevel : maxUpperLevel;
 		}
+		lowestLevelEnergyInMWH = 0;
 		final int lowestStep = energyToCeilIndex(minLowerLevel);
 		final int highestStep = energyToFloorIndex(maxUpperLevel);
 		lowestLevelEnergyInMWH = lowestStep * energyResolutionInMWH;
@@ -123,7 +124,7 @@ public class EnergyStateManager implements StateManager {
 
 	/** @return energy content corresponding to the given index */
 	private double indexToEnergy(int index) {
-		return index * energyResolutionInMWH - lowestLevelEnergyInMWH;
+		return index * energyResolutionInMWH + lowestLevelEnergyInMWH;
 	}
 
 	@Override
@@ -174,7 +175,7 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public int[] getFinalStates(int initialStateIndex) {
-		final double initialEnergyContentInMWH = initialStateIndex * energyResolutionInMWH;
+		final double initialEnergyContentInMWH = indexToEnergy(initialStateIndex);
 		final double lowestEnergyContentInMWH = deviceCache.getMinTargetEnergyContentInMWH(initialEnergyContentInMWH);
 		final double highestEnergyContentInMWH = deviceCache.getMaxTargetEnergyContentInMWH(initialEnergyContentInMWH);
 		return new int[] {energyToCeilIndex(lowestEnergyContentInMWH), energyToFloorIndex(highestEnergyContentInMWH)};

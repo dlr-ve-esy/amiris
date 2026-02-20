@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
+# SPDX-FileCopyrightText: 2022-2026 German Aerospace Center <amiris@dlr.de>
 #
 # SPDX-License-Identifier: Apache-2.0
 Metadata:
@@ -141,11 +141,16 @@ AgentTypes:
               isAbout: [{name: "energy transfer", "@id": "OEO_00000253"}, {name: "maximum value", "@id": "OEO_00010256"}]
       GateClosureInfoOffsetInSeconds: *DAM_A_GateClosureInfoOffset
     Products:
-      TransmissionAndBids: &DAM_P_TransmissionAndBids
+      TransmissionAndBids: &MarketCouplingClient_P_TransmissionAndBids
         MetaData:
           description: "Transmission capacities and bids from exchange in local market zone."
       Awards: *DAM_P_Awards
       GateClosureInfo: *DAM_P_GateClosureInfo
+      TransmissionCapacities:
+        MetaData:
+          description: "Net transfer capacities over time of supply from own to all connected market zones"
+          unit: MW
+          isAbout: [{name: "energy transfer", "@id": "OEO_00000253"}, {name: "maximum value", "@id": "OEO_00010256"}]          
     Outputs:
       TotalAwardedPowerInMW: *DAM_O_TotalAwardedPower
       ElectricityPriceInEURperMWH: *DAM_O_ElectricityPrice
@@ -194,6 +199,9 @@ AgentTypes:
       MarketCouplingResult:
         MetaData:
           description: "Result of the coupled market clearing"
+      MarketCouplingForecastResult:
+        MetaData:
+          description: "Result of the coupled market clearing forecasts"      
     Outputs:
       AvailableTransferCapacityInMWH:
         MetaData:
@@ -1116,6 +1124,9 @@ AgentTypes:
       ForecastRequest: &MarketForecaster_P_ForecastRequest
         MetaData:
           description: "A request for a (perfect foresight) bid prognosis."
+      TransmissionAndBidForecasts: &MarketCouplingClient_P_TransmissionAndBidForecasts
+        MetaData:
+          description: "Transmission capacities and bids to be used in forecasting interactions involving market coupling."
       MeritOrderForecast: &DamForecastProvider_P_MeritOrderForecast
         MetaData:
           description: "Perfect foresight merit-order forecast for a specific market clearing event"
@@ -1146,6 +1157,7 @@ AgentTypes:
       ForecastPeriodInHours: *MarketForecaster_A_ForecastPeriod
     Products:
       ForecastRequest: *MarketForecaster_P_ForecastRequest
+      TransmissionAndBidForecasts: *MarketCouplingClient_P_TransmissionAndBidForecasts
       MeritOrderForecast: *DamForecastProvider_P_MeritOrderForecast
     Outputs:
       AwardedEnergyForecastInMWH: *MarketForecaster_O_AwardedEnergyForecast
@@ -1161,6 +1173,7 @@ AgentTypes:
       ForecastPeriodInHours: *MarketForecaster_A_ForecastPeriod
     Products:
       ForecastRequest: *MarketForecaster_P_ForecastRequest
+      TransmissionAndBidForecasts: *MarketCouplingClient_P_TransmissionAndBidForecasts
       PriceForecast: *DamForecastProvider_P_PriceForecast
     Outputs:
       AwardedEnergyForecastInMWH: *MarketForecaster_O_AwardedEnergyForecast
@@ -1294,10 +1307,11 @@ AgentTypes:
               unit: 1
               isAbout: [{name: "time span", "@id": "OEO_00030035"}]
     Products:
+      ForecastRequest: *MarketForecaster_P_ForecastRequest
+      TransmissionAndBidForecasts: *MarketCouplingClient_P_TransmissionAndBidForecasts
       SensitivityForecast: &SensitivityForecastProvider_P_SensitivityForecast
         MetaData:
           description: "Forecast of a market clearing sensitivity; type of sensitivity depends on the registered needs of the client"
-      ForecastRequest: *MarketForecaster_P_ForecastRequest
       MeritOrderForecast: *DamForecastProvider_P_MeritOrderForecast
       PriceForecast: *DamForecastProvider_P_PriceForecast
     Outputs:

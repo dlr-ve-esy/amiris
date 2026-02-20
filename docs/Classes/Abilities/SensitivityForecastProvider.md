@@ -22,3 +22,5 @@ None
 # See also
 
 * [Clients](./SensitivityForecastClient.md)
+* [SensitivityForecaster](../Agents/SensitivityForecaster.md)
+* [SensitivityForecasterFile](../Agents/SensitivityForecasterFile.md)

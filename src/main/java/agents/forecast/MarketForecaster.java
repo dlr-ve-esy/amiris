@@ -4,19 +4,28 @@
 package agents.forecast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import agents.markets.DayAheadMarket;
+import agents.markets.DayAheadMarketMultiZone;
+import agents.markets.MarketCoupling;
+import agents.markets.MarketCouplingClient;
 import agents.markets.meritOrder.MarketClearing;
 import agents.markets.meritOrder.MarketClearingResult;
+import agents.markets.meritOrder.books.DemandOrderBook;
+import agents.markets.meritOrder.books.SupplyOrderBook;
+import agents.markets.meritOrder.books.TransmissionBook;
 import agents.trader.Trader;
 import communications.message.AmountAtTime;
 import communications.message.ClearingTimes;
 import communications.message.PointInTime;
 import communications.portable.BidsAtTime;
+import communications.portable.CouplingData;
 import communications.portable.MeritOrderMessage;
+import communications.portable.TransmissionCapacitySeries;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
 import de.dlr.gitlab.fame.agent.input.Input;
@@ -28,6 +37,7 @@ import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
+import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.service.output.Output;
 import de.dlr.gitlab.fame.time.Constants.Interval;
 import de.dlr.gitlab.fame.time.TimeSpan;
@@ -37,7 +47,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * bid forecasts; uses forecasted bids to clear market ahead of time and create own forecasts
  * 
  * @author Christoph Schimeczek */
-public class MarketForecaster extends Agent implements DamForecastProvider {
+public class MarketForecaster extends Agent implements DamForecastProvider, MarketCouplingClient {
 	@Input private static final Tree parameters = Make.newTree().add(Make.newInt("ForecastPeriodInHours"))
 			.addAs("Clearing", MarketClearing.parameters).buildTree();
 
@@ -63,8 +73,16 @@ public class MarketForecaster extends Agent implements DamForecastProvider {
 	private final MarketClearing marketClearing;
 	/** All previously calculated forecasts (that still lie in the future) with their associated time */
 	private final TreeMap<TimeStamp, MarketClearingResult> calculatedForecastContainer = new TreeMap<>();
+	/** SupplyOrderBooks for forecasts that are not yet sent to {@link MarketCoupling} */
+	private final TreeMap<TimeStamp, SupplyOrderBook> supplyOrderBooks = new TreeMap<>();
+	/** DemandOrderBooks for forecasts that are not yet sent to {@link MarketCoupling} */
+	private final TreeMap<TimeStamp, DemandOrderBook> demandOrderBooks = new TreeMap<>();
 	/** The last time a forecast was stored */
 	private TimeStamp lastStoredForecastAt = null;
+
+	private String originMarketZone;
+	/** Transmission capacities of forecasted day-ahead market to its connected neighbours */
+	private HashMap<String, TimeSeries> transmissionCapacities;
 
 	/** Creates a {@link MarketForecaster}
 	 * 
@@ -76,16 +94,33 @@ public class MarketForecaster extends Agent implements DamForecastProvider {
 		marketClearing = new MarketClearing(input.getGroup("Clearing"));
 		forecastPeriodInHours = input.getInteger("ForecastPeriodInHours");
 
+		/** Receive transmission capacities to other markets */
+		call(this::receiveTransmissionCapacities).onAndUse(DayAheadMarketMultiZone.Products.TransmissionCapacities);
 		/** Send out forecast requests to make other agents prepare their bids ahead of time */
 		call(this::sendForecastRequests).on(Products.ForecastRequest).use(DayAheadMarket.Products.GateClosureInfo);
-		/** On incoming bid forecasts: clear the market ahead and store the clearing result */
-		call(this::calcMarketClearingForecasts).onAndUse(Trader.Products.BidsForecast);
+		/** On incoming bid forecasts: prepare for market clearing */
+		call(this::digestForecastBids).onAndUse(Trader.Products.BidsForecast);
+		/** Send out transmission data and bids for (multiple) market coupling events */
+		call(this::sendCouplingData).on(MarketCouplingClient.Products.TransmissionAndBidForecasts);
+		/** Digest resolved market couplings and clear market */
+		call(this::clearMarketCoupled).onAndUse((MarketCoupling.Products.MarketCouplingForecastResult));
 		/** On outgoing merit order forecasts: provide merit order results to clients */
 		call(this::sendMeritOrderForecast).on(DamForecastProvider.Products.MeritOrderForecast)
 				.use(DamForecastClient.Products.MeritOrderForecastRequest);
 		/** On outgoing price forecasts: provide merit order results to clients */
 		call(this::sendPriceForecast).on(DamForecastProvider.Products.PriceForecast)
 				.use(DamForecastClient.Products.PriceForecastRequest);
+	}
+
+	/** Receive transmission capacities to other markets from connected {@link DayAheadMarketMultiZone}
+	 * 
+	 * @param input single message from connected day-ahead market with transmission capacities to neighbouring zones
+	 * @param __ not used */
+	private void receiveTransmissionCapacities(ArrayList<Message> input, List<Contract> __) {
+		TransmissionCapacitySeries capacitySeries = CommUtils.getExactlyOneEntry(input)
+				.getFirstPortableItemOfType(TransmissionCapacitySeries.class);
+		transmissionCapacities = capacitySeries.getCapacities();
+		originMarketZone = capacitySeries.getOriginMarketZone();
 	}
 
 	/** Requests bid forecast for all future hours within forecast period
@@ -132,18 +167,43 @@ public class MarketForecaster extends Agent implements DamForecastProvider {
 		}
 	}
 
-	/** Uses received forecasted Bids to clear market and store the clearing result(s) for later usage
-	 **
-	 * @param messages bid forecast(s) received
-	 * @param contracts not used */
-	private void calcMarketClearingForecasts(ArrayList<Message> messages, List<Contract> contracts) {
+	/** Uses received forecasted Bids to either clear the market directly (if no market coupling is used), or store order books for
+	 * later interaction with {@link MarketCoupling}
+	 * 
+	 * @param messages bid forecasts from connected Traders - may belong to multiple TimeStamps
+	 * @param __ unused */
+	private void digestForecastBids(ArrayList<Message> messages, List<Contract> __) {
 		TreeMap<TimeStamp, ArrayList<Message>> messagesByTimeStamp = sortMessagesByBidTimeStamp(messages);
-		for (Entry<TimeStamp, ArrayList<Message>> entry : messagesByTimeStamp.entrySet()) {
+		if (transmissionCapacities == null || transmissionCapacities.isEmpty()) {
+			clearMarketUsingSentBidForecasts(messagesByTimeStamp);
+		} else {
+			cacheOrderBooks(messagesByTimeStamp);
+		}
+	}
+
+	/** Iterates over time stamps at which the bid forecast messages are valid, clears the market for each time stamp, and saves the
+	 * clearing result to {@link #calculatedForecastContainer} */
+	private void clearMarketUsingSentBidForecasts(TreeMap<TimeStamp, ArrayList<Message>> bidMessagesByTimeStamp) {
+		for (Entry<TimeStamp, ArrayList<Message>> entry : bidMessagesByTimeStamp.entrySet()) {
 			TimeStamp requestedTime = entry.getKey();
 			ArrayList<Message> bidsAtRequestedTime = entry.getValue();
 			String clearingId = this + " " + now();
 			MarketClearingResult marketClearingResult = marketClearing.clear(bidsAtRequestedTime, clearingId);
 			calculatedForecastContainer.put(requestedTime, marketClearingResult);
+		}
+	}
+
+	/** Iterates over time stamps at which the bid forecast messages are valid, assigns them to an order book for demand and supply
+	 * for each time stamp, and caches these order books for later use */
+	private void cacheOrderBooks(TreeMap<TimeStamp, ArrayList<Message>> bidMessagesByTimeStamp) {
+		for (Entry<TimeStamp, ArrayList<Message>> entry : bidMessagesByTimeStamp.entrySet()) {
+			TimeStamp requestedTime = entry.getKey();
+			ArrayList<Message> bidsAtRequestedTime = entry.getValue();
+			SupplyOrderBook supplyBook = new SupplyOrderBook();
+			DemandOrderBook demandBook = new DemandOrderBook();
+			MarketClearing.fillOrderBooksWithTraderBids(bidsAtRequestedTime, supplyBook, demandBook);
+			demandOrderBooks.put(requestedTime, demandBook);
+			supplyOrderBooks.put(requestedTime, supplyBook);
 		}
 	}
 
@@ -158,6 +218,40 @@ public class MarketForecaster extends Agent implements DamForecastProvider {
 			messageByTimeStamp.computeIfAbsent(deliveryTime, __ -> new ArrayList<Message>()).add(message);
 		}
 		return messageByTimeStamp;
+	}
+
+	/** If market coupling is active: Uses previously stored order books to send them to the connected {@link MarketCoupling} agent.
+	 * 
+	 * @param __ unused
+	 * @param contracts single contract with a {@link MarketCoupling} agent */
+	private void sendCouplingData(ArrayList<Message> __, List<Contract> contracts) {
+		Contract contract = CommUtils.getExactlyOneEntry(contracts);
+		for (Entry<TimeStamp, SupplyOrderBook> entry : supplyOrderBooks.entrySet()) {
+			TimeStamp requestedTime = entry.getKey();
+			TransmissionBook transmissionBook = MarketCouplingClient.buildTransmissionBook(originMarketZone,
+					transmissionCapacities, requestedTime);
+			fulfilNext(contract,
+					new CouplingData(requestedTime, demandOrderBooks.get(requestedTime), entry.getValue(), transmissionBook));
+		}
+		demandOrderBooks.clear();
+		supplyOrderBooks.clear();
+	}
+
+	/** If market coupling is active: Uses order books received from {@link MarketCoupling} to clear the market and store the
+	 * cleared market for later use.
+	 * 
+	 * @param messages incoming market coupling data
+	 * @param __ not used */
+	private void clearMarketCoupled(ArrayList<Message> messages, List<Contract> __) {
+		for (Message message : messages) {
+			CouplingData coupledData = message.getFirstPortableItemOfType(CouplingData.class);
+			TimeStamp clearingTime = coupledData.getClearingTime();
+			DemandOrderBook demandBook = coupledData.getDemandOrderBook();
+			SupplyOrderBook supplyBook = coupledData.getSupplyOrderBook();
+			String clearingId = this + " " + clearingTime;
+			MarketClearingResult marketClearingResult = marketClearing.clear(supplyBook, demandBook, clearingId);
+			calculatedForecastContainer.put(clearingTime, marketClearingResult);
+		}
 	}
 
 	/** Sends {@link MeritOrderMessage}s to the requesting trader(s) based on incoming Forecast requests; requesting agent(s) must

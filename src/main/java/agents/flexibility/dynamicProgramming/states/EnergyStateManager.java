@@ -32,7 +32,7 @@ public class EnergyStateManager implements StateManager {
 	private TimePeriod startingPeriod;
 	private int currentOptimisationTimeIndex;
 	private boolean hasSelfDischarge;
-	
+
 	private int[][] bestNextState;
 	private double[][] bestValue;
 	private double[] transitionValuesCharging;

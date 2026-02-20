@@ -35,7 +35,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private double[][] bestValue;
 	private double[] transitionValuesCharging;
 	private double[] transitionValuesDischarging;
-	private double[] zeroValues;
+	private double[] waterValuesZero;
 
 	public EnergyAndTimeStateManager(GenericDevice device, AssessmentFunction assessmentFunction,
 			double planningHorizonInHours,
@@ -62,9 +62,10 @@ public class EnergyAndTimeStateManager implements StateManager {
 		raiseOnSelfDischarge();
 		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getStateCount()];
 		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getStateCount()];
-		zeroValues = new double[stateDiscretiser.getStateCount()];
+		waterValuesZero = new double[stateDiscretiser.getStateCount()];
 	}
 
+	/** @throws RuntimeException if self discharge occurs */
 	private void raiseOnSelfDischarge() {
 		if (StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod)) {
 			new RuntimeException(ERR_SELF_DISCHARGE + Type.ENERGY_AND_TIME);
@@ -146,7 +147,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		if (currentOptimisationTimeIndex + 1 < numberOfTimeSteps) {
 			return bestValue[currentOptimisationTimeIndex + 1];
 		} else {
-			return zeroValues;
+			return waterValuesZero;
 		}
 	}
 

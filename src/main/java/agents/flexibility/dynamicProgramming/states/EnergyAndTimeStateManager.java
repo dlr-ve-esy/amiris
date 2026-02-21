@@ -24,28 +24,25 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private final GenericDeviceCache deviceCache;
 	private final AssessmentFunction assessmentFunction;
 	private final double planningHorizonInHours;
-	private final double energyResolutionInMWH;
 
 	private final StateDiscretiser stateDiscretiser;
+	private final TransitionEvaluator transitionEvaluator;
 	private int numberOfTimeSteps;
 	private TimePeriod startingPeriod;
 	private int currentOptimisationTimeIndex;
 
 	private int[][] bestNextState;
 	private double[][] bestValue;
-	private double[] transitionValuesCharging;
-	private double[] transitionValuesDischarging;
 	private double[] waterValuesZero;
 
 	public EnergyAndTimeStateManager(GenericDevice device, AssessmentFunction assessmentFunction,
-			double planningHorizonInHours,
-			double energyResolutionInMWH, WaterValues waterValues) {
+			double planningHorizonInHours, double energyResolutionInMWH, WaterValues waterValues) {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
 		this.assessmentFunction = assessmentFunction;
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, device.hasProlonging());
+		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
 		this.planningHorizonInHours = planningHorizonInHours;
-		this.energyResolutionInMWH = energyResolutionInMWH;
 		if (waterValues.hasData()) {
 			new RuntimeException(ERR_WATER_VALUES + Type.ENERGY_AND_TIME);
 		}
@@ -74,34 +71,10 @@ public class EnergyAndTimeStateManager implements StateManager {
 
 	@Override
 	public void prepareFor(TimeStamp time) {
-		assessmentFunction.prepareFor(time);
-		deviceCache.prepareFor(time);
+		transitionEvaluator.prepareFor(time, false);
 		currentOptimisationTimeIndex = StateManager.getCurrentOptimisationTimeIndex(time, startingPeriod);
-		cacheTransitions();
 		stateDiscretiser.setShiftEnergyDeltaLimits(deviceCache.getMaxNetDischargingEnergyInMWH(),
 				deviceCache.getMaxNetChargingEnergyInMWH());
-	}
-
-	/** Cache values of transitions */
-	private void cacheTransitions() {
-		int maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(deviceCache.getMaxNetChargingEnergyInMWH());
-		transitionValuesCharging = new double[maxChargingSteps + 1];
-		for (int chargingSteps = 0; chargingSteps <= maxChargingSteps; chargingSteps++) {
-			transitionValuesCharging[chargingSteps] = calcEnergyValueFor(0, chargingSteps);
-		}
-		int maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(-deviceCache.getMaxNetDischargingEnergyInMWH());
-		transitionValuesDischarging = new double[maxDischargingSteps + 1];
-		for (int dischargingSteps = 0; dischargingSteps <= maxDischargingSteps; dischargingSteps++) {
-			transitionValuesDischarging[dischargingSteps] = calcEnergyValueFor(0, -dischargingSteps);
-		}
-	}
-
-	/** @return calculated value of transition */
-	private double calcEnergyValueFor(int initialStateIndex, int finalStateIndex) {
-		double externalEnergyDeltaInMWH = deviceCache.simulateTransition(
-				stateDiscretiser.energyIndexToEnergyInMWH(initialStateIndex),
-				stateDiscretiser.energyIndexToEnergyInMWH(finalStateIndex));
-		return assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
 	}
 
 	@Override
@@ -132,14 +105,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 					- Math.abs(absoluteInitialEnergyInMWH - absoluteFinalEnergyInMWH);
 			prolongingCostInEUR = prolongedEnergyDeltaInMWH * deviceCache.getVariableCostInEURperMWH();
 		}
-		return getCachedValueFor(initialStateIndex, finalStateIndex) + prolongingCostInEUR;
-	}
-
-	/** @return cached value of transition, only available without self discharge */
-	private double getCachedValueFor(int initialStateIndex, int finalStateIndex) {
-		int energyIndexDelta = stateDiscretiser.getEnergyIndexDelta(initialStateIndex, finalStateIndex);
-		return energyIndexDelta >= 0 ? transitionValuesCharging[energyIndexDelta]
-				: transitionValuesDischarging[-energyIndexDelta];
+		return transitionEvaluator.getTransitionValueFor(initialStateIndex, finalStateIndex) + prolongingCostInEUR;
 	}
 
 	@Override

@@ -16,6 +16,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public class EnergyStateManager implements StateManager {
+	private static final TimeSpan MAX_SHIFT_TIME = new TimeSpan(0);
+
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
 	private final AssessmentFunction assessmentFunction;
@@ -24,6 +26,7 @@ public class EnergyStateManager implements StateManager {
 	private final WaterValues waterValues;
 
 	private final StateDiscretiser stateDiscretiser;
+	private final TransitionEvaluator transitionEvaluator;
 	private int numberOfTimeSteps;
 	private TimePeriod startingPeriod;
 	private int currentOptimisationTimeIndex;
@@ -31,8 +34,6 @@ public class EnergyStateManager implements StateManager {
 
 	private int[][] bestNextState;
 	private double[][] bestValue;
-	private double[] transitionValuesCharging;
-	private double[] transitionValuesDischarging;
 	private double[] cachedWaterValuesInEUR;
 
 	public EnergyStateManager(GenericDevice device, AssessmentFunction assessmentFunction, double planningHorizonInHours,
@@ -41,6 +42,7 @@ public class EnergyStateManager implements StateManager {
 		this.deviceCache = new GenericDeviceCache(device);
 		this.assessmentFunction = assessmentFunction;
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, false);
+		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
 		this.planningHorizonInHours = planningHorizonInHours;
 		this.energyResolutionInMWH = energyResolutionInMWH;
 		this.waterValues = waterValues;
@@ -53,7 +55,7 @@ public class EnergyStateManager implements StateManager {
 		stateDiscretiser.setTimeResolution(startingPeriod.getDuration());
 		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
-		stateDiscretiser.setBoundaries(energyBoundaries, new TimeSpan(0));
+		stateDiscretiser.setBoundaries(energyBoundaries, MAX_SHIFT_TIME);
 		hasSelfDischarge = StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod);
 		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getStateCount()];
 		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getStateCount()];
@@ -74,34 +76,8 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public void prepareFor(TimeStamp time) {
-		assessmentFunction.prepareFor(time);
-		deviceCache.prepareFor(time);
+		transitionEvaluator.prepareFor(time, hasSelfDischarge);
 		currentOptimisationTimeIndex = StateManager.getCurrentOptimisationTimeIndex(time, startingPeriod);
-		if (!hasSelfDischarge) {
-			cacheTransitionValuesNoSelfDischarge();
-		}
-	}
-
-	/** Cache values of transitions - only applicable without self discharge */
-	private void cacheTransitionValuesNoSelfDischarge() {
-		int maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(deviceCache.getMaxNetChargingEnergyInMWH());
-		transitionValuesCharging = new double[maxChargingSteps + 1];
-		for (int chargingSteps = 0; chargingSteps <= maxChargingSteps; chargingSteps++) {
-			transitionValuesCharging[chargingSteps] = calcValueFor(0, chargingSteps);
-		}
-		int maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(-deviceCache.getMaxNetDischargingEnergyInMWH());
-		transitionValuesDischarging = new double[maxDischargingSteps + 1];
-		for (int dischargingSteps = 0; dischargingSteps <= maxDischargingSteps; dischargingSteps++) {
-			transitionValuesDischarging[dischargingSteps] = calcValueFor(0, -dischargingSteps);
-		}
-	}
-
-	/** @return calculated value of transition */
-	private double calcValueFor(int initialStateIndex, int finalStateIndex) {
-		final double externalEnergyDeltaInMWH = deviceCache.simulateTransition(
-				stateDiscretiser.energyIndexToEnergyInMWH(initialStateIndex),
-				stateDiscretiser.energyIndexToEnergyInMWH(finalStateIndex));
-		return assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
 	}
 
 	@Override
@@ -125,14 +101,7 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public double getTransitionValueFor(int initialStateIndex, int finalStateIndex) {
-		return hasSelfDischarge ? calcValueFor(initialStateIndex, finalStateIndex)
-				: getCachedValueFor(initialStateIndex, finalStateIndex);
-	}
-
-	/** @return cached value of transition, only available without self discharge */
-	private double getCachedValueFor(int initialStateIndex, int finalStateIndex) {
-		int stateDelta = finalStateIndex - initialStateIndex;
-		return stateDelta >= 0 ? transitionValuesCharging[stateDelta] : transitionValuesDischarging[-stateDelta];
+		return transitionEvaluator.getTransitionValueFor(initialStateIndex, finalStateIndex);
 	}
 
 	@Override

@@ -4,8 +4,6 @@
 package agents.flexibility.dynamicProgramming.states;
 
 import java.util.ArrayList;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
 import agents.flexibility.dynamicProgramming.Optimiser;
@@ -18,8 +16,6 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public class EnergyStateManager implements StateManager {
-	private static final Logger logger = LoggerFactory.getLogger(EnergyStateManager.class);
-
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
 	private final AssessmentFunction assessmentFunction;
@@ -27,7 +23,7 @@ public class EnergyStateManager implements StateManager {
 	private final double energyResolutionInMWH;
 	private final WaterValues waterValues;
 
-	private StateDiscretiser stateDiscretiser;
+	private final StateDiscretiser stateDiscretiser;
 	private int numberOfTimeSteps;
 	private TimePeriod startingPeriod;
 	private int currentOptimisationTimeIndex;
@@ -44,6 +40,7 @@ public class EnergyStateManager implements StateManager {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
 		this.assessmentFunction = assessmentFunction;
+		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, false);
 		this.planningHorizonInHours = planningHorizonInHours;
 		this.energyResolutionInMWH = energyResolutionInMWH;
 		this.waterValues = waterValues;
@@ -53,7 +50,7 @@ public class EnergyStateManager implements StateManager {
 	public void initialise(TimePeriod startingPeriod) {
 		this.startingPeriod = startingPeriod;
 		deviceCache.setPeriod(startingPeriod);
-		stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, startingPeriod.getDuration(), false);
+		stateDiscretiser.setTimeResolution(startingPeriod.getDuration());
 		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
 		stateDiscretiser.setBoundaries(energyBoundaries, new TimeSpan(0));

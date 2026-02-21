@@ -19,23 +19,24 @@ public class StateDiscretiserTest {
 	private StateDiscretiser discretiser;
 	private TimeSpan oneHour = new TimeSpan(1, Interval.HOURS);
 
-	@Test
-	public void constructor_invalidEnergyResolution_throws() {
+	@ParameterizedTest
+	@CsvSource(value = {"-2.", "0."})
+	public void constructor_invalidEnergyResolution_throws(double energyResolution) {
 		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVALID_ENERGY_RESOLUTION,
-				() -> new StateDiscretiser(-2., oneHour, true));
-		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVALID_ENERGY_RESOLUTION,
-				() -> new StateDiscretiser(0., oneHour, true));
+				() -> new StateDiscretiser(energyResolution, true));
 	}
 
 	@Test
-	public void constructor_invalidTimeResolution_throws() {
+	public void setTimeResolution_invalid_throws() {
+		var discretiser = new StateDiscretiser(1., true);
 		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVALID_TIME_RESOLUTION,
-				() -> new StateDiscretiser(1., new TimeSpan(0), true));
+				() -> discretiser.setTimeResolution(new TimeSpan(0)));
 	}
 
 	@Test
 	public void setBoundaries_limitsInverted_throws() {
-		discretiser = new StateDiscretiser(2, oneHour, true);
+		discretiser = new StateDiscretiser(2, true);
+		discretiser.setTimeResolution(oneHour);
 		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVERTED_ENERGY_LIMITS,
 				() -> discretiser.setBoundaries(new double[] {5., -5.}, oneHour));
 	}
@@ -56,7 +57,8 @@ public class StateDiscretiserTest {
 
 	private void initDiscretiser(double energyResolutionInMWH, long timeResolutionInSteps, double minEnergyInMWH,
 			double maxEnergyInMWH, long maxShiftTimeInSteps, boolean hasProlonging) {
-		discretiser = new StateDiscretiser(energyResolutionInMWH, new TimeSpan(timeResolutionInSteps), hasProlonging);
+		discretiser = new StateDiscretiser(energyResolutionInMWH, hasProlonging);
+		discretiser.setTimeResolution(new TimeSpan(timeResolutionInSteps));
 		discretiser.setBoundaries(new double[] {minEnergyInMWH, maxEnergyInMWH}, new TimeSpan(maxShiftTimeInSteps));
 	}
 

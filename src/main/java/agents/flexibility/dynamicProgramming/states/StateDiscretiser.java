@@ -22,13 +22,14 @@ public class StateDiscretiser {
 	public static final double PRECISION_GUARD = 1E-5;
 
 	private final double energyResolutionInMWH;
-	private final TimeSpan timeResolution;
+	private final boolean allowProlonging;
+
+	private TimeSpan timeResolution;
 	private int numberOfEnergyStates;
 	private int numberOfTimeStates;
 	private int energyStateOffset;
 	private double lowestLevelEnergyInMWH;
 	private boolean considerTimeConstraint;
-	private boolean allowProlonging;
 
 	/** Indices of all technically possible states ignoring impossible states (e.g. states out of balance with zero shift time) */
 	private int[] allStates;
@@ -40,15 +41,20 @@ public class StateDiscretiser {
 	/** Instantiates a new {@link StateDiscretiser}
 	 * 
 	 * @param energyResolutionInMWH energy delta between two neighbouring energy states
-	 * @param timeResolution time delta between two neighbouring time states
 	 * @param allowProlonging whether prolonging is feasible */
-	public StateDiscretiser(double energyResolutionInMWH, TimeSpan timeResolution, boolean allowProlonging) {
+	public StateDiscretiser(double energyResolutionInMWH, boolean allowProlonging) {
 		this.allowProlonging = allowProlonging;
 		if (energyResolutionInMWH <= 0) {
 			logger.error(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
 			throw new RuntimeException(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
 		}
 		this.energyResolutionInMWH = energyResolutionInMWH;
+	}
+
+	/** Updates the time resolution to the provided value
+	 * 
+	 * @param timeResolution to be used from here on */
+	public void setTimeResolution(TimeSpan timeResolution) {
 		if (timeResolution.getSteps() < 1) {
 			logger.error(ERR_INVALID_TIME_RESOLUTION + timeResolution);
 			throw new RuntimeException(ERR_INVALID_TIME_RESOLUTION + timeResolution);

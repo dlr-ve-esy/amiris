@@ -26,7 +26,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private final double planningHorizonInHours;
 	private final double energyResolutionInMWH;
 
-	private StateDiscretiser stateDiscretiser;
+	private final StateDiscretiser stateDiscretiser;
 	private int numberOfTimeSteps;
 	private TimePeriod startingPeriod;
 	private int currentOptimisationTimeIndex;
@@ -43,6 +43,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
 		this.assessmentFunction = assessmentFunction;
+		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, device.hasProlonging());
 		this.planningHorizonInHours = planningHorizonInHours;
 		this.energyResolutionInMWH = energyResolutionInMWH;
 		if (waterValues.hasData()) {
@@ -54,8 +55,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	public void initialise(TimePeriod startingPeriod) {
 		this.startingPeriod = startingPeriod;
 		deviceCache.setPeriod(startingPeriod);
-		stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, startingPeriod.getDuration(),
-				device.hasProlonging());
+		stateDiscretiser.setTimeResolution(startingPeriod.getDuration());
 		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
 		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTime());

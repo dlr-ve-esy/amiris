@@ -73,6 +73,15 @@ public class StateDiscretiserTest {
 	}
 
 	@ParameterizedTest
+	@CsvSource(value = {"-10:10:0:20", "-4.2:4.2:6:14", "0:0:10:10", "-4.2:-2.2:6:7", "2.2:4.2:13:14"}, delimiter = ':')
+	public void getEnergyStateLimits(double lowerLimitInMWH, double upperLimitInMWH, int expectedLowerStateLimit,
+			int expectedUpperStateLimit) {
+		initDiscretiser(1., 10, -10., 10., 0, false);
+		int[] expected = new int[] {expectedLowerStateLimit, expectedUpperStateLimit};
+		assertArrayEquals(expected, discretiser.getEnergyStateLimits(lowerLimitInMWH, upperLimitInMWH));
+	}
+
+	@ParameterizedTest
 	@CsvSource(value = {"4.2:2", "1.99999999:1", "1.9:0", "11.:5",}, delimiter = ':')
 	public void discretiseEnergyDelta_returnsExpected(double energyDelta, int expected) {
 		initDiscretiser(2., 10, 0, 0, 10, true);

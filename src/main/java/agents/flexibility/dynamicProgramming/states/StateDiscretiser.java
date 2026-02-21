@@ -80,16 +80,16 @@ public class StateDiscretiser {
 		}
 	}
 
-	/** @return next lower index corresponding to given energy level */
-	private int energyToFloorIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
-		double discretisedEnergyInMWH = Math.floor(energyAmountInMWH / energyResolutionInMWH + PRECISION_GUARD)
+	/** @return next higher index corresponding to given energy level */
+	private int energyToCeilIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
+		double discretisedEnergyInMWH = Math.ceil(energyAmountInMWH / energyResolutionInMWH - PRECISION_GUARD)
 				* energyResolutionInMWH;
 		return (int) Math.round((discretisedEnergyInMWH - lowestLevelEnergyInMWH) / energyResolutionInMWH);
 	}
 
-	/** @return next higher index corresponding to given energy level */
-	private int energyToCeilIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
-		double discretisedEnergyInMWH = Math.ceil(energyAmountInMWH / energyResolutionInMWH - PRECISION_GUARD)
+	/** @return next lower index corresponding to given energy level */
+	private int energyToFloorIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
+		double discretisedEnergyInMWH = Math.floor(energyAmountInMWH / energyResolutionInMWH + PRECISION_GUARD)
 				* energyResolutionInMWH;
 		return (int) Math.round((discretisedEnergyInMWH - lowestLevelEnergyInMWH) / energyResolutionInMWH);
 	}

@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.states;
 
+import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.states.StateManager.DispatchSchedule;
@@ -26,6 +27,11 @@ public class StateEvaluations {
 
 	private int currentOptimisationTimeIndex;
 
+	/** Initialises a new {@link StateEvaluations}
+	 * 
+	 * @param stateDiscretiser maps energy content and shift-times to state indices
+	 * @param deviceCache caches values for a connected {@link GenericDevice}
+	 * @param assessmentFunction assesses values of energy transitions */
 	public StateEvaluations(StateDiscretiser stateDiscretiser, GenericDeviceCache deviceCache,
 			AssessmentFunction assessmentFunction) {
 		this.stateDiscretiser = stateDiscretiser;
@@ -33,14 +39,20 @@ public class StateEvaluations {
 		this.assessmentFunction = assessmentFunction;
 	}
 
+	/** Initialises storage for state evaluations in the forecast period determined by starting period and number of time steps
+	 * 
+	 * @param startingPeriod first time period of forecast horizon
+	 * @param numberOfTimeSteps number of time periods to store data for
+	 * @param stateCount number of states to store data for
+	 * @param waterValues to consider at the end of the forecast horizon. Assumed zero if water values are null or hold no data. */
 	public void initialise(TimePeriod startingPeriod, int numberOfTimeSteps, int stateCount, WaterValues waterValues) {
 		this.startingPeriod = startingPeriod;
 		this.numberOfTimeSteps = numberOfTimeSteps;
+
 		bestNextState = new int[numberOfTimeSteps][stateCount];
 		bestValue = new double[numberOfTimeSteps][stateCount];
 		cachedWaterValuesInEUR = new double[stateCount];
-		TimeStamp targetTime = StateManager.getTimeByIndex(startingPeriod, numberOfTimeSteps);
-		cacheWaterValues(waterValues, targetTime);
+		cacheWaterValues(waterValues, StateManager.getTimeByIndex(startingPeriod, numberOfTimeSteps));
 	}
 
 	/** Caches water values for each possible state and stores them to {@link #cachedWaterValuesInEUR} */
@@ -53,10 +65,16 @@ public class StateEvaluations {
 		}
 	}
 
+	/** Prepares this {@link StateEvaluations} to hold data at the provided time stamp
+	 * 
+	 * @param time to store data at */
 	public void prepareFor(TimeStamp time) {
 		currentOptimisationTimeIndex = StateManager.getCurrentOptimisationTimeIndex(time, startingPeriod);
 	}
 
+	/** Returns best values for the next time period after the current one as declared by {@link #prepareFor(TimeStamp)}
+	 * 
+	 * @return best value for each state starting at the lowest state */
 	public double[] getBestValuesNextPeriod() {
 		if (currentOptimisationTimeIndex + 1 < numberOfTimeSteps) {
 			return bestValue[currentOptimisationTimeIndex + 1];
@@ -65,11 +83,22 @@ public class StateEvaluations {
 		}
 	}
 
+	/** Stores best final state and its associated assessment value for the given initial state
+	 * 
+	 * @param initialStateIndex index of the initial state
+	 * @param bestFinalStateIndex index of the best follow-up state with respect to the initial state
+	 * @param bestAssessmentValue assessment value of the transition to the best follow-up state */
 	public void updateBestFinalState(int initialStateIndex, int bestFinalStateIndex, double bestAssessmentValue) {
 		bestValue[currentOptimisationTimeIndex][initialStateIndex] = bestAssessmentValue;
 		bestNextState[currentOptimisationTimeIndex][initialStateIndex] = bestFinalStateIndex;
 	}
 
+	/** Returns the best {@link DispatchSchedule} of given length, starting at the provided initial energy level and shift time
+	 * 
+	 * @param schedulingSteps number of time periods in the dispatch schedule
+	 * @param initialEnergyLevel energy level of the device at the beginning of the schedule
+	 * @param initialShiftTimeSteps shift time in time steps of the device at the beginning of the schedule
+	 * @return best dispatch schedule obtained from previously stored evaluations */
 	public DispatchSchedule buildDispatchSchedule(int schedulingSteps, double initialEnergyLevel,
 			long initialShiftTimeSteps) {
 		double currentInternalEnergyInMWH = initialEnergyLevel;

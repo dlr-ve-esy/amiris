@@ -6,6 +6,7 @@ package agents.flexibility.dynamicProgramming.states;
 import java.util.ArrayList;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
+import agents.flexibility.dynamicProgramming.Optimiser;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -108,6 +109,21 @@ public interface StateManager {
 	 * @param startingPeriod first interval of the planning horizon
 	 * @return list of starting times */
 	ArrayList<TimeStamp> getPlanningTimes(TimePeriod startingPeriod);
+
+	/** Builds and returns a list of starting times of time periods starting with the provided period repeated until the planning
+	 * horizon is reached.
+	 * 
+	 * @param startingPeriod first interval of the planning horizon
+	 * @param planningHorizonInHours total length of the planning horizon
+	 * @return starting time of each planning interval in the planning horizon */
+	static ArrayList<TimeStamp> createPlanningTimes(TimePeriod startingPeriod, double planningHorizonInHours) {
+		int numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
+		ArrayList<TimeStamp> planningTimes = new ArrayList<>(numberOfTimeSteps);
+		for (int step = 0; step < numberOfTimeSteps; step++) {
+			planningTimes.add(startingPeriod.shiftByDuration(step).getStartTime());
+		}
+		return planningTimes;
+	}
 
 	/** Analyses which minimum lower energy level and maximum upper energy level apply during planning time
 	 * 

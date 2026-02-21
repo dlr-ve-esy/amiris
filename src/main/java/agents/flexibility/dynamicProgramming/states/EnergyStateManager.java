@@ -20,64 +20,42 @@ public class EnergyStateManager implements StateManager {
 
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
-	private final AssessmentFunction assessmentFunction;
 	private final double planningHorizonInHours;
-	private final double energyResolutionInMWH;
 	private final WaterValues waterValues;
 
 	private final StateDiscretiser stateDiscretiser;
 	private final TransitionEvaluator transitionEvaluator;
-	private int numberOfTimeSteps;
-	private TimePeriod startingPeriod;
-	private int currentOptimisationTimeIndex;
-	private boolean hasSelfDischarge;
+	private final StateEvaluations stateEvaluations;
 
-	private int[][] bestNextState;
-	private double[][] bestValue;
-	private double[] cachedWaterValuesInEUR;
+	private int numberOfTimeSteps;
+	private boolean hasSelfDischarge;
 
 	public EnergyStateManager(GenericDevice device, AssessmentFunction assessmentFunction, double planningHorizonInHours,
 			double energyResolutionInMWH, WaterValues waterValues) {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
-		this.assessmentFunction = assessmentFunction;
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, false);
 		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
+		this.stateEvaluations = new StateEvaluations(stateDiscretiser, deviceCache, assessmentFunction);
 		this.planningHorizonInHours = planningHorizonInHours;
-		this.energyResolutionInMWH = energyResolutionInMWH;
 		this.waterValues = waterValues;
 	}
 
 	@Override
 	public void initialise(TimePeriod startingPeriod) {
-		this.startingPeriod = startingPeriod;
 		deviceCache.setPeriod(startingPeriod);
 		stateDiscretiser.setTimeResolution(startingPeriod.getDuration());
 		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
 		stateDiscretiser.setBoundaries(energyBoundaries, MAX_SHIFT_TIME);
 		hasSelfDischarge = StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod);
-		bestNextState = new int[numberOfTimeSteps][stateDiscretiser.getStateCount()];
-		bestValue = new double[numberOfTimeSteps][stateDiscretiser.getStateCount()];
-		cacheWaterValues();
-	}
-
-	/** Caches water values for each possible state and stores them to {@link #cachedWaterValuesInEUR} */
-	private void cacheWaterValues() {
-		cachedWaterValuesInEUR = new double[stateDiscretiser.getStateCount()];
-		if (waterValues.hasData()) {
-			TimeStamp targetTime = StateManager.getTimeByIndex(startingPeriod, numberOfTimeSteps);
-			for (int index = 0; index < stateDiscretiser.getStateCount(); index++) {
-				cachedWaterValuesInEUR[index] = waterValues.getValueInEUR(targetTime,
-						stateDiscretiser.energyIndexToEnergyInMWH(index));
-			}
-		}
+		stateEvaluations.initialise(startingPeriod, numberOfTimeSteps, stateDiscretiser.getStateCount(), waterValues);
 	}
 
 	@Override
 	public void prepareFor(TimeStamp time) {
 		transitionEvaluator.prepareFor(time, hasSelfDischarge);
-		currentOptimisationTimeIndex = StateManager.getCurrentOptimisationTimeIndex(time, startingPeriod);
+		stateEvaluations.prepareFor(time);
 	}
 
 	@Override
@@ -106,17 +84,12 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public double[] getBestValuesNextPeriod() {
-		if (currentOptimisationTimeIndex + 1 < numberOfTimeSteps) {
-			return bestValue[currentOptimisationTimeIndex + 1];
-		} else {
-			return cachedWaterValuesInEUR;
-		}
+		return stateEvaluations.getBestValuesNextPeriod();
 	}
 
 	@Override
 	public void updateBestFinalState(int initialStateIndex, int bestFinalStateIndex, double bestAssessmentValue) {
-		bestValue[currentOptimisationTimeIndex][initialStateIndex] = bestAssessmentValue;
-		bestNextState[currentOptimisationTimeIndex][initialStateIndex] = bestFinalStateIndex;
+		stateEvaluations.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);
 	}
 
 	@Override
@@ -126,51 +99,11 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) {
-		double currentInternalEnergyInMWH = device.getCurrentInternalEnergyInMWH();
-		double[] externalEnergyDeltaInMWH = new double[schedulingSteps];
-		double[] internalEnergiesInMWH = new double[schedulingSteps];
-		double[] specificValuesInEURperMWH = new double[schedulingSteps];
-		double[] expectedElectricityPriceInEURperMWH = new double[schedulingSteps];
-
-		for (int timeIndex = 0; timeIndex < schedulingSteps; timeIndex++) {
-			TimeStamp time = StateManager.getTimeByIndex(startingPeriod, timeIndex);
-			deviceCache.prepareFor(time);
-
-			internalEnergiesInMWH[timeIndex] = currentInternalEnergyInMWH;
-			int currentEnergyLevelIndex = stateDiscretiser.energyToNearestEnergyIndex(currentInternalEnergyInMWH);
-			int nextEnergyLevelIndex = bestNextState[timeIndex][currentEnergyLevelIndex];
-			double plannedEnergyDeltaInMWH = (nextEnergyLevelIndex - currentEnergyLevelIndex) * energyResolutionInMWH;
-
-			double nextInternalEnergyInMWH = StateManager.calcNextEnergyInMWH(deviceCache, currentInternalEnergyInMWH,
-					plannedEnergyDeltaInMWH);
-			externalEnergyDeltaInMWH[timeIndex] = deviceCache.simulateTransition(currentInternalEnergyInMWH,
-					nextInternalEnergyInMWH);
-			currentInternalEnergyInMWH = nextInternalEnergyInMWH;
-
-			double rawValueDeltaInEUR = getValueOfStorage(timeIndex + 1, nextEnergyLevelIndex)
-					- getValueOfStorage(timeIndex + 1, currentEnergyLevelIndex);
-			specificValuesInEURperMWH[timeIndex] = StateManager.calcSpecificValueInEURperMWH(plannedEnergyDeltaInMWH,
-					rawValueDeltaInEUR);
-
-			expectedElectricityPriceInEURperMWH[timeIndex] = assessmentFunction
-					.getElectricityPriceAt(time, externalEnergyDeltaInMWH[timeIndex]);
-		}
-		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH,
-				expectedElectricityPriceInEURperMWH);
-	}
-
-	/** @return the value of storage for given time and state index */
-	private double getValueOfStorage(int timeIndex, int stateIndex) {
-		return timeIndex < numberOfTimeSteps ? bestValue[timeIndex][stateIndex] : cachedWaterValuesInEUR[stateIndex];
+		return stateEvaluations.buildDispatchSchedule(schedulingSteps, device.getCurrentInternalEnergyInMWH(), 0L);
 	}
 
 	@Override
 	public ArrayList<TimeStamp> getPlanningTimes(TimePeriod startingPeriod) {
-		int numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
-		ArrayList<TimeStamp> planningTimes = new ArrayList<>(numberOfTimeSteps);
-		for (int step = 0; step < numberOfTimeSteps; step++) {
-			planningTimes.add(startingPeriod.shiftByDuration(step).getStartTime());
-		}
-		return planningTimes;
+		return StateManager.createPlanningTimes(startingPeriod, planningHorizonInHours);
 	}
 }

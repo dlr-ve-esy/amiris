@@ -21,7 +21,6 @@ public class EnergyStateManager implements StateManager {
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
 	private final double planningHorizonInHours;
-	private final WaterValues waterValues;
 
 	private final StateDiscretiser stateDiscretiser;
 	private final TransitionEvaluator transitionEvaluator;
@@ -36,9 +35,8 @@ public class EnergyStateManager implements StateManager {
 		this.deviceCache = new GenericDeviceCache(device);
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, false);
 		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
-		this.stateEvaluations = new StateEvaluations(stateDiscretiser, deviceCache, assessmentFunction);
+		this.stateEvaluations = new StateEvaluations(stateDiscretiser, deviceCache, assessmentFunction, waterValues);
 		this.planningHorizonInHours = planningHorizonInHours;
-		this.waterValues = waterValues;
 	}
 
 	@Override
@@ -49,7 +47,7 @@ public class EnergyStateManager implements StateManager {
 		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
 		stateDiscretiser.setBoundaries(energyBoundaries, MAX_SHIFT_TIME);
 		hasSelfDischarge = StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod);
-		stateEvaluations.initialise(startingPeriod, numberOfTimeSteps, stateDiscretiser.getStateCount(), waterValues);
+		stateEvaluations.initialise(startingPeriod, numberOfTimeSteps, stateDiscretiser.getStateCount());
 	}
 
 	@Override

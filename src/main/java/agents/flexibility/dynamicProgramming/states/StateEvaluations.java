@@ -14,9 +14,13 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class StateEvaluations {
+	/** Used to avoid rounding errors in floating point calculation of transition steps */
+	static final double PRECISION_GUARD = 1E-6;
+
 	private final StateDiscretiser stateDiscretiser;
 	private final GenericDeviceCache deviceCache;
 	private final AssessmentFunction assessmentFunction;
+	private final WaterValues waterValues;
 
 	private int numberOfTimeSteps;
 	private TimePeriod startingPeriod;
@@ -31,21 +35,22 @@ public class StateEvaluations {
 	 * 
 	 * @param stateDiscretiser maps energy content and shift-times to state indices
 	 * @param deviceCache caches values for a connected {@link GenericDevice}
-	 * @param assessmentFunction assesses values of energy transitions */
+	 * @param assessmentFunction assesses values of energy transitions
+	 * @param waterValues to be used as values for the last final state, assumed Zero if null or no data is given */
 	public StateEvaluations(StateDiscretiser stateDiscretiser, GenericDeviceCache deviceCache,
-			AssessmentFunction assessmentFunction) {
+			AssessmentFunction assessmentFunction, WaterValues waterValues) {
 		this.stateDiscretiser = stateDiscretiser;
 		this.deviceCache = deviceCache;
 		this.assessmentFunction = assessmentFunction;
+		this.waterValues = waterValues;
 	}
 
 	/** Initialises storage for state evaluations in the forecast period determined by starting period and number of time steps
 	 * 
 	 * @param startingPeriod first time period of forecast horizon
 	 * @param numberOfTimeSteps number of time periods to store data for
-	 * @param stateCount number of states to store data for
-	 * @param waterValues to consider at the end of the forecast horizon. Assumed zero if water values are null or hold no data. */
-	public void initialise(TimePeriod startingPeriod, int numberOfTimeSteps, int stateCount, WaterValues waterValues) {
+	 * @param stateCount number of states to store data for */
+	public void initialise(TimePeriod startingPeriod, int numberOfTimeSteps, int stateCount) {
 		this.startingPeriod = startingPeriod;
 		this.numberOfTimeSteps = numberOfTimeSteps;
 
@@ -58,9 +63,9 @@ public class StateEvaluations {
 	/** Caches water values for each possible state and stores them to {@link #cachedWaterValuesInEUR} */
 	private void cacheWaterValues(WaterValues waterValues, TimeStamp targetTime) {
 		if (waterValues != null && waterValues.hasData()) {
-			for (int index = 0; index < cachedWaterValuesInEUR.length; index++) {
-				cachedWaterValuesInEUR[index] = waterValues.getValueInEUR(targetTime,
-						stateDiscretiser.energyIndexToEnergyInMWH(index));
+			for (int stateIndex = 0; stateIndex < cachedWaterValuesInEUR.length; stateIndex++) {
+				double energyInMWH = stateDiscretiser.getEnergyOfStateInMWH(stateIndex);
+				cachedWaterValuesInEUR[stateIndex] = waterValues.getValueInEUR(targetTime, energyInMWH);
 			}
 		}
 	}
@@ -118,24 +123,42 @@ public class StateEvaluations {
 			int stateIndex = stateDiscretiser.getStateIndex(currentEnergyLevelIndex, currentShiftTimeIndex);
 			int nextStateIndex = bestNextState[timeIndex][stateIndex];
 			double plannedEnergyDeltaInMWH = stateDiscretiser.calcEnergyDeltaInMWH(stateIndex, nextStateIndex);
-			double nextInternalEnergyInMWH = StateManager.calcNextEnergyInMWH(deviceCache, currentInternalEnergyInMWH,
+			double nextInternalEnergyInMWH = calcNextEnergyInMWH(deviceCache, currentInternalEnergyInMWH,
 					plannedEnergyDeltaInMWH);
-			externalEnergyDeltaInMWH[timeIndex] = deviceCache.simulateTransition(currentInternalEnergyInMWH,
+			double nextExternalEnergyDeltaInMWH = deviceCache.simulateTransition(currentInternalEnergyInMWH,
 					nextInternalEnergyInMWH);
+			externalEnergyDeltaInMWH[timeIndex] = nextExternalEnergyDeltaInMWH;
 			currentInternalEnergyInMWH = nextInternalEnergyInMWH;
 			currentShiftTimeIndex = stateDiscretiser.calcShiftTimeIndexFromStateIndex(nextStateIndex);
 
 			double rawValueDeltaInEUR = getValueOfStorage(timeIndex + 1, nextStateIndex)
 					- getValueOfStorage(timeIndex + 1, stateIndex);
-			specificValuesInEURperMWH[timeIndex] = StateManager.calcSpecificValueInEURperMWH(plannedEnergyDeltaInMWH,
-					rawValueDeltaInEUR);
+			specificValuesInEURperMWH[timeIndex] = calcSpecificValueInEURperMWH(plannedEnergyDeltaInMWH, rawValueDeltaInEUR);
 
-			expectedElectricityPriceInEURperMWH[timeIndex] = assessmentFunction
-					.getElectricityPriceAt(time, externalEnergyDeltaInMWH[timeIndex]);
-
+			expectedElectricityPriceInEURperMWH[timeIndex] = assessmentFunction.getElectricityPriceAt(time,
+					nextExternalEnergyDeltaInMWH);
 		}
 		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH,
 				expectedElectricityPriceInEURperMWH);
+	}
+
+	/** Returns next energy level based on current one and planned energy delta; if current energy level is already out of bounds,
+	 * do <b>not</b> force the planned next energy value onto a modelled energy level. This avoids unplanned dispatch purely because
+	 * an energy level is out-of-bounds. Instead, follow the original dispatch plan.
+	 * 
+	 * @param deviceCache cached generic device prepared for time at which transition takes place
+	 * @param currentInternalEnergyInMWH initial energy level of device
+	 * @param plannedEnergyDeltaInMWH of transition
+	 * @return next energy level based on current one and planned energy delta */
+	static double calcNextEnergyInMWH(GenericDeviceCache deviceCache, double currentInternalEnergyInMWH,
+			double plannedEnergyDeltaInMWH) {
+		double lowerLevelInMWH = deviceCache.getEnergyContentLowerLimitInMWH();
+		double upperLevelInMWH = deviceCache.getEnergyContentUpperLimitInMWH();
+		double plannedNextEnergyContentInMWH = currentInternalEnergyInMWH + plannedEnergyDeltaInMWH;
+		if (currentInternalEnergyInMWH >= lowerLevelInMWH && currentInternalEnergyInMWH <= upperLevelInMWH) {
+			return Math.max(lowerLevelInMWH, Math.min(upperLevelInMWH, plannedNextEnergyContentInMWH));
+		}
+		return plannedNextEnergyContentInMWH;
 	}
 
 	/** @return the value of storage for given time and state index */
@@ -143,4 +166,15 @@ public class StateEvaluations {
 		return timeIndex < numberOfTimeSteps ? bestValue[timeIndex][stateIndex] : cachedWaterValuesInEUR[stateIndex];
 	}
 
+	/** Returns specific value in EUR per MWh of a transition with given deltas for energy and value
+	 * 
+	 * @param energyDeltaInMWH of transition
+	 * @param valueDeltaInEUR of transition
+	 * @return specific value of a transition with given deltas for energy and value */
+	static double calcSpecificValueInEURperMWH(double energyDeltaInMWH, double valueDeltaInEUR) {
+		if (Math.abs(energyDeltaInMWH) > PRECISION_GUARD) {
+			return valueDeltaInEUR / energyDeltaInMWH;
+		}
+		return 0;
+	}
 }

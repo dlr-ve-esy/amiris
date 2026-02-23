@@ -12,11 +12,12 @@ The same assumptions apply as for [StateManager](./StateManager.md).
 
 As described for the `StateManager`, the discrete steps are fixed within a given planning horizon.
 The `StateDiscretiser` can discretise states along two dimensions:
+
 * energy: energy states denote the state of charge of a `GenericDevice`
 * time out of balance: time states denote, for how long an energy device is out of balance. 
 
 Time out of balance is only applicable in case, intertemporal constraints apply, e.g. for load shifting.
-Otherwise, there is only one time state, i.e., we end up with a one-dimensional energy state representation, see [EnergyStateManager](./EnergyStateManager.md)
+Otherwise, there is only one time state, i.e., one ends up with a one-dimensional energy state representation, see [EnergyStateManager](./EnergyStateManager.md)
 
 ## Energy and time discretisation
 

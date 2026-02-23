@@ -10,7 +10,7 @@ import agents.flexibility.dynamicProgramming.states.StateManager.DispatchSchedul
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
-/** Holds evaluations of states
+/** Holds evaluations of states and creates dispatch schedules from these evaluations
  * 
  * @author Christoph Schimeczek */
 public class StateEvaluations {

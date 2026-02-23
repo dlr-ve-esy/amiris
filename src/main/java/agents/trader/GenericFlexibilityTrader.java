@@ -171,7 +171,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double demandPower = bidSchedule.getScheduledEnergyPurchaseInMWH(requestedTime);
 		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
 		Bid demandBid = new Bid(demandPower, price, Double.NaN);
-		store(Outputs.OfferedChargePriceInEURperMWH, price);
+		if (demandPower > 0) {
+			store(Outputs.OfferedChargePriceInEURperMWH, price);
+		}
 		return demandBid;
 	}
 
@@ -183,7 +185,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double supplyPower = bidSchedule.getScheduledEnergySalesInMWH(requestedTime);
 		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
 		Bid supplyBid = new Bid(supplyPower, price, Double.NaN);
-		store(Outputs.OfferedDischargePriceInEURperMWH, price);
+		if (supplyPower > 0) {
+			store(Outputs.OfferedDischargePriceInEURperMWH, price);
+		}
 		return supplyBid;
 	}
 

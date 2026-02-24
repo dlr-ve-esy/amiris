@@ -33,22 +33,14 @@ Note that using the full state list comes at the expense of a lower speed for th
 
 ### Caching
 
-`EnergyAndTimeStateManager` will cache all transition values for a given time step during `prepareFor()`.
-`EnergyAndTimeStateManager` pre-caches the properties of its `GenericDevice` using a [GenericDeviceCache](./GenericDeviceCache.md) at any given time step.
+`EnergyStateAndTimeManager` utilises a [TransitionEvaluator](./TransitionEvaluator.md) that will cache all transition values for a given time step during `prepareFor()`.
+In any case, `EnergyStateManager` pre-caches the properties of its `GenericDevice` using a [GenericDeviceCache](./GenericDeviceCache.md) at any given time step.
 **Warning**: If the `GenericDevice`'s lower or upper energy content limit is not constant, the algorithm will not consider changes in the number of states at the end of its planning interval.
 This can lead to imperfect planning results and the `GenericDevice` might temporarily operate outside of its (changed) energy limits.
-`EnergyStateAndTimeManager` will ensure that no energy is lost or gained due to this behaviour and will correct its state along with its normal dispatch.
-An according warning will be raised in this case.
-
-See also [StateManager](./StateManager.md).
 
 ### Dispatch scheduling
 
-There may be situations, where an energy state does not exactly match the energy content of a [GenericDevice](./GenericDevice.md).
-See [EnergyStateManager](./EnergyStateManager.md) on how the correction is performed.
-
-A similar correction is not needed for the time out of balance or shift time, as only integer values are allowed here
-and no deviations may occur.
+The [StateEvaluations](./StateEvaluations.md) module used by `EnergyStateAndTimeManager` will ensure that no energy is lost or gained during dispatch and find the optimal state path based on the previously evaluated states.
 
 # Input from file
 
@@ -59,6 +51,8 @@ See [StateManagerBuilder](./StateManagerBuilder.md)
 * [StateManager](./StateManager.md)
 * [EnergyStateManager](./EnergyStateManager.md)
 * [StateDiscretiser](./StateDiscretiser.md)
+* [TransitionEvaluator](./TransitionEvaluator.md)
+* [StateEvaluations](/StateEvaluations.md)
 * [GenericDevice](./GenericDevice.md)
 * [GenericDeviceCache](./GenericDeviceCache.md)
 * [Optimiser](./Optimiser.md)

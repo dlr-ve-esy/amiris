@@ -46,11 +46,16 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Felix Nitsch, Christoph Schimeczek, Johannes Kochems */
 public class GenericFlexibilityTrader extends Trader implements SensitivityForecastClient {
+	static final String GROUP_DEVICE = "Device";
+	static final String GROUP_ASSESSMENT = "Assessment";
+	static final String GROUP_STATES = "StateDiscretisation";
+	static final String GROUP_BIDS = "Bidding";
+
 	@Input private static final Tree parameters = Make.newTree()
-			.addAs("Device", GenericDevice.parameters)
-			.addAs("Assessment", AssessmentFunctionBuilder.parameters)
-			.addAs("StateDiscretisation", StateManagerBuilder.parameters)
-			.addAs("Bidding", BidSchedulerBuilder.parameters)
+			.addAs(GROUP_DEVICE, GenericDevice.parameters)
+			.addAs(GROUP_ASSESSMENT, AssessmentFunctionBuilder.parameters)
+			.addAs(GROUP_STATES, StateManagerBuilder.parameters)
+			.addAs(GROUP_BIDS, BidSchedulerBuilder.parameters)
 			.buildTree();
 
 	/** Output columns of {@link GenericFlexibilityTrader}s */
@@ -80,10 +85,10 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		super(dataProvider);
 		ParameterData input = parameters.join(dataProvider);
 
-		device = new GenericDevice(input.getGroup("Device"));
-		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup("Assessment"), device);
-		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup("StateDiscretisation"));
-		var bidScheduler = BidSchedulerBuilder.build(input.getGroup("Bidding"));
+		device = new GenericDevice(input.getGroup(GROUP_DEVICE));
+		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT), device);
+		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup(GROUP_STATES));
+		var bidScheduler = BidSchedulerBuilder.build(input.getGroup(GROUP_BIDS));
 		strategist = new Optimiser(stateManager, bidScheduler, assessmentFunction.getTargetType());
 
 		call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);
@@ -171,7 +176,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double demandPower = bidSchedule.getScheduledEnergyPurchaseInMWH(requestedTime);
 		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
 		Bid demandBid = new Bid(demandPower, price, Double.NaN);
-		store(Outputs.OfferedChargePriceInEURperMWH, price);
+		if (demandPower > 0) {
+			store(Outputs.OfferedChargePriceInEURperMWH, price);
+		}
 		return demandBid;
 	}
 
@@ -183,7 +190,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double supplyPower = bidSchedule.getScheduledEnergySalesInMWH(requestedTime);
 		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
 		Bid supplyBid = new Bid(supplyPower, price, Double.NaN);
-		store(Outputs.OfferedDischargePriceInEURperMWH, price);
+		if (supplyPower > 0) {
+			store(Outputs.OfferedDischargePriceInEURperMWH, price);
+		}
 		return supplyBid;
 	}
 

@@ -19,23 +19,24 @@ public class StateDiscretiserTest {
 	private StateDiscretiser discretiser;
 	private TimeSpan oneHour = new TimeSpan(1, Interval.HOURS);
 
-	@Test
-	public void constructor_invalidEnergyResolution_throws() {
+	@ParameterizedTest
+	@CsvSource(value = {"-2.", "0."})
+	public void constructor_invalidEnergyResolution_throws(double energyResolution) {
 		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVALID_ENERGY_RESOLUTION,
-				() -> new StateDiscretiser(-2., oneHour, true));
-		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVALID_ENERGY_RESOLUTION,
-				() -> new StateDiscretiser(0., oneHour, true));
+				() -> new StateDiscretiser(energyResolution, true));
 	}
 
 	@Test
-	public void constructor_invalidTimeResolution_throws() {
+	public void setTimeResolution_invalid_throws() {
+		var discretiser = new StateDiscretiser(1., true);
 		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVALID_TIME_RESOLUTION,
-				() -> new StateDiscretiser(1., new TimeSpan(0), true));
+				() -> discretiser.setTimeResolution(new TimeSpan(0)));
 	}
 
 	@Test
 	public void setBoundaries_limitsInverted_throws() {
-		discretiser = new StateDiscretiser(2, oneHour, true);
+		discretiser = new StateDiscretiser(2, true);
+		discretiser.setTimeResolution(oneHour);
 		assertThrowsMessage(RuntimeException.class, StateDiscretiser.ERR_INVERTED_ENERGY_LIMITS,
 				() -> discretiser.setBoundaries(new double[] {5., -5.}, oneHour));
 	}
@@ -56,7 +57,8 @@ public class StateDiscretiserTest {
 
 	private void initDiscretiser(double energyResolutionInMWH, long timeResolutionInSteps, double minEnergyInMWH,
 			double maxEnergyInMWH, long maxShiftTimeInSteps, boolean hasProlonging) {
-		discretiser = new StateDiscretiser(energyResolutionInMWH, new TimeSpan(timeResolutionInSteps), hasProlonging);
+		discretiser = new StateDiscretiser(energyResolutionInMWH, hasProlonging);
+		discretiser.setTimeResolution(new TimeSpan(timeResolutionInSteps));
 		discretiser.setBoundaries(new double[] {minEnergyInMWH, maxEnergyInMWH}, new TimeSpan(maxShiftTimeInSteps));
 	}
 
@@ -70,6 +72,15 @@ public class StateDiscretiserTest {
 	public void getAllAvailableStates_multipleTimeStates_returnsValidStatesOnly() {
 		initDiscretiser(1., 10, -1., 1., 40, true);
 		assertArrayEquals(new int[] {1, 3, 5, 6, 8, 9, 11, 12, 14}, discretiser.getAllAvailableStates());
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"-10:10:0:20", "-4.2:4.2:6:14", "0:0:10:10", "-4.2:-2.2:6:7", "2.2:4.2:13:14"}, delimiter = ':')
+	public void getEnergyStateLimits(double lowerLimitInMWH, double upperLimitInMWH, int expectedLowerStateLimit,
+			int expectedUpperStateLimit) {
+		initDiscretiser(1., 10, -10., 10., 0, false);
+		int[] expected = new int[] {expectedLowerStateLimit, expectedUpperStateLimit};
+		assertArrayEquals(expected, discretiser.getEnergyStateLimits(lowerLimitInMWH, upperLimitInMWH));
 	}
 
 	@ParameterizedTest
@@ -105,6 +116,13 @@ public class StateDiscretiserTest {
 	public void getEnergyIndexDelta_returnsExpected(int initialStateIndex, int finalStateIndex, int expected) {
 		initDiscretiser(2.5, 10, -4, 10, 50, true);
 		assertEquals(expected, discretiser.getEnergyIndexDelta(initialStateIndex, finalStateIndex));
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"0:0", "2:2", "10:10", "21:0", "43:1"}, delimiter = ':')
+	public void getEnergyIndexOfStateIndex_returnsExpected(int stateIndex, int expected) {
+		initDiscretiser(1, 10, -10, 10, 50, false);
+		assertEquals(expected, discretiser.getEnergyIndexOfStateIndex(stateIndex));
 	}
 
 	@Test

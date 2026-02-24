@@ -19,16 +19,17 @@ public class StateDiscretiser {
 	private static final Logger logger = LoggerFactory.getLogger(StateDiscretiser.class);
 
 	/** Used to avoid rounding errors in floating point calculations of energy levels */
-	private static final double PRECISION_GUARD = 1E-5;
+	public static final double PRECISION_GUARD = 1E-5;
 
 	private final double energyResolutionInMWH;
-	private final TimeSpan timeResolution;
+	private final boolean allowProlonging;
+
+	private TimeSpan timeResolution;
 	private int numberOfEnergyStates;
 	private int numberOfTimeStates;
 	private int energyStateOffset;
 	private double lowestLevelEnergyInMWH;
 	private boolean considerTimeConstraint;
-	private boolean allowProlonging;
 
 	/** Indices of all technically possible states ignoring impossible states (e.g. states out of balance with zero shift time) */
 	private int[] allStates;
@@ -40,15 +41,20 @@ public class StateDiscretiser {
 	/** Instantiates a new {@link StateDiscretiser}
 	 * 
 	 * @param energyResolutionInMWH energy delta between two neighbouring energy states
-	 * @param timeResolution time delta between two neighbouring time states
 	 * @param allowProlonging whether prolonging is feasible */
-	public StateDiscretiser(double energyResolutionInMWH, TimeSpan timeResolution, boolean allowProlonging) {
+	public StateDiscretiser(double energyResolutionInMWH, boolean allowProlonging) {
 		this.allowProlonging = allowProlonging;
 		if (energyResolutionInMWH <= 0) {
 			logger.error(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
 			throw new RuntimeException(ERR_INVALID_ENERGY_RESOLUTION + energyResolutionInMWH);
 		}
 		this.energyResolutionInMWH = energyResolutionInMWH;
+	}
+
+	/** Updates the time resolution to the provided value
+	 * 
+	 * @param timeResolution to be used from here on */
+	public void setTimeResolution(TimeSpan timeResolution) {
 		if (timeResolution.getSteps() < 1) {
 			logger.error(ERR_INVALID_TIME_RESOLUTION + timeResolution);
 			throw new RuntimeException(ERR_INVALID_TIME_RESOLUTION + timeResolution);
@@ -80,17 +86,18 @@ public class StateDiscretiser {
 		}
 	}
 
-	/** @return next lower index corresponding to given energy level */
-	private int energyToFloorIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
-		double energyLevel = Math.floor(energyAmountInMWH / energyResolutionInMWH + PRECISION_GUARD)
-				* energyResolutionInMWH;
-		return (int) Math.round((energyLevel - lowestLevelEnergyInMWH) / energyResolutionInMWH);
-	}
-
 	/** @return next higher index corresponding to given energy level */
 	private int energyToCeilIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
-		double energyLevel = Math.ceil(energyAmountInMWH / energyResolutionInMWH - PRECISION_GUARD) * energyResolutionInMWH;
-		return (int) Math.round((energyLevel - lowestLevelEnergyInMWH) / energyResolutionInMWH);
+		double discretisedEnergyInMWH = Math.ceil(energyAmountInMWH / energyResolutionInMWH - PRECISION_GUARD)
+				* energyResolutionInMWH;
+		return (int) Math.round((discretisedEnergyInMWH - lowestLevelEnergyInMWH) / energyResolutionInMWH);
+	}
+
+	/** @return next lower index corresponding to given energy level */
+	private int energyToFloorIndex(double energyAmountInMWH, double lowestLevelEnergyInMWH) {
+		double discretisedEnergyInMWH = Math.floor(energyAmountInMWH / energyResolutionInMWH + PRECISION_GUARD)
+				* energyResolutionInMWH;
+		return (int) Math.round((discretisedEnergyInMWH - lowestLevelEnergyInMWH) / energyResolutionInMWH);
 	}
 
 	/** Allocates and assign {@link #allStates} */
@@ -144,6 +151,17 @@ public class StateDiscretiser {
 		return allStates;
 	}
 
+	/** Returns indices of lowest and highest accessible energy levels corresponding to the provided lowest and highest energy
+	 * contents in MWh
+	 * 
+	 * @param energyContentLowerLimitInMWH energy content of the lowest accessible energy level in MWh
+	 * @param energyContentUpperLimitInMWH energy content of the highest accessible energy level in MWh
+	 * @return array of length 2 containing [lowestEnergyLevelIndex, highestEnergyLevelIndex] */
+	public int[] getEnergyStateLimits(double energyContentLowerLimitInMWH, double energyContentUpperLimitInMWH) {
+		return new int[] {energyToCeilIndex(energyContentLowerLimitInMWH, lowestLevelEnergyInMWH),
+				energyToFloorIndex(energyContentUpperLimitInMWH, lowestLevelEnergyInMWH)};
+	}
+
 	/** Returns number of discretisation steps equivalent to given energy delta in MWh (rounded down).
 	 * 
 	 * @param energyDeltaInMWH positive energy delta in MWh
@@ -166,6 +184,14 @@ public class StateDiscretiser {
 	 * @return energy in MWh corresponding to the given index */
 	public double getEnergyOfStateInMWH(int stateIndex) {
 		return (stateIndex % numberOfEnergyStates - energyStateOffset) * energyResolutionInMWH;
+	}
+
+	/** Returns energy index corresponding to given state index
+	 * 
+	 * @param stateIndex index of the <b>time-and-energy state</b>
+	 * @return energy index corresponding to given state index */
+	public int getEnergyIndexOfStateIndex(int stateIndex) {
+		return stateIndex % numberOfEnergyStates;
 	}
 
 	/** Returns delta in <b>energy indices</b> for the given two <b>time-and-energy state</b> indices.
@@ -194,7 +220,7 @@ public class StateDiscretiser {
 		}
 	}
 
-	/** Set follow up state indices considering energy and shift time constraints */
+	/** Sets follow up state indices considering energy and shift time constraints */
 	private int[] addEnergyAndTimeFollowUps(int lowestEnergyIndex, int highestEnergyIndex,
 			int initialStateIndex) {
 		final int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
@@ -245,7 +271,7 @@ public class StateDiscretiser {
 		}
 	}
 
-	/** Set follow up state indices considering only energy indices due to lack of shift time constraints */
+	/** Sets follow up state indices considering only energy indices due abscence of shift time constraints */
 	private int[] addEnergyFollowUps(int lowestEnergyIndex, int highestEnergyIndex) {
 		int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
 		int arrayIndex = 0;

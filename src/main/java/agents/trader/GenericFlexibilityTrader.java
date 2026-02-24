@@ -47,13 +47,13 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * @author Felix Nitsch, Christoph Schimeczek, Johannes Kochems */
 public class GenericFlexibilityTrader extends Trader implements SensitivityForecastClient {
 	static final String GROUP_DEVICE = "Device";
-	static final String GROUP_ASSESS = "Assessment";
+	static final String GROUP_ASSESSMENT = "Assessment";
 	static final String GROUP_STATES = "StateDiscretisation";
 	static final String GROUP_BIDS = "Bidding";
 
 	@Input private static final Tree parameters = Make.newTree()
 			.addAs(GROUP_DEVICE, GenericDevice.parameters)
-			.addAs(GROUP_ASSESS, AssessmentFunctionBuilder.parameters)
+			.addAs(GROUP_ASSESSMENT, AssessmentFunctionBuilder.parameters)
 			.addAs(GROUP_STATES, StateManagerBuilder.parameters)
 			.addAs(GROUP_BIDS, BidSchedulerBuilder.parameters)
 			.buildTree();
@@ -86,7 +86,7 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		ParameterData input = parameters.join(dataProvider);
 
 		device = new GenericDevice(input.getGroup(GROUP_DEVICE));
-		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESS), device);
+		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT), device);
 		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup(GROUP_STATES));
 		var bidScheduler = BidSchedulerBuilder.build(input.getGroup(GROUP_BIDS));
 		strategist = new Optimiser(stateManager, bidScheduler, assessmentFunction.getTargetType());

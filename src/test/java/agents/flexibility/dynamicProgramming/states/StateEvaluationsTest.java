@@ -13,10 +13,10 @@ import agents.flexibility.GenericDeviceCache;
 
 public class StateEvaluationsTest {
 	@ParameterizedTest
-	@ValueSource(doubles = {0., 1., 1E12, -5., -1E2})
+	@ValueSource(doubles = {0., 1E12, StateEvaluations.PRECISION_GUARD / 2.})
 	public void calcSpecificValueInEURperMWH_closeToZero_returnsZero(double valueDelta) {
-		assertEquals(0., StateEvaluations.calcSpecificValueInEURperMWH(StateEvaluations.PRECISION_GUARD / 2., 0), 1E-10);
-		assertEquals(0., StateEvaluations.calcSpecificValueInEURperMWH(-StateEvaluations.PRECISION_GUARD / 2., 0), 1E-10);
+		assertEquals(0., StateEvaluations.calcSpecificValueInEURperMWH(valueDelta, 0), 1E-10);
+		assertEquals(0., StateEvaluations.calcSpecificValueInEURperMWH(valueDelta, 0), 1E-10);
 	}
 
 	@ParameterizedTest
@@ -27,7 +27,8 @@ public class StateEvaluationsTest {
 
 	@ParameterizedTest
 	@CsvSource(value = {"0:10:5:5:10", "0:10:2:-2:0", "-10:10:0:-3:-3", "-10:10:-3:5:2"}, delimiter = ':')
-	public void calcNextEnergyInMWH_withinBounds_notChanged(double lowerLimit, double upperLimit, double currentEnergy,
+	public void calcNextEnergyInMWH_withinBounds_returnsExpected(double lowerLimit, double upperLimit,
+			double currentEnergy,
 			double delta, double expected) {
 		GenericDeviceCache device = mockDeviceCacheLimits(lowerLimit, upperLimit);
 		assertEquals(expected, StateEvaluations.calcNextEnergyInMWH(device, currentEnergy, delta), 1E-10);
@@ -45,7 +46,8 @@ public class StateEvaluationsTest {
 	@CsvSource(
 			value = {"-10:10:5:10:10", "-10:0:-2:3:0", "-10:-5:-7:3:-5", "5:10:7:-5:5", "0:10:3:-5:0", "-5:10:2:-10:-5"},
 			delimiter = ':')
-	public void calcNextEnergyInMWH_exceedBounds_limited(double lowerLimit, double upperLimit, double currentEnergy,
+	public void calcNextEnergyInMWH_exceedBounds_limitedByDevice(double lowerLimit, double upperLimit,
+			double currentEnergy,
 			double delta, double expected) {
 		GenericDeviceCache device = mockDeviceCacheLimits(lowerLimit, upperLimit);
 		assertEquals(expected, StateEvaluations.calcNextEnergyInMWH(device, currentEnergy, delta), 1E-10);
@@ -53,7 +55,7 @@ public class StateEvaluationsTest {
 
 	@ParameterizedTest
 	@CsvSource(value = {"-10:10:-15:2:-13", "-10:10:-15:-2:-17", "0:10:15:2:17", "0:10:15:-2:13"}, delimiter = ':')
-	public void calcNextEnergyInMWH_totallyOutOfBounds_notChanged(double lowerLimit, double upperLimit,
+	public void calcNextEnergyInMWH_initiallyOutOfBounds_notLimited(double lowerLimit, double upperLimit,
 			double currentEnergy, double delta, double expected) {
 		GenericDeviceCache device = mockDeviceCacheLimits(lowerLimit, upperLimit);
 		assertEquals(expected, StateEvaluations.calcNextEnergyInMWH(device, currentEnergy, delta), 1E-10);

@@ -7,7 +7,7 @@ Based on these evaluations `StateEvaluations` can create dispatch schedules.
 
 ## Dispatch scheduling
 
-When creating a dispatch schedule, `StateEvaluations` consider the actual SOC of the associated `GenericDevice`.
+When creating a dispatch schedule, `StateEvaluations` consider the actual state of charge (SOC) of the associated `GenericDevice`.
 However, the actual SOC might not exactly match a discretised energy state used during the optimisation.
 Therefore, `StateEvaluations` will base its schedule using the discretised energy state closest to the actual SOC.
 It will perform "parallel shifts" and use the same transition pathway as originally planned.

@@ -22,7 +22,7 @@ public class TransitionEvaluator {
 
 	/** Instantiates a {@link TransitionEvaluator}
 	 * 
-	 * @param stateDiscretiser maps energy content and shift-times to state indices
+	 * @param stateDiscretiser maps energy content and shift times to state indices
 	 * @param deviceCache caches values for a connected {@link GenericDevice}
 	 * @param assessmentFunction assesses values of energy transitions */
 	public TransitionEvaluator(StateDiscretiser stateDiscretiser, GenericDeviceCache deviceCache,

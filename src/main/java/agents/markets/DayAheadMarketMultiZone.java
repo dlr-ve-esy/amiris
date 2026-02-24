@@ -56,7 +56,7 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 		AwardedNetEnergyToExportInMWH,
 		/** Net energy awarded from imports */
 		AwardedNetEnergyFromImportInMWH
-	};
+	}
 
 	@Input private static final Tree parameters = Make.newTree()
 			.add(
@@ -151,15 +151,20 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 	private void provideTransmissionAndBids(ArrayList<Message> input, List<Contract> contracts) {
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 
+		if (clearingTimes.getTimes().size() != 1) {
+			throw new RuntimeException(LONE_LIST);
+		}
+		TimeStamp clearingTime = clearingTimes.getTimes().get(0);
+
 		TransmissionBook transmissionBook = MarketCouplingClient.buildTransmissionBook(ownMarketZone,
-				transmissionCapacities, now());
+				transmissionCapacities, clearingTime);
 
 		MarketClearingResult result = marketClearing.clear(supplyBook.clone(), demandBook.clone(), getClearingEventId());
 		store(OutputFields.PreCouplingElectricityPriceInEURperMWH, result.getMarketPriceInEURperMWH());
 		store(OutputFields.PreCouplingTotalAwardedPowerInMW, result.getTradedEnergyInMWH());
 		store(OutputFields.PreCouplingDispatchSystemCostInEUR, result.getSystemCostTotalInEUR());
 
-		fulfilNext(contract, new CouplingData(now(), demandBook, supplyBook, transmissionBook));
+		fulfilNext(contract, new CouplingData(clearingTime, demandBook, supplyBook, transmissionBook));
 	}
 
 	/** Clears the local market and sends the Awards to the contracted Trader Agents. Depending on whether this EnergyExchange is
@@ -226,7 +231,7 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 
 			List<TimeStamp> clearingTimeList = clearingTimes.getTimes();
 			if (clearingTimeList.size() > 1) {
-				throw new RuntimeException(LONE_LIST + clearingTimeList);
+				throw new RuntimeException(LONE_LIST);
 			}
 			for (TimeStamp clearingTime : clearingTimeList) {
 				AwardData awardData = new AwardData(supplyPower, demandPower, powerPrice, clearingTime);

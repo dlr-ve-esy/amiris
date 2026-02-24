@@ -33,7 +33,7 @@ public class StateEvaluations {
 
 	/** Initialises a new {@link StateEvaluations}
 	 * 
-	 * @param stateDiscretiser maps energy content and shift-times to state indices
+	 * @param stateDiscretiser maps energy content and shift times to state indices
 	 * @param deviceCache caches values for a connected {@link GenericDevice}
 	 * @param assessmentFunction assesses values of energy transitions
 	 * @param waterValues to be used as values for the last final state, assumed Zero if null or no data is given */

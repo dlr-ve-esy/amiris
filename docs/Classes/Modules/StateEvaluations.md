@@ -5,15 +5,13 @@ Based on these evaluations `StateEvaluations` can create dispatch schedules.
 
 # Details
 
-## Operations
-
-### Dispatch scheduling
+## Dispatch scheduling
 
 When creating a dispatch schedule, `StateEvaluations` consider the actual SOC of the associated `GenericDevice`.
 However, the actual SOC might not exactly match a discretised energy state used during the optimisation.
 Therefore, `StateEvaluations` will base its schedule using the discretised energy state closest to the actual SOC.
-It will perform "parallel shifts" and use the same transitions as originally planned.
-However, if the transition would exceed the energy limits of the `GenericDevice` the transition will be adjusted to respect these limits.
+It will perform "parallel shifts" and use the same transition pathway as originally planned.
+However, if a transition would exceed the energy limits of the `GenericDevice`, this transition will be adjusted to respect these limits.
 
 Correction for time states are not needed for the time out of balance or shift time, as only integer values are allowed here
 and no deviations may occur.

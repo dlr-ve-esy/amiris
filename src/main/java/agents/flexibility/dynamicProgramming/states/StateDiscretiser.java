@@ -263,7 +263,7 @@ public class StateDiscretiser {
 		}
 	}
 
-	/** Sets follow up state indices considering only energy indices due to lack of shift time constraints */
+	/** Sets follow up state indices considering only energy indices due abscence of shift time constraints */
 	private int[] addEnergyFollowUps(int lowestEnergyIndex, int highestEnergyIndex) {
 		int[] followUpStates = new int[highestEnergyIndex - lowestEnergyIndex + 1];
 		int arrayIndex = 0;

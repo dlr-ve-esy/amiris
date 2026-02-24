@@ -106,8 +106,7 @@ public interface StateManager {
 	 * @return list of starting times */
 	ArrayList<TimeStamp> getPlanningTimes(TimePeriod startingPeriod);
 
-	/** Builds and returns a list of starting times of time periods starting with the provided period repeated until the planning
-	 * horizon is reached.
+	/** Builds and returns a list of starting times of all time periods within the planning horizon.
 	 * 
 	 * @param startingPeriod first interval of the planning horizon
 	 * @param planningHorizonInHours total length of the planning horizon

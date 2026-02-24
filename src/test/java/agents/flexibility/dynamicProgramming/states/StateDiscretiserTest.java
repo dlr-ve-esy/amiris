@@ -118,6 +118,13 @@ public class StateDiscretiserTest {
 		assertEquals(expected, discretiser.getEnergyIndexDelta(initialStateIndex, finalStateIndex));
 	}
 
+	@ParameterizedTest
+	@CsvSource(value = {"0:0", "2:2", "10:10", "21:0", "43:1"}, delimiter = ':')
+	public void getEnergyIndexOfStateIndex_returnsExpected(int stateIndex, int expected) {
+		initDiscretiser(1, 10, -10, 10, 50, false);
+		assertEquals(expected, discretiser.getEnergyIndexOfStateIndex(stateIndex));
+	}
+
 	@Test
 	public void getFollowUpStates_energyOnly_returnsExpected() {
 		initDiscretiser(3, 10, -4, 10, 0, true);

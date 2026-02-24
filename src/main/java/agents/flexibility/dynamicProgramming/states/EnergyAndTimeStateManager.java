@@ -93,7 +93,9 @@ public class EnergyAndTimeStateManager implements StateManager {
 					- Math.abs(absoluteInitialEnergyInMWH - absoluteFinalEnergyInMWH);
 			prolongingCostInEUR = prolongedEnergyDeltaInMWH * deviceCache.getVariableCostInEURperMWH();
 		}
-		return transitionEvaluator.getTransitionValueFor(initialStateIndex, finalStateIndex) + prolongingCostInEUR;
+		int initialEnergyIndex = stateDiscretiser.getEnergyIndexOfStateIndex(initialStateIndex);
+		int finalEnergyIndex = stateDiscretiser.getEnergyIndexOfStateIndex(finalStateIndex);
+		return transitionEvaluator.getTransitionValueFor(initialEnergyIndex, finalEnergyIndex) + prolongingCostInEUR;
 	}
 
 	@Override

@@ -186,6 +186,14 @@ public class StateDiscretiser {
 		return (stateIndex % numberOfEnergyStates - energyStateOffset) * energyResolutionInMWH;
 	}
 
+	/** Returns energy index corresponding to given state index
+	 * 
+	 * @param stateIndex index of the <b>time-and-energy state</b>
+	 * @return energy index corresponding to given state index */
+	public int getEnergyIndexOfStateIndex(int stateIndex) {
+		return stateIndex % numberOfEnergyStates;
+	}
+	
 	/** Returns delta in <b>energy indices</b> for the given two <b>time-and-energy state</b> indices.
 	 * 
 	 * @param initialStateIndex <b>time-and-energy state</b> index of the initial state

@@ -119,6 +119,8 @@ public class MarketCoupling extends Agent {
 	 * @param input received CouplingRequests of the contracted EnergyExchanges
 	 * @param contracts with said EnergyExchanges */
 	private void clearCoupledMarkets(ArrayList<Message> input, List<Contract> contracts, boolean writeOutput) {
+		couplingRequests.clear();
+		initialTransmissionBookByMarket.clear();
 		for (Message message : input) {
 			CouplingData couplingRequest = message.getFirstPortableItemOfType(CouplingData.class);
 			initialTransmissionBookByMarket.put(message.getSenderId(), couplingRequest.getTransmissionBook());

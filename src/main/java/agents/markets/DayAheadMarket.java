@@ -25,8 +25,7 @@ import de.dlr.gitlab.fame.time.TimeSpan;
  * 
  * @author Christoph Schimeczek, A. Achraf El Ghazi, Felix Nitsch, Johannes Kochems */
 public abstract class DayAheadMarket extends Agent {
-	static final String UNKNOWN_BID_TYPE = " is an unknown type of bid: ";
-	static final String LONE_LIST = "At most one element is expected in this list: ";
+	static final String LONE_LIST = "At most one round of market clearing is currently implemented.";
 
 	@Input private static final Tree parameters = Make.newTree()
 			.addAs("Clearing", MarketClearing.parameters)
@@ -39,7 +38,7 @@ public abstract class DayAheadMarket extends Agent {
 		Awards,
 		/** States when the market clearing is performed and which time intervals it covers */
 		GateClosureInfo
-	};
+	}
 
 	/** Output columns for all types of {@link DayAheadMarket}s */
 	@Output
@@ -50,7 +49,7 @@ public abstract class DayAheadMarket extends Agent {
 		ElectricityPriceInEURperMWH,
 		/** System cost for generating the power awarded at last market clearing */
 		DispatchSystemCostInEUR,
-	};
+	}
 
 	private final TimeSpan gateClosureInfoOffset;
 	/** Algorithm that performs the market clearing */

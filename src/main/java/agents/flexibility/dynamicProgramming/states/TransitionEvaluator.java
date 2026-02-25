@@ -12,8 +12,6 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class TransitionEvaluator {
-	static final String ERR_TRANSITION_LIMITS = "GenericDevice's effective dispatch limits are not sensible.";
-
 	private StateDiscretiser stateDiscretiser;
 	private GenericDeviceCache deviceCache;
 	private AssessmentFunction assessmentFunction;
@@ -69,19 +67,12 @@ public class TransitionEvaluator {
 	private int[] calcMaxSteps() {
 		double maxNetChargingEnergyInMWH = deviceCache.getMaxNetChargingEnergyInMWH();
 		double maxNetDischargingEnergyInMWH = -deviceCache.getMaxNetDischargingEnergyInMWH();
-		int maxChargingSteps, maxDischargingSteps;
-		if (maxNetChargingEnergyInMWH >= 0 && maxNetDischargingEnergyInMWH >= 0) {
-			maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetChargingEnergyInMWH);
-			maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetDischargingEnergyInMWH);
-		} else if (maxNetChargingEnergyInMWH < 0 && maxNetDischargingEnergyInMWH >= 0) {
-			maxChargingSteps = -1;
-			maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetDischargingEnergyInMWH);
-		} else if (maxNetChargingEnergyInMWH >= 0 && maxNetDischargingEnergyInMWH < 0) {
-			maxDischargingSteps = -1;
-			maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetChargingEnergyInMWH);
-		} else {
-			throw new RuntimeException(ERR_TRANSITION_LIMITS);
-		}
+		int maxChargingSteps = maxNetChargingEnergyInMWH >= 0
+				? stateDiscretiser.discretiseEnergyDelta(maxNetChargingEnergyInMWH)
+				: -1;
+		int maxDischargingSteps = maxNetDischargingEnergyInMWH >= 0
+				? stateDiscretiser.discretiseEnergyDelta(maxNetDischargingEnergyInMWH)
+				: -1;
 		return new int[] {maxChargingSteps, maxDischargingSteps};
 	}
 

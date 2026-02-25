@@ -52,16 +52,28 @@ public class TransitionEvaluator {
 
 	/** Caches the transition values for (dis-)charging depending on state deltas */
 	private void cacheTransitionValuesNoSelfDischarge() {
-		int maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(deviceCache.getMaxNetChargingEnergyInMWH());
-		transitionValuesCharging = new double[maxChargingSteps + 1];
-		for (int chargingSteps = 0; chargingSteps <= maxChargingSteps; chargingSteps++) {
+		int[] maxSteps = calcMaxSteps();
+		transitionValuesCharging = new double[maxSteps[0] + 1];
+		for (int chargingSteps = 0; chargingSteps <= maxSteps[0]; chargingSteps++) {
 			transitionValuesCharging[chargingSteps] = calcValueFor(0, chargingSteps);
 		}
-		int maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(-deviceCache.getMaxNetDischargingEnergyInMWH());
-		transitionValuesDischarging = new double[maxDischargingSteps + 1];
-		for (int dischargingSteps = 0; dischargingSteps <= maxDischargingSteps; dischargingSteps++) {
+		transitionValuesDischarging = new double[maxSteps[1] + 1];
+		for (int dischargingSteps = 0; dischargingSteps <= maxSteps[1]; dischargingSteps++) {
 			transitionValuesDischarging[dischargingSteps] = calcValueFor(0, -dischargingSteps);
 		}
+	}
+
+	/** @return maximum steps for charging & discharging */
+	private int[] calcMaxSteps() {
+		double maxNetChargingEnergyInMWH = deviceCache.getMaxNetChargingEnergyInMWH();
+		double maxNetDischargingEnergyInMWH = -deviceCache.getMaxNetDischargingEnergyInMWH();
+		int maxChargingSteps = maxNetChargingEnergyInMWH >= 0
+				? stateDiscretiser.discretiseEnergyDelta(maxNetChargingEnergyInMWH)
+				: -1;
+		int maxDischargingSteps = maxNetDischargingEnergyInMWH >= 0
+				? stateDiscretiser.discretiseEnergyDelta(maxNetDischargingEnergyInMWH)
+				: -1;
+		return new int[] {maxChargingSteps, maxDischargingSteps};
 	}
 
 	/** Returns the value of the transition from the given initial to final state at the time prepared for. Uses cached values if

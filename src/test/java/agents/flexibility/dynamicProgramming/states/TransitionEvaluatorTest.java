@@ -107,4 +107,18 @@ public class TransitionEvaluatorTest {
 		double result = evaluator.getTransitionValueFor(initialIndex, finalIndex);
 		assertEquals(expectedValue, result, 1E-12);
 	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"-2:-12:2:0:2", "0:-12:2:0:2", "12:2:0:2:-2", "12:0:0:2:-2"}, delimiter = ':')
+	public void getTransitionValue_cachedWithOutflow_returnsCorrectValue(double maxChargingInMWH,
+			double maxDischargingInMWH, int initialIndex, int finalIndex, double expectedValue) {
+		mockDiscretisation(1);
+		mockTransition();
+		mockAssessment(1);
+		when(deviceCache.getMaxNetChargingEnergyInMWH()).thenReturn(maxChargingInMWH);
+		when(deviceCache.getMaxNetDischargingEnergyInMWH()).thenReturn(maxDischargingInMWH);
+		evaluator.prepareFor(THE_TIME, false);
+		double result = evaluator.getTransitionValueFor(initialIndex, finalIndex);
+		assertEquals(expectedValue, result, 1E-12);
+	}
 }

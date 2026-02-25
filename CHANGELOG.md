@@ -28,6 +28,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - `FlexibilityAssessor`: Fix improper formatted warning messages #204 (@dlr-cjs)
 - `MeritOrderKernel`: Fix inconsistent clearing result on cut at same power #221 (@dlr-cjs)
 - `MarketCoupling`: Fix accidental interaction of multiple market coupling events #226 (@dlr-cjs, @dlr_jk)
+- `GenericDevice`: Fix too early triggering of prolonging #229 (@dlr-cjs, @dlr_jk)
 - license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09

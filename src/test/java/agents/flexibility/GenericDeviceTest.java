@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -112,6 +113,14 @@ public class GenericDeviceTest {
 		double targetValue = 42.;
 		device = createGenericDevice(0, 0, 0, 0, 0, targetValue, 0, 0, 0, 0, 0, 0, 0);
 		assertEquals(targetValue, device.getEnergyContentLowerLimitInMWH(defaultTime), 1E-12);
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"0", "1"})
+	public void hasProlonging_returnsConfiguresValue(int prolonging) {
+		device = createGenericDevice(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, prolonging, 0);
+		boolean expected = prolonging != 0;
+		assertEquals(expected, device.hasProlonging());
 	}
 
 	@Test
@@ -231,11 +240,27 @@ public class GenericDeviceTest {
 	}
 
 	@Test
+	public void transition_toZero_noProlongingCost() {
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0, 0);
+		device.transition(defaultTime, 100, oneHour);
+		device.transition(defaultTime, -100, oneHour);
+		assertEquals(0, device.getLastProlongingCostInEUR(), 1E-12);
+	}
+
+	@Test
 	public void transition_counterShift_reinitialisesCurrentShiftTime() {
 		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0, 0);
 		device.transition(defaultTime, 25, quarterHour);
 		device.transition(defaultTime, -100, oneHour);
 		assertEquals(oneHour.getSteps(), device.getCurrentShiftTimeInSteps());
+	}
+
+	@Test
+	public void transition_counterShift__noProlongingCost() {
+		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0, 0);
+		device.transition(defaultTime, 25, quarterHour);
+		device.transition(defaultTime, -100, oneHour);
+		assertEquals(0, device.getLastProlongingCostInEUR(), 1E-12);
 	}
 
 	@ParameterizedTest
@@ -244,7 +269,7 @@ public class GenericDeviceTest {
 		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 10, 0.1, 0, 1.);
 		device.transition(defaultTime, chargedEnergy, quarterHour);
 		logChecker.assertLogsContain(GenericDevice.WARN_SHIFT_TIME_EXCEEDED);
-		assertEquals(25, device.getLastProlongingCostInEUR(), 1E-13);
+		assertEquals(25, device.getLastProlongingCostInEUR(), 1E-12);
 	}
 
 	@Test
@@ -256,7 +281,7 @@ public class GenericDeviceTest {
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		assertEquals(quarterHour.getSteps(), device.getCurrentShiftTimeInSteps());
-		assertEquals(3 * 25, device.getLastProlongingCostInEUR(), 1E-10);
+		assertEquals(3 * 25, device.getLastProlongingCostInEUR(), 1E-12);
 	}
 
 	@Test
@@ -266,7 +291,8 @@ public class GenericDeviceTest {
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
 		device.transition(defaultTime, 0, quarterHour);
+		device.transition(defaultTime, 0, quarterHour);
 		assertEquals(quarterHour.getSteps(), device.getCurrentShiftTimeInSteps());
-		assertEquals(10 * 2 * 12, device.getLastProlongingCostInEUR(), 1E-10);
+		assertEquals(10 * 2 * 12, device.getLastProlongingCostInEUR(), 1E-12);
 	}
 }

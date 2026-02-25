@@ -90,33 +90,6 @@ public class GenericDevice {
 		penaltyCostInEURperMWH = input.getTimeSeries(PARAM_PENALTY_COST);
 	}
 
-	/** @return effective self discharge rate for given duration, considering exponential reduction over time */
-	private double calcSelfDischarge(TimeStamp time, TimeSpan duration) {
-		return 1. - Math.pow(1 - selfDischargeRatePerHour.getValueLinear(time), calcDurationInHours(duration));
-	}
-
-	private double calcDurationInHours(TimeSpan duration) {
-		return (double) duration.getSteps() / STEPS_PER_HOUR;
-	}
-
-	/** @return current internal energy level of this {@link GenericDevice} in MWh */
-	public double getCurrentInternalEnergyInMWH() {
-		return currentEnergyContentInMWH;
-	}
-
-	/** Returns external energy delta equivalent of given internal energy delta
-	 * 
-	 * @param internalEnergyDelta &gt; 0: charging; &lt; 0: depleting
-	 * @param time of transition
-	 * @return external energy delta equivalent */
-	public double internalToExternalEnergy(double internalEnergyDelta, TimeStamp time) {
-		if (internalEnergyDelta > 0) {
-			return internalEnergyDelta / chargingEfficiency.getValueLinear(time);
-		} else {
-			return internalEnergyDelta * dischargingEfficiency.getValueLinear(time);
-		}
-	}
-
 	/** Performs an actual transition from current energy content at given time using a given external energy delta. Enforces energy
 	 * and power limits. Returns actual external energy delta considering applied limits. Logs errors in case limits are violated.
 	 * 
@@ -125,13 +98,8 @@ public class GenericDevice {
 	 * @param duration of the transition
 	 * @return actual external energy delta for transition considering power and capacity limits */
 	public double transition(TimeStamp time, double externalEnergyDeltaInMWH, TimeSpan duration) {
-		double externalPowerInMW = ensurePowerWithinLimits(time, externalEnergyDeltaInMWH / calcDurationInHours(duration));
-		double internalPowerInMW = externalToInternal(externalPowerInMW, time);
-		double netChargingEnergyInMWH = (internalPowerInMW + netInflowPowerInMW.getValueLinear(time))
-				* calcDurationInHours(duration);
-		double selfDischargeRate = calcSelfDischarge(time, duration);
-		selfDischargeRate = ensureNoNegativeSelfDischarge(time, selfDischargeRate);
-		double selfDischargeLossInMWH = currentEnergyContentInMWH * selfDischargeRate;
+		double netChargingEnergyInMWH = calcNetChargingEnergyInMWH(time, externalEnergyDeltaInMWH, duration);
+		double selfDischargeLossInMWH = calcSelfDischargeLossInMWH(time, duration);
 		double finalEnergyContentInMWH = currentEnergyContentInMWH + netChargingEnergyInMWH - selfDischargeLossInMWH;
 		finalEnergyContentInMWH = ensureEnergyWithinLimits(time, finalEnergyContentInMWH);
 		double internalEnergyDeltaInMWH = finalEnergyContentInMWH - currentEnergyContentInMWH
@@ -141,6 +109,88 @@ public class GenericDevice {
 		return internalToExternalEnergy(internalEnergyDeltaInMWH, time);
 	}
 
+	/** @return net change of internal energy in MWh */
+	private double calcNetChargingEnergyInMWH(TimeStamp time, double externalEnergyDeltaInMWH, TimeSpan duration) {
+		double externalPowerInMW = ensurePowerWithinLimits(time, externalEnergyDeltaInMWH / calcDurationInHours(duration));
+		double internalPowerInMW = externalToInternal(externalPowerInMW, time);
+		return (internalPowerInMW + netInflowPowerInMW.getValueLinear(time)) * calcDurationInHours(duration);
+	}
+
+	/** Logs an error if the given external (dis-)charging power exceeds its corresponding limit.
+	 * 
+	 * @param time at which the power is applied
+	 * @param powerInMW positive values represent charging
+	 * @return the applied (dis-)charging power - capped at its corresponding maximum at the given time */
+	private double ensurePowerWithinLimits(TimeStamp time, double powerInMW) {
+		if (powerInMW > externalChargingPowerInMW.getValueLinear(time) + TOLERANCE) {
+			logger.error(time + ERR_EXCEED_CHARGING_POWER + (powerInMW - externalChargingPowerInMW.getValueLinear(time)));
+			powerInMW = externalChargingPowerInMW.getValueLinear(time);
+		} else if (powerInMW < -externalDischargingPowerInMW.getValueLinear(time) - TOLERANCE) {
+			logger
+					.error(time + ERR_EXCEED_DISCHARGING_POWER + (externalDischargingPowerInMW.getValueLinear(time) + powerInMW));
+			powerInMW = -externalDischargingPowerInMW.getValueLinear(time);
+		}
+		return powerInMW;
+	}
+
+	/** Returns internal energy delta or power equivalent of given external energy delta or power
+	 * 
+	 * @param externalValue &gt; 0: charging; &lt; 0: depleting
+	 * @param time of transition
+	 * @return corresponding internal energy delta or power equivalent */
+	private double externalToInternal(double externalValue, TimeStamp time) {
+		if (externalValue > 0) {
+			return externalValue * chargingEfficiency.getValueLinear(time);
+		} else {
+			return externalValue / dischargingEfficiency.getValueLinear(time);
+		}
+	}
+
+	/** @return loss of energy due to self discharge at given time and duration */
+	private double calcSelfDischargeLossInMWH(TimeStamp time, TimeSpan duration) {
+		double selfDischargeRate = calcSelfDischarge(time, duration);
+		selfDischargeRate = ensureNoNegativeSelfDischarge(time, selfDischargeRate);
+		return currentEnergyContentInMWH * selfDischargeRate;
+	}
+
+	/** @return effective self discharge rate for given duration, considering exponential reduction over time */
+	private double calcSelfDischarge(TimeStamp time, TimeSpan duration) {
+		return 1. - Math.pow(1 - getSelfDischargeRate(time), calcDurationInHours(duration));
+	}
+
+	/** @return duration as a fraction of hours */
+	private double calcDurationInHours(TimeSpan duration) {
+		return (double) duration.getSteps() / STEPS_PER_HOUR;
+	}
+
+	/** Logs error if self discharge is applied based on a negative energy content and returns 0, else returns given rate */
+	private double ensureNoNegativeSelfDischarge(TimeStamp time, double selfDischargeRate) {
+		if (currentEnergyContentInMWH < -TOLERANCE && selfDischargeRate > 0) {
+			logger.error(ERR_NEGATIVE_SELF_DISCHARGE + time);
+			return 0;
+		}
+		return selfDischargeRate;
+	}
+
+	/** Logs an error if the given internal target energy content exceeds its upper or lower limit.
+	 * 
+	 * @param time at which the energy content shall be applied
+	 * @param targetEnergyContentInMWH to be checked for consistency with energy content limits
+	 * @return valid energy content closest to provided energy content target */
+	private double ensureEnergyWithinLimits(TimeStamp time, double targetEnergyContentInMWH) {
+		if (targetEnergyContentInMWH > energyContentUpperLimitInMWH.getValueLinear(time) + TOLERANCE) {
+			double exceedance = (targetEnergyContentInMWH - energyContentUpperLimitInMWH.getValueLinear(time));
+			logger.error(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
+			targetEnergyContentInMWH = energyContentUpperLimitInMWH.getValueLinear(time);
+		} else if (targetEnergyContentInMWH < energyContentLowerLimitInMWH.getValueLinear(time) - TOLERANCE) {
+			double exceedance = (energyContentLowerLimitInMWH.getValueLinear(time) - targetEnergyContentInMWH);
+			logger.error(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
+			targetEnergyContentInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
+		}
+		return targetEnergyContentInMWH;
+	}
+
+	/** Updates {@link #currentShiftTimeInSteps}; if prolonging occurs, stores its costs in {@link #lastProlongingCostInEUR} */
 	private void updateShiftTimeAndProlongingCost(double initialEnergyContentInMWH, double finalEnergyContentInMWH,
 			TimeSpan duration, TimeStamp time) {
 		if (maximumShiftTimeInSteps > 0) {
@@ -168,7 +218,7 @@ public class GenericDevice {
 	 * 
 	 * @param energyContentInMWH to be evaluated
 	 * @return true if given energy content is within zero storage level tolerance */
-	public static boolean hasZeroEnergyContent(double energyContentInMWH) {
+	private boolean hasZeroEnergyContent(double energyContentInMWH) {
 		return -TOLERANCE <= energyContentInMWH && energyContentInMWH <= TOLERANCE;
 	}
 
@@ -177,7 +227,7 @@ public class GenericDevice {
 	 * @param initialEnergyContent before transition
 	 * @param finalEnergyContent after transition
 	 * @return true if energy content changes its sign */
-	public static boolean isChangeOfSign(double initialEnergyContent, double finalEnergyContent) {
+	private boolean isChangeOfSign(double initialEnergyContent, double finalEnergyContent) {
 		return Math.signum(finalEnergyContent) != Math.signum(initialEnergyContent);
 	}
 
@@ -188,7 +238,7 @@ public class GenericDevice {
 	 * @param initialEnergyContent before transition
 	 * @return whether shift is a prolonged shift */
 	private boolean isProlongedShift(double chargingPower, double initialEnergyContent, TimeSpan duration) {
-		if (currentShiftTimeInSteps + duration.getSteps() >= maximumShiftTimeInSteps) {
+		if (currentShiftTimeInSteps + duration.getSteps() > maximumShiftTimeInSteps) {
 			double finalEnergyLevel = initialEnergyContent + chargingPower;
 			return (initialEnergyContent > TOLERANCE && finalEnergyLevel > TOLERANCE) ||
 					(initialEnergyContent < -TOLERANCE && finalEnergyLevel < -TOLERANCE);
@@ -219,61 +269,22 @@ public class GenericDevice {
 		}
 	}
 
-	/** Returns internal energy delta or power equivalent of given external energy delta or power
+	/** Returns external energy delta equivalent of given internal energy delta
 	 * 
-	 * @param externalValue &gt; 0: charging; &lt; 0: depleting
+	 * @param internalEnergyDelta &gt; 0: charging; &lt; 0: depleting
 	 * @param time of transition
-	 * @return corresponding internal energy delta or power equivalent */
-	private double externalToInternal(double externalValue, TimeStamp time) {
-		if (externalValue > 0) {
-			return externalValue * chargingEfficiency.getValueLinear(time);
+	 * @return external energy delta equivalent */
+	private double internalToExternalEnergy(double internalEnergyDelta, TimeStamp time) {
+		if (internalEnergyDelta > 0) {
+			return internalEnergyDelta / chargingEfficiency.getValueLinear(time);
 		} else {
-			return externalValue / dischargingEfficiency.getValueLinear(time);
+			return internalEnergyDelta * dischargingEfficiency.getValueLinear(time);
 		}
 	}
 
-	/** Logs an error if the given external (dis-)charging power exceeds its corresponding limit.
-	 * 
-	 * @param time at which the power is applied
-	 * @param powerInMW positive values represent charging
-	 * @return the applied (dis-)charging power - capped at its corresponding maximum at the given time */
-	private double ensurePowerWithinLimits(TimeStamp time, double powerInMW) {
-		if (powerInMW > externalChargingPowerInMW.getValueLinear(time) + TOLERANCE) {
-			logger.error(time + ERR_EXCEED_CHARGING_POWER + (powerInMW - externalChargingPowerInMW.getValueLinear(time)));
-			powerInMW = externalChargingPowerInMW.getValueLinear(time);
-		} else if (powerInMW < -externalDischargingPowerInMW.getValueLinear(time) - TOLERANCE) {
-			logger
-					.error(time + ERR_EXCEED_DISCHARGING_POWER + (externalDischargingPowerInMW.getValueLinear(time) + powerInMW));
-			powerInMW = -externalDischargingPowerInMW.getValueLinear(time);
-		}
-		return powerInMW;
-	}
-
-	/** Logs an error if the given internal target energy content exceeds its upper or lower limit.
-	 * 
-	 * @param time at which the energy content shall be applied
-	 * @param targetEnergyContentInMWH to be checked for consistency with energy content limits
-	 * @return valid energy content closest to provided energy content target */
-	private double ensureEnergyWithinLimits(TimeStamp time, double targetEnergyContentInMWH) {
-		if (targetEnergyContentInMWH > energyContentUpperLimitInMWH.getValueLinear(time) + TOLERANCE) {
-			double exceedance = (targetEnergyContentInMWH - energyContentUpperLimitInMWH.getValueLinear(time));
-			logger.error(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
-			targetEnergyContentInMWH = energyContentUpperLimitInMWH.getValueLinear(time);
-		} else if (targetEnergyContentInMWH < energyContentLowerLimitInMWH.getValueLinear(time) - TOLERANCE) {
-			double exceedance = (energyContentLowerLimitInMWH.getValueLinear(time) - targetEnergyContentInMWH);
-			logger.error(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
-			targetEnergyContentInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
-		}
-		return targetEnergyContentInMWH;
-	}
-
-	/** If self discharge is applied based on a negative energy content, return 0 and log an error */
-	private double ensureNoNegativeSelfDischarge(TimeStamp time, double selfDischargeRate) {
-		if (currentEnergyContentInMWH < -TOLERANCE && selfDischargeRate > 0) {
-			logger.error(ERR_NEGATIVE_SELF_DISCHARGE + time);
-			return 0;
-		}
-		return selfDischargeRate;
+	/** @return current internal energy level of this {@link GenericDevice} in MWh */
+	public double getCurrentInternalEnergyInMWH() {
+		return currentEnergyContentInMWH;
 	}
 
 	/** Returns lower limit of energy content at given time

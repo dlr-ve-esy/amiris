@@ -12,6 +12,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class TransitionEvaluator {
+	static final String ERR_TRANSITION_LIMITS = "GenericDevice's effective dispatch limits are not sensible.";
+
 	private StateDiscretiser stateDiscretiser;
 	private GenericDeviceCache deviceCache;
 	private AssessmentFunction assessmentFunction;
@@ -52,16 +54,35 @@ public class TransitionEvaluator {
 
 	/** Caches the transition values for (dis-)charging depending on state deltas */
 	private void cacheTransitionValuesNoSelfDischarge() {
-		int maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(deviceCache.getMaxNetChargingEnergyInMWH());
-		transitionValuesCharging = new double[maxChargingSteps + 1];
-		for (int chargingSteps = 0; chargingSteps <= maxChargingSteps; chargingSteps++) {
+		int[] maxSteps = calcMaxSteps();
+		transitionValuesCharging = new double[maxSteps[0] + 1];
+		for (int chargingSteps = 0; chargingSteps <= maxSteps[0]; chargingSteps++) {
 			transitionValuesCharging[chargingSteps] = calcValueFor(0, chargingSteps);
 		}
-		int maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(-deviceCache.getMaxNetDischargingEnergyInMWH());
-		transitionValuesDischarging = new double[maxDischargingSteps + 1];
-		for (int dischargingSteps = 0; dischargingSteps <= maxDischargingSteps; dischargingSteps++) {
+		transitionValuesDischarging = new double[maxSteps[1] + 1];
+		for (int dischargingSteps = 0; dischargingSteps <= maxSteps[1]; dischargingSteps++) {
 			transitionValuesDischarging[dischargingSteps] = calcValueFor(0, -dischargingSteps);
 		}
+	}
+
+	/** @return maximum steps for charging & discharging */
+	private int[] calcMaxSteps() {
+		double maxNetChargingEnergyInMWH = deviceCache.getMaxNetChargingEnergyInMWH();
+		double maxNetDischargingEnergyInMWH = -deviceCache.getMaxNetDischargingEnergyInMWH();
+		int maxChargingSteps, maxDischargingSteps;
+		if (maxNetChargingEnergyInMWH >= 0 && maxNetDischargingEnergyInMWH >= 0) {
+			maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetChargingEnergyInMWH);
+			maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetDischargingEnergyInMWH);
+		} else if (maxNetChargingEnergyInMWH < 0 && maxNetDischargingEnergyInMWH >= 0) {
+			maxChargingSteps = -1;
+			maxDischargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetDischargingEnergyInMWH);
+		} else if (maxNetChargingEnergyInMWH >= 0 && maxNetDischargingEnergyInMWH < 0) {
+			maxDischargingSteps = -1;
+			maxChargingSteps = stateDiscretiser.discretiseEnergyDelta(maxNetChargingEnergyInMWH);
+		} else {
+			throw new RuntimeException(ERR_TRANSITION_LIMITS);
+		}
+		return new int[] {maxChargingSteps, maxDischargingSteps};
 	}
 
 	/** Returns the value of the transition from the given initial to final state at the time prepared for. Uses cached values if

@@ -256,7 +256,7 @@ public class GenericDeviceTest {
 	}
 
 	@Test
-	public void transition_counterShift__noProlongingCost() {
+	public void transition_counterShift_noProlongingCost() {
 		device = createGenericDevice(100, 100, 1, 1, 500, -500, 0., 0, 0, 0, 10, 0, 0);
 		device.transition(defaultTime, 25, quarterHour);
 		device.transition(defaultTime, -100, oneHour);

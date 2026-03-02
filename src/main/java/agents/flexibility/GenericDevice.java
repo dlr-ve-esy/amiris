@@ -53,7 +53,7 @@ public class GenericDevice {
 		/** Fully consider the inflows / outflows, even if the state violates given energy content limits */
 		TRACK_STATE,
 		/** Consider violating the energy limits an error */
-		CRASH
+		CRASH,
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(GenericDevice.class);
@@ -119,7 +119,7 @@ public class GenericDevice {
 		double netChargingEnergyInMWH = calcNetChargingEnergyInMWH(time, externalEnergyDeltaInMWH, duration);
 		double selfDischargeLossInMWH = calcSelfDischargeLossInMWH(time, duration);
 		double finalEnergyContentInMWH = currentEnergyContentInMWH + netChargingEnergyInMWH - selfDischargeLossInMWH;
-		finalEnergyContentInMWH = ensureEnergyWithinLimits(time, finalEnergyContentInMWH);
+		finalEnergyContentInMWH = checkEnergyBoundaries(time, finalEnergyContentInMWH);
 		double internalEnergyDeltaInMWH = finalEnergyContentInMWH - currentEnergyContentInMWH
 				+ selfDischargeLossInMWH - netInflowPowerInMW.getValueLinear(time) * calcDurationInHours(duration);
 		updateShiftTimeAndProlongingCost(currentEnergyContentInMWH, finalEnergyContentInMWH, duration, time);
@@ -190,20 +190,36 @@ public class GenericDevice {
 		return selfDischargeRate;
 	}
 
-	/** Logs an error if the given internal target energy content exceeds its upper or lower limit.
+	/** Checks targeted energy content against upper and lower energy boundaries of the device. If targeted energy is out of bounds,
+	 * the result depends on configured overflow / underflow behaviour: energy may be a) silently cut to ensure bounds, b) kept
+	 * unchanged but logged with a warning, c) result in an exception.
 	 * 
 	 * @param time at which the energy content shall be applied
 	 * @param targetEnergyContentInMWH to be checked for consistency with energy content limits
-	 * @return valid energy content closest to provided energy content target */
-	private double ensureEnergyWithinLimits(TimeStamp time, double targetEnergyContentInMWH) {
-		if (targetEnergyContentInMWH > energyContentUpperLimitInMWH.getValueLinear(time) + TOLERANCE) {
-			double exceedance = (targetEnergyContentInMWH - energyContentUpperLimitInMWH.getValueLinear(time));
-			logger.error(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
-			targetEnergyContentInMWH = energyContentUpperLimitInMWH.getValueLinear(time);
-		} else if (targetEnergyContentInMWH < energyContentLowerLimitInMWH.getValueLinear(time) - TOLERANCE) {
-			double exceedance = (energyContentLowerLimitInMWH.getValueLinear(time) - targetEnergyContentInMWH);
-			logger.error(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
-			targetEnergyContentInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
+	 * @return updated energy content - depending on configured behaviour */
+	private double checkEnergyBoundaries(TimeStamp time, double targetEnergyContentInMWH) {
+		double upperEnergyContentLimitInMWH = energyContentUpperLimitInMWH.getValueLinear(time);
+		double lowerEnergyContentLimitInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
+		if (targetEnergyContentInMWH > upperEnergyContentLimitInMWH + TOLERANCE) {
+			double exceedance = targetEnergyContentInMWH - upperEnergyContentLimitInMWH;
+			if (onOverflow == StateViolation.CRASH) {
+				throw new RuntimeException(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
+			} else if (onOverflow == StateViolation.TRACK_STATE) {
+				logger.warn(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
+				return targetEnergyContentInMWH;
+			} else if (onOverflow == StateViolation.CUT) {
+				return upperEnergyContentLimitInMWH;
+			}
+		} else if (targetEnergyContentInMWH < lowerEnergyContentLimitInMWH - TOLERANCE) {
+			double exceedance = lowerEnergyContentLimitInMWH - targetEnergyContentInMWH;
+			if (onUnderflow == StateViolation.CRASH) {
+				throw new RuntimeException(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
+			} else if (onUnderflow == StateViolation.TRACK_STATE) {
+				logger.warn(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
+				return targetEnergyContentInMWH;
+			} else if (onUnderflow == StateViolation.CUT) {
+				return lowerEnergyContentLimitInMWH;
+			}
 		}
 		return targetEnergyContentInMWH;
 	}

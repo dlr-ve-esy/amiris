@@ -95,7 +95,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		}
 		int initialEnergyIndex = stateDiscretiser.getEnergyIndexOfStateIndex(initialStateIndex);
 		int finalEnergyIndex = stateDiscretiser.getEnergyIndexOfStateIndex(finalStateIndex);
-		return transitionEvaluator.getTransitionValueFor(initialEnergyIndex, finalEnergyIndex) + prolongingCostInEUR;
+		return transitionEvaluator.getTransitionValueFor(initialEnergyIndex, finalEnergyIndex, prolongingCostInEUR);
 	}
 
 	@Override

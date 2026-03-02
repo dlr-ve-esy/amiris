@@ -8,6 +8,7 @@ import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
+import agents.flexibility.dynamicProgramming.states.StateManagerBuilder.StateTracking;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
@@ -25,18 +26,22 @@ public class EnergyStateManager implements StateManager {
 	private final StateDiscretiser stateDiscretiser;
 	private final TransitionEvaluator transitionEvaluator;
 	private final StateEvaluations stateEvaluations;
+	private final StateTracking onUnderflow;
+	private final StateTracking onOverflow;
 
 	private int numberOfTimeSteps;
 	private boolean hasSelfDischarge;
 
 	public EnergyStateManager(GenericDevice device, AssessmentFunction assessmentFunction, double planningHorizonInHours,
-			double energyResolutionInMWH, WaterValues waterValues) {
+			double energyResolutionInMWH, WaterValues waterValues, StateTracking onUnderflow, StateTracking onOverflow) {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, false);
 		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
 		this.stateEvaluations = new StateEvaluations(stateDiscretiser, deviceCache, assessmentFunction, waterValues);
 		this.planningHorizonInHours = planningHorizonInHours;
+		this.onUnderflow = onUnderflow;
+		this.onOverflow = onOverflow;
 	}
 
 	@Override

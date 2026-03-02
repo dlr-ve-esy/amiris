@@ -43,6 +43,18 @@ public class GenericDevice {
 	static final String PARAM_SHIFT_TIME = "MaximumShiftTimeInHours";
 	static final String PARAM_ENABLE_PROLONGING = "EnableProlonging";
 	static final String PARAM_PENALTY_COST = "PenaltyCostInEURperMWH";
+	static final String PARAM_OVERFLOW = "OnOverflow";
+	static final String PARAM_UNDERFLOW = "OnUnderflow";
+
+	/** How to deal with violations of upper or lower energy content limits */
+	enum StateViolation {
+		/** Shed excess energy inflows or reduce too large energy outflows */
+		CUT,
+		/** Fully consider the inflows / outflows, even if the state violates given energy content limits */
+		TRACK_STATE,
+		/** Consider violating the energy limits an error */
+		CRASH
+	}
 
 	private static Logger logger = LoggerFactory.getLogger(GenericDevice.class);
 	private TimeSeries externalChargingPowerInMW;
@@ -61,13 +73,17 @@ public class GenericDevice {
 	private boolean enableProlonging;
 	private double lastProlongingCostInEUR;
 
+	public final StateViolation onOverflow;
+	public final StateViolation onUnderflow;
+
 	/** Input parameters of a storage {@link Device} */
 	public static final Tree parameters = Make.newTree()
 			.add(Make.newSeries(PARAM_CHARGING_POWER), Make.newSeries(PARAM_DISCHARGING_POWER),
 					Make.newSeries(PARAM_CHARGING_EFFICIENCY), Make.newSeries(PARAM_DISCHARGING_EFFICIENCY),
 					Make.newSeries(PARAM_UPPER_LIMIT), Make.newSeries(PARAM_LOWER_LIMIT), Make.newSeries(PARAM_SELF_DISCHARGE),
 					Make.newSeries(PARAM_INFLOW), Make.newDouble(PARAM_INITIAL_ENERGY), Make.newSeries(PARAM_VARIABLE_COST),
-					Make.newDouble(PARAM_SHIFT_TIME), Make.newInt(PARAM_ENABLE_PROLONGING), Make.newSeries(PARAM_PENALTY_COST))
+					Make.newDouble(PARAM_SHIFT_TIME), Make.newInt(PARAM_ENABLE_PROLONGING), Make.newSeries(PARAM_PENALTY_COST),
+					Make.newEnum(PARAM_OVERFLOW, StateViolation.class), Make.newEnum(PARAM_UNDERFLOW, StateViolation.class))
 			.buildTree();
 
 	/** Instantiates new {@link GenericDevice}
@@ -88,6 +104,8 @@ public class GenericDevice {
 		maximumShiftTimeInSteps = (long) (new TimeSpan(1, Interval.HOURS).getSteps() * input.getDouble(PARAM_SHIFT_TIME));
 		enableProlonging = input.getInteger(PARAM_ENABLE_PROLONGING) >= 1;
 		penaltyCostInEURperMWH = input.getTimeSeries(PARAM_PENALTY_COST);
+		onOverflow = input.getEnum(PARAM_OVERFLOW, StateViolation.class);
+		onUnderflow = input.getEnum(PARAM_UNDERFLOW, StateViolation.class);
 	}
 
 	/** Performs an actual transition from current energy content at given time using a given external energy delta. Enforces energy

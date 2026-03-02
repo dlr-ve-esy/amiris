@@ -38,7 +38,7 @@ public class MinSystemCost extends SensitivityBasedAssessment {
 	protected InterpolationType getInterpolationType() {
 		return InterpolationType.CUMULATIVE;
 	}
-	
+
 	@Override
 	public double getSignOfCostValue() {
 		return 1.;

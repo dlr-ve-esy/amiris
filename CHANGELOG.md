@@ -29,6 +29,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - `MeritOrderKernel`: Fix inconsistent clearing result on cut at same power #221 (@dlr-cjs)
 - `MarketCoupling`: Fix accidental interaction of multiple market coupling events #226 (@dlr-cjs, @dlr_jk)
 - `GenericDevice`: Fix too early triggering of prolonging #229 (@dlr-cjs, @dlr_jk)
+- `EnergyAndTimeStateManager`: Fix incorrect handling of prolongig costs # (@dlr-cjs, @dlr_jk)
 - `TransitionEvaluator`: Fix crash on strong inflows or outflows #228 (@dlr-cjs)
 - license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)
 

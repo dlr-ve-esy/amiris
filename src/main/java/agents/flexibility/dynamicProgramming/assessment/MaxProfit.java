@@ -38,4 +38,9 @@ public class MaxProfit extends SensitivityBasedAssessment {
 	protected InterpolationType getInterpolationType() {
 		return InterpolationType.DIRECT;
 	}
+	
+	@Override
+	public double getSignOfCostValue() {
+		return -1.;
+	}
 }

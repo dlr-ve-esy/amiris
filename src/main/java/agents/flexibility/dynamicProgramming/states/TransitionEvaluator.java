@@ -87,6 +87,19 @@ public class TransitionEvaluator {
 				: calcValueFor(initialStateIndex, finalStateIndex);
 	}
 
+	/** Returns the value of the transition from the given initial to final state at the time prepared for. Uses cached values if
+	 * available.
+	 * 
+	 * @param initialStateIndex index of state at the begin of a transition
+	 * @param finalStateIndex index of state at the end of a transition
+	 * @param additionalCostInEUR cost to add to a transition
+	 * @return value of the transition between two states */
+	public double getTransitionValueFor(int initialStateIndex, int finalStateIndex, double additionalCostInEUR) {
+		double transitionValue = cachedValuesAvailable ? getCachedValueFor(initialStateIndex, finalStateIndex)
+				: calcValueFor(initialStateIndex, finalStateIndex);
+		return transitionValue + assessmentFunction.getSignOfCostValue() * additionalCostInEUR;
+	}
+
 	/** @return value for transition from initial to final state */
 	private double calcValueFor(int initialStateIndex, int finalStateIndex) {
 		final double externalEnergyDeltaInMWH = deviceCache.simulateTransition(

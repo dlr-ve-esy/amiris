@@ -107,35 +107,39 @@ public class StateDiscretiser {
 
 	/** Allocates and assign {@link #allStates} */
 	private void updateListOfStates() {
-		if (considerTimeConstraint) {
-			allocateEnergyAndTimeStates();
-		} else {
-			allocateEnergyStates();
-		}
+		allStates = considerTimeConstraint ? allocateEnergyAndTimeStates(0, numberOfEnergyStates - 1)
+				: allocateEnergyStates();
 	}
 
 	/** Updates list of all states - use only, if {@link #considerTimeConstraint} applies */
-	private void allocateEnergyAndTimeStates() {
-		allStates = new int[(numberOfEnergyStates - 1) * (numberOfTimeStates - 1) + 1];
-		allStates[0] = energyStateOffset;
+	private int[] allocateEnergyAndTimeStates(int lowestEnergyState, int highestEnergyState) {
+		int[] states = new int[calcStateCount(highestEnergyState - lowestEnergyState + 1, numberOfTimeStates)];
+		states[0] = energyStateOffset;
 		int arrayIndex = 1;
 		for (int time = 1; time < numberOfTimeStates; time++) {
-			for (int energy = 0; energy < numberOfEnergyStates; energy++) {
+			for (int energy = lowestEnergyState; energy <= highestEnergyState; energy++) {
 				if (energy == energyStateOffset) {
 					continue;
 				}
-				allStates[arrayIndex] = time * numberOfEnergyStates + energy;
+				states[arrayIndex] = time * numberOfEnergyStates + energy;
 				arrayIndex++;
 			}
 		}
+		return states;
 	}
 
-	/** Updates list of all states - use only, if time states are disregarded */
-	private void allocateEnergyStates() {
-		allStates = new int[numberOfEnergyStates];
+	/** @return number of technically possible energy-and-time states */
+	private int calcStateCount(int numberOfEnergyStates, int numberOfTimeStates) {
+		return (numberOfEnergyStates - 1) * (numberOfTimeStates - 1) + 1;
+	}
+
+	/** Updates list of all energy states - use only, if time states are disregarded */
+	private int[] allocateEnergyStates() {
+		int[] states = new int[numberOfEnergyStates];
 		for (int energyIndex = 0; energyIndex < numberOfEnergyStates; energyIndex++) {
-			allStates[energyIndex] = energyIndex;
+			states[energyIndex] = energyIndex;
 		}
+		return states;
 	}
 
 	/** Sets maximum energy delta for shifts in down and up direction that can be achieved by the associated device within a time
@@ -152,8 +156,19 @@ public class StateDiscretiser {
 	/** Returns indices of technically possible states ignoring impossible states, e.g., states out of balance with zero shift time.
 	 * 
 	 * @return all indices of technically possible states */
-	public int[] getAllAvailableStates() {
+	int[] getAllAvailableStates() {
 		return allStates;
+	}
+
+	/** Returns indices of technically possible states within given energy limits ignoring impossible states, e.g., states out of
+	 * balance with zero shift time.
+	 * 
+	 * @param energyContentLowerLimitInMWH energy content of the lowest accessible energy level in MWh
+	 * @param energyContentUpperLimitInMWH energy content of the highest accessible energy level in MWh
+	 * @return all indices of technically possible states within given energy limits */
+	public int[] getAvailableStates(double energyContentLowerLimitInMWH, double energyContentUpperLimitInMWH) {
+		int[] energyBoundaries = getEnergyStateLimits(energyContentLowerLimitInMWH, energyContentUpperLimitInMWH);
+		return allocateEnergyAndTimeStates(energyBoundaries[0], energyBoundaries[1]);
 	}
 
 	/** Returns indices of lowest and highest accessible energy levels corresponding to the provided lowest and highest energy

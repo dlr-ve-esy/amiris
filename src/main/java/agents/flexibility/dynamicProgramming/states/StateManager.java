@@ -13,6 +13,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public interface StateManager {
+	public static final int STATE_INFEASIBLE = Integer.MIN_VALUE;
+
 	/** Contains the course of the internal energy levels, external energy deltas, and water values over a dispatch */
 	public static class DispatchSchedule {
 		public final double[] externalEnergyDeltasInMWH;

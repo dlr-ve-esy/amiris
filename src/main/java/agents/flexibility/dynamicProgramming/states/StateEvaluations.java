@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.states;
 
+import java.util.Arrays;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
@@ -54,10 +55,19 @@ public class StateEvaluations {
 		this.startingPeriod = startingPeriod;
 		this.numberOfTimeSteps = numberOfTimeSteps;
 
-		bestNextState = new int[numberOfTimeSteps][stateCount];
+		bestNextState = getNewStateArray(numberOfTimeSteps, stateCount);
 		bestValue = new double[numberOfTimeSteps][stateCount];
 		cachedWaterValuesInEUR = new double[stateCount];
 		cacheWaterValues(waterValues, StateManager.getTimeByIndex(startingPeriod, numberOfTimeSteps));
+	}
+
+	/** @return newly allocated array to track best follow-up state, initialised to indicate infeasibility */
+	private int[][] getNewStateArray(int numberOfTimeSteps, int stateCount) {
+		int[][] bestNextState = new int[numberOfTimeSteps][stateCount];
+		for (int[] states : bestNextState) {
+			Arrays.fill(states, StateManager.STATE_INFEASIBLE);
+		}
+		return bestNextState;
 	}
 
 	/** Caches water values for each possible state and stores them to {@link #cachedWaterValuesInEUR} */

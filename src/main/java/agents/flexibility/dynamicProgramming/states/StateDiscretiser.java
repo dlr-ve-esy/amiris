@@ -62,6 +62,11 @@ public class StateDiscretiser {
 		this.timeResolution = timeResolution;
 	}
 
+	/** @return time resolution between neighbouring time steps */
+	public TimeSpan getTimeResolution() {
+		return timeResolution;
+	}
+
 	/** Sets boundaries for energy and time
 	 * 
 	 * @param energyBoundariesInMWH two doubles values representing minimum and maximum energy content of the associated device

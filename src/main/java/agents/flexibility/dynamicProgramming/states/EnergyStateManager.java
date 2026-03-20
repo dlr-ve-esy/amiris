@@ -28,6 +28,7 @@ public class EnergyStateManager implements StateManager {
 
 	private int numberOfTimeSteps;
 	private boolean hasSelfDischarge;
+	private TimeStamp timeAtFinalState;
 
 	public EnergyStateManager(GenericDevice device, AssessmentFunction assessmentFunction, double planningHorizonInHours,
 			double energyResolutionInMWH, WaterValues waterValues) {
@@ -52,6 +53,7 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public void prepareFor(TimeStamp time) {
+		timeAtFinalState = time;
 		transitionEvaluator.prepareFor(time, hasSelfDischarge);
 		stateEvaluations.prepareFor(time);
 	}
@@ -63,8 +65,9 @@ public class EnergyStateManager implements StateManager {
 
 	@Override
 	public int[] getInitialStates() {
-		return stateDiscretiser.getEnergyStateLimits(deviceCache.getEnergyContentLowerLimitInMWH(),
-				deviceCache.getEnergyContentUpperLimitInMWH());
+		TimeStamp timeAtInitialState = timeAtFinalState.earlierBy(stateDiscretiser.getTimeResolution());
+		return stateDiscretiser.getEnergyStateLimits(device.getEnergyContentLowerLimitInMWH(timeAtInitialState),
+				device.getEnergyContentUpperLimitInMWH(timeAtInitialState));
 	}
 
 	@Override

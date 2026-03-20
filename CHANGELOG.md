@@ -16,8 +16,9 @@ SPDX-License-Identifier: CC0-1.0 -->
 - GenericFlexibilityTrader: Add output column `ElectricityPricePredictionInEURperMWH` #219 (@dlr-cjs, @jgower11)
 - agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
 - `DayAheadMarketMultiZone`: Add Product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
-- add new Ability `MarketCouplingClient` to enable market coupling interactions also from forecasters  #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
-- `MarketForecaster`: add ability to interact with `MarketCoupling` #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- Add new Ability `MarketCouplingClient` to enable market coupling interactions also from forecasters  #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- `MarketForecaster`: Add ability to interact with `MarketCoupling` #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- `MarketCoupling`: add optional parameter to limit shifted energy per iteration in market coupling algorithm #234 (@dlr-cjs)
 - CI: also check compatibility with JDK 25
 - docs: add content milestones to `History.md` #198 (@dlr-cjs)
 

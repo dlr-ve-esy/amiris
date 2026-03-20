@@ -111,7 +111,7 @@ public class StateDiscretiser {
 				: allocateEnergyStates();
 	}
 
-	/** Updates list of all states - use only, if {@link #considerTimeConstraint} applies; <br>
+	/** Returns list of all states - use only, if {@link #considerTimeConstraint} applies; <br>
 	 * adds a single balanced state at shift time 0 plus all unbalanced states for non-zero shift times */
 	private int[] allocateEnergyAndTimeStates(int lowestEnergyState, int highestEnergyState) {
 		int[] states = new int[calcStateCount(highestEnergyState - lowestEnergyState + 1, numberOfTimeStates)];
@@ -134,7 +134,7 @@ public class StateDiscretiser {
 		return (numberOfEnergyStates - 1) * (numberOfTimeStates - 1) + 1;
 	}
 
-	/** Updates list of all energy states - use only, if time states are disregarded */
+	/** Returns list of all energy states - use only, if time states are disregarded */
 	private int[] allocateEnergyStates() {
 		int[] states = new int[numberOfEnergyStates];
 		for (int energyIndex = 0; energyIndex < numberOfEnergyStates; energyIndex++) {

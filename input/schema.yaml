@@ -195,6 +195,16 @@ AgentTypes:
         MetaData:
           description: "This offset is added to the demand shift to ensures a price change at the involved markets."
           unit: MWh
+          isAbout: [{name: "energy value", "@id": "OEO_00050019"}]
+      MaximumShiftedEnergyPerIterationInMWH:
+        AttributeType: double
+        Mandatory: false
+        List: false
+        help: "Maximum energy shifted between markets per iteration of the market coupling algorithm."
+        MetaData:
+          description: "Maximum energy shifted between markets per iteration of the market coupling algorithm."
+          unit: MWh
+          isAbout: [{name: "energy value", "@id": "OEO_00050019"}]
     Products:
       MarketCouplingResult:
         MetaData:

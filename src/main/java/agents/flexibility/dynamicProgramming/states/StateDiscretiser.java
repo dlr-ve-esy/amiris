@@ -117,7 +117,7 @@ public class StateDiscretiser {
 		int[] states = new int[calcStateCount(highestEnergyState - lowestEnergyState + 1, numberOfTimeStates)];
 		states[0] = energyStateOffset;
 		int arrayIndex = 1;
-		for (int time = 1; time < numberOfTimeStates; time++) { // add unbalanced states for non-zero shift times
+		for (int time = 1; time < numberOfTimeStates; time++) {
 			for (int energy = lowestEnergyState; energy <= highestEnergyState; energy++) {
 				if (energy == energyStateOffset) {
 					continue;

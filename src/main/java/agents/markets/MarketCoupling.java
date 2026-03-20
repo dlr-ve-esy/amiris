@@ -35,6 +35,7 @@ public class MarketCoupling extends Agent {
 	static final String MULTIPLE_REQUESTS = "Only one coupling request is allow per market, but multiple received from: ";
 	static final String NO_AGENT_FOR_ZONE = "No DayAheadMarket agent found for market zone: ";
 	static final double DEFAULT_DEMAND_SHIFT_OFFSET = 1.0;
+	static final double DEFAULT_MAX_SHIFT = Double.MAX_VALUE;
 
 	/** Products of {@link MarketCoupling} */
 	@Product
@@ -45,9 +46,13 @@ public class MarketCoupling extends Agent {
 		MarketCouplingResult
 	}
 
+	static final String PARAM_MIN_OFFSET = "MinimumDemandOffsetInMWH";
+	static final String PARAM_MAX_SHIFT = "MaximumShiftedEnergyPerIterationInMWH";
+
 	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newDouble("MinimumDemandOffsetInMWH").optional()
-					.help("Offset added to the demand shift that ensures a price change at the involved markets."))
+			.add(Make.newDouble(PARAM_MIN_OFFSET).optional()
+					.help("Offset added to the demand shift that ensures a price change at the involved markets."),
+					Make.newDouble(PARAM_MAX_SHIFT).optional())
 			.buildTree();
 
 	@Output
@@ -78,8 +83,9 @@ public class MarketCoupling extends Agent {
 	public MarketCoupling(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
 		ParameterData input = parameters.join(dataProvider);
-		double minEffectiveDemandOffset = input.getDoubleOrDefault("MinimumDemandOffsetInMWH", DEFAULT_DEMAND_SHIFT_OFFSET);
-		demandBalancer = new DemandBalancer(minEffectiveDemandOffset);
+		double minEffectiveDemandOffset = input.getDoubleOrDefault(PARAM_MIN_OFFSET, DEFAULT_DEMAND_SHIFT_OFFSET);
+		double maxEnergyShift = input.getDoubleOrDefault(PARAM_MAX_SHIFT, DEFAULT_MAX_SHIFT);
+		demandBalancer = new DemandBalancer(minEffectiveDemandOffset, maxEnergyShift);
 
 		call(this::forecastCoupledMarkets).on(Products.MarketCouplingForecastResult)
 				.use(MarketCouplingClient.Products.TransmissionAndBidForecasts);

@@ -303,6 +303,10 @@ public class UtilTest {
 	@ValueSource(ints = {6, 8, 10, 100})
 	public void truncateIntArray_newLengthEqualOrLarger_returnOriginal(int newLength) {
 		int[] original = new int[] {0, 1, 2, 3, 4, 5};
-		assertEquals(original, Util.truncateIntArray(original, newLength));
+		int[] result = Util.truncateIntArray(original, newLength);
+		assertEquals(original.length, result.length);
+		for (int i = 0; i < original.length; i++) {
+			assertEquals(original[i], result[i]);
+		}
 	}
 }

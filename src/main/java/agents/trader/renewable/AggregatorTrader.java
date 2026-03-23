@@ -200,7 +200,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 	protected List<ClientData> getClientDataForSetType(String setType) {
 		List<ClientData> clients = new ArrayList<>();
 		for (ClientData clientData : clientMap.values()) {
-			if (clientData.getTechnologySet().setType == setType) {
+			if (clientData.getTechnologySet().setType.equals(setType)) {
 				clients.add(clientData);
 			}
 		}

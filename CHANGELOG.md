@@ -33,6 +33,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - `EnergyAndTimeStateManager`: Fix incorrect handling of prolongig costs # (@dlr-cjs, @dlr_jk)
 - `TransitionEvaluator`: Fix crash on strong inflows or outflows #228 (@dlr-cjs)
 - `StateManager`: Fix incorrect handling of energy limits for initial states #233 (@dlr-cjs)
+- `AggregatorTrader`: Fix incorrect string comparison #235 (@dlr-cjs)
 - license headers: use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09

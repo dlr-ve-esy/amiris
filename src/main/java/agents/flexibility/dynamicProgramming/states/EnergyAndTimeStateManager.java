@@ -54,7 +54,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	/** @throws RuntimeException if self-discharge occurs */
 	private void raiseOnSelfDischarge(TimePeriod startingPeriod) {
 		if (StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod)) {
-			new RuntimeException(ERR_SELF_DISCHARGE + Type.ENERGY_AND_TIME);
+			throw new RuntimeException(ERR_SELF_DISCHARGE + Type.ENERGY_AND_TIME);
 		}
 	}
 

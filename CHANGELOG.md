@@ -6,8 +6,9 @@ SPDX-License-Identifier: CC0-1.0 -->
 ## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - TBA
 ### Changed
 - `EnergyStateManager`: also use `StateDiscretiser` to reduce code duplications #227 (@dlr-cjs, @dlr_jk)
+- tests: Improve unit tests for merit order kernel #218 (@dlr-cjs)
 - docs: Improve get-started section based on user feedback #210 (@dlr-cjs)
-- tests: improved unit tests for merit order kernel #218 (@dlr-cjs)
+- docs: Update diagrams of model and workflow #236 (@dlr-cjs, @dlr_fn)
 
 ### Added
 - `GenericFlexibilityTrader`: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)

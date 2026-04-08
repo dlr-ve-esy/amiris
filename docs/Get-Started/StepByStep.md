@@ -77,7 +77,7 @@ Feel free to give the AMIRIS project a "star" :star: and hit the notification be
 
 ## Run AMIRIS
 
-![AMIRIS-Py Workflow](../uploads/amirispy.png)
+![AMIRIS-Py Workflow](../uploads/Workflow_amirispy.png)
 The image above shows the workflow when running simulations with AMIRIS-Py.
 AMIRIS-Py will load the specified scenario configuration, read linked timeseries files, and run the simulation.
 Once finished, AMIRIS-Py will automatically extract the simulation results to CSV files.

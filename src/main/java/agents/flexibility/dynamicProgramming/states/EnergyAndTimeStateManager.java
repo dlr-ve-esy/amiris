@@ -31,6 +31,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private final StateTracking onOverflow;
 
 	private int numberOfTimeSteps;
+	private TimeStamp timeAtFinalState;
 
 	public EnergyAndTimeStateManager(GenericDevice device, AssessmentFunction assessmentFunction,
 			double planningHorizonInHours, double energyResolutionInMWH, WaterValues waterValues, StateTracking onUnderflow,
@@ -59,12 +60,13 @@ public class EnergyAndTimeStateManager implements StateManager {
 	/** @throws RuntimeException if self-discharge occurs */
 	private void raiseOnSelfDischarge(TimePeriod startingPeriod) {
 		if (StateManager.hasSelfDischarge(device, numberOfTimeSteps, startingPeriod)) {
-			new RuntimeException(ERR_SELF_DISCHARGE + Type.ENERGY_AND_TIME);
+			throw new RuntimeException(ERR_SELF_DISCHARGE + Type.ENERGY_AND_TIME);
 		}
 	}
 
 	@Override
 	public void prepareFor(TimeStamp time) {
+		timeAtFinalState = time;
 		transitionEvaluator.prepareFor(time, false);
 		stateEvaluations.prepareFor(time);
 		stateDiscretiser.setShiftEnergyDeltaLimits(deviceCache.getMaxNetDischargingEnergyInMWH(),
@@ -78,7 +80,9 @@ public class EnergyAndTimeStateManager implements StateManager {
 
 	@Override
 	public int[] getInitialStates() {
-		return stateDiscretiser.getAllAvailableStates();
+		TimeStamp timeAtInitialState = timeAtFinalState.earlierBy(stateDiscretiser.getTimeResolution());
+		return stateDiscretiser.getAvailableStates(device.getEnergyContentLowerLimitInMWH(timeAtInitialState),
+				device.getEnergyContentUpperLimitInMWH(timeAtInitialState));
 	}
 
 	@Override
@@ -101,7 +105,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 		}
 		int initialEnergyIndex = stateDiscretiser.getEnergyIndexOfStateIndex(initialStateIndex);
 		int finalEnergyIndex = stateDiscretiser.getEnergyIndexOfStateIndex(finalStateIndex);
-		return transitionEvaluator.getTransitionValueFor(initialEnergyIndex, finalEnergyIndex) + prolongingCostInEUR;
+		return transitionEvaluator.getTransitionValueFor(initialEnergyIndex, finalEnergyIndex, prolongingCostInEUR);
 	}
 
 	@Override

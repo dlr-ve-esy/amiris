@@ -65,4 +65,9 @@ public interface AssessmentFunction {
 	 * @param externalEnergyDeltaInMWH charging if positive, discharging when negative
 	 * @return predicted electricity price */
 	double getElectricityPriceAt(TimeStamp time, double externalEnergyDeltaInMWH);
+
+	/** Return the sign of a cost value
+	 * 
+	 * @return sign of cost added to value */
+	double getSignOfCostValue();
 }

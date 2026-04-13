@@ -36,18 +36,18 @@ You are now ready to compile input files for AMIRIS and read its outputs.
 
 The picture below describes the workflow between AMIRIS and FAME-Io:
 
-![FAME-Io Workflow](../uploads/fameio.png)
+![FAME-Io Workflow](../uploads/Workflow_fameio.png)
 
-AMIRIS is built with the _FAME-Core_ Java library.
+AMIRIS is built with the *FAME-Core* Java library.
 Inputs, interactions and outputs of each agent in AMIRIS are described in the "schema.yaml" file.
 The [YAML](https://yaml.org/) format is used throughout for configuration files.
-Execution of AMIRIS requires a binary input file in [protobuf](https://protobuf.dev/overview/) format that is compiled using _[FAME-Io](https://gitlab.com/fame-framework/fame-io)_.
+Execution of AMIRIS requires a binary input file in [protobuf](https://protobuf.dev/overview/) format that is compiled using *[FAME-Io](https://gitlab.com/fame-framework/fame-io)*.
 This step requires another configuration YAML file, usually named "scenario.yaml".
 Timeseries are external files linked to the scenario.
-_FAME-Io_ validates the provided configuration based on the given schema and creates the binary input file.
+*FAME-Io* validates the provided configuration based on the given schema and creates the binary input file.
 To start the simulation, the AMIRIS ".jar" executable is provided to Java together with the compiled binary input.
 A binary output file in protobuf format is created by the AMIRIS simulation.
-Finally, _FAME-Io_ translates the binary outputs to readable outputs in CSV format.
+Finally, *FAME-Io* translates the binary outputs to readable outputs in CSV format.
 
 ### In a Nutshell
 

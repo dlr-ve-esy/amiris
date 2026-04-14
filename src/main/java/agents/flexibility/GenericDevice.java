@@ -51,7 +51,7 @@ public class GenericDevice {
 		/** Shed excess energy inflows or reduce too large energy outflows */
 		CUT,
 		/** Consider violating the energy limits an error */
-		CRASH,
+		ERROR,
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(GenericDevice.class);
@@ -200,18 +200,16 @@ public class GenericDevice {
 		double lowerEnergyContentLimitInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
 		if (targetEnergyContentInMWH > upperEnergyContentLimitInMWH + TOLERANCE) {
 			double exceedance = targetEnergyContentInMWH - upperEnergyContentLimitInMWH;
-			if (onOverflow == StateViolation.CRASH) {
-				throw new RuntimeException(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
-			} else if (onOverflow == StateViolation.CUT) {
-				return upperEnergyContentLimitInMWH;
+			if (onOverflow == StateViolation.ERROR) {
+				logger.error(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
 			}
+			return upperEnergyContentLimitInMWH;
 		} else if (targetEnergyContentInMWH < lowerEnergyContentLimitInMWH - TOLERANCE) {
 			double exceedance = lowerEnergyContentLimitInMWH - targetEnergyContentInMWH;
-			if (onUnderflow == StateViolation.CRASH) {
-				throw new RuntimeException(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
-			} else if (onUnderflow == StateViolation.CUT) {
-				return lowerEnergyContentLimitInMWH;
+			if (onUnderflow == StateViolation.ERROR) {
+				logger.error(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
 			}
+			return lowerEnergyContentLimitInMWH;
 		}
 		return targetEnergyContentInMWH;
 	}

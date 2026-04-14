@@ -3077,12 +3077,12 @@ AgentTypes:
             AttributeType: enum
             Mandatory: true
             List: false
-            Default: CRASH
+            Default: ERROR
             Values:
               CUT:
                 MetaData:
                   Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a dammed hydro power plant with an overflow valve"
-              CRASH:
+              ERROR:
                 MetaData:
                   Description: "Consider a exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
           OnUnderflow:
@@ -3091,12 +3091,12 @@ AgentTypes:
             AttributeType: enum
             Mandatory: true
             List: false
-            Default: CRASH
+            Default: ERROR
             Values:
               CUT:
                 MetaData:
                   Description: "Reduce effective outflow to not underflow the minimum allowed energy content"
-              CRASH:
+              ERROR:
                 MetaData:
                   Description: "Consider a falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
       Assessment:

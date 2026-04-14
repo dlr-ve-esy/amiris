@@ -12,7 +12,7 @@ It is connected to a trader who markets the flexibility by applying an algorithm
 
 Besides "getter" methods for (current/maximum/minimum) energy content, (charging/discharging) efficiencies, the self discharge rate, specific variable costs, absolute costs for prolonging, and the current shift time, `GenericDevice` provides the following methods:
 
-* `transition`: Performs an actual transition from the current energy content at given time using a given external energy delta. It enforces energy and power limits. Returns actual external energy delta considering applied limits, i.e. positive values represent charging.
+* `transition`: Performs an actual transition from the current energy content at given time using a given external energy delta. It enforces energy and power limits. Returns actual external energy delta considering applied limits (i.e. positive values represent charging).
 * `internalToExternalEnergy`: Converts a given internal energy delta of a `GenericDevice` to an external energy delta by applying charging efficiency $\eta_\mathrm{c}$ or discharging efficiency $\eta_\mathrm{d}$.
 
 For performance improvement, a cached version of a `GenericDevice` is used to simulate transitions within the dynamic programming scheduling algorithm, see [GenericDeviceCache](./GenericDeviceCache.md)
@@ -64,13 +64,18 @@ These required input parameters are `TimeSeries`:
 * `SelfDischargeRatePerHour`: rate at which the associated electricity storage looses energy due to self discharge per hour relative to _initial_ level of charged energy (value from 0 to 1); 0 means no internal self-discharge; defaults to 0 (specified in schema).
 * `NetInflowPowerInMW`: _net_ inflow into the associated flexibility device in MW; positive values are inflows, negative values are outflows; defaults to 0 (specified in schema).
 * `VariableCostInEURperMWH`: variable cost for operating a flexibility device applied to both, charging and discharging energy amounts at grid interaction level in EUR/MWh; defaults to 0 (specified in schema).
-* `MaximumShiftTimeInHours`: maximum allowed time for the flexibility device to be in an unbalanced state, e.g. maximum time for load shifting, in hours; no limit in case of 0 or negative values; defaults to -1 (specified in schema).
-* `EnableProlonging`: if positive, enables prolonged shifts of flexibility device beyond maximum shift time; defaults to 1 (specified in schema); ignored in case of unlimited shift time.
 * `PenaltyCostInEURperMWH`: Penalty cost for operating a flexibility device outside of maximum shift time; costs are imposed if, caused by not-awarded bids, the GenericDevice cannot return to a balanced state in time.
 
-In addition, a scalar double parameter exists:
-
+In addition, these scalar parameters exists:
 * `InitialEnergyContentInMWH`: electrical energy stored in the associated flexibility device in MWh at the beginning of the simulation; defaults to 0 (specified in schema).
+* `MaximumShiftTimeInHours`: maximum allowed time for the flexibility device to be in an unbalanced state, e.g. maximum time for load shifting, in hours; no limit in case of 0 or negative values; defaults to -1 (specified in schema).
+* `EnableProlonging`: if positive, enables prolonged shifts of flexibility device beyond maximum shift time; defaults to 1 (specified in schema); ignored in case of unlimited shift time.
+* `OnOverflow`: How to deal with violation of maximum energy content limit due to excessive energy inflow; choose one of
+  * `ERROR`: (default); Consider exceeding the maximum energy content to be an error; if this cannot be avoided dispatch planning will fail
+  * `CUT`: Shed excess inflow to not exceed the maximum allowed energy content
+* `OnUnderflow`: How to deal with violation of minimum energy content limit due to excessive energy outflow; choose one of
+  * `ERROR`: (default); Consider falling below the minimum energy content to be an error; if this cannot be avoided dispatch planning will fail
+  * `CUT`: Reduce effective outflow to not underflow the minimum allowed energy content
 
 # See also
 

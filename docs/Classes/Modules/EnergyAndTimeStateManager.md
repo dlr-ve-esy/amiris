@@ -30,6 +30,7 @@ Hence,
 * `getInitialStates()` and `getFinalStates()` will return the full list of all feasible states
 
 Note that using the full state list comes at the expense of a lower speed for the [Optimiser](./Optimiser.md).
+If no valid state can be reached from a given initial state when calling `getFinalStates()` due to an energy reservoir overflow or underflow, a reserved state is returned to indicate the corresponding issue.
 
 ### Caching
 

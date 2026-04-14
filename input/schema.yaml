@@ -3084,7 +3084,7 @@ AgentTypes:
                   Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a dammed hydro power plant with an overflow valve"
               ERROR:
                 MetaData:
-                  Description: "Consider a exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
+                  Description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
           OnUnderflow:
             MetaData:
               Description: "How to deal with violation of minimum energy content limit due to excessive energy outflow"
@@ -3098,7 +3098,7 @@ AgentTypes:
                   Description: "Reduce effective outflow to not underflow the minimum allowed energy content"
               ERROR:
                 MetaData:
-                  Description: "Consider a falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
+                  Description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
       Assessment:
         AttributeType: block
         Mandatory: true

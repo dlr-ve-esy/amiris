@@ -15,7 +15,7 @@ SPDX-License-Identifier: CC0-1.0 -->
 - GenericFlexibility: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
 - GenericFlexibility: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
 - GenericFlexibilityTrader: Add output column `ElectricityPricePredictionInEURperMWH` #219 (@dlr-cjs, @jgower11)
-- GenericFlexibilityTrader: Add ability to deal with energy overflow and underflow; add associated input attributes `Device.OnOverflow`, `Device.OnUnderflow`, `StateDiscretisation.OnOverflowTracking`, `StateDiscretisation.OnUnderflowTracking` #230 (@dlr-cjs)
+- GenericFlexibilityTrader: Add ability to cut energy overflow and underflow; add associated input attributes `Device.OnOverflow`, `Device.OnUnderflow` #230 (@dlr-cjs)
 - agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
 - `DayAheadMarketMultiZone`: Add Product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
 - Add new Ability `MarketCouplingClient` to enable market coupling interactions also from forecasters  #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)

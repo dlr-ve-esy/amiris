@@ -4,6 +4,7 @@
 package agents.flexibility;
 
 import static de.dlr.gitlab.fame.time.Constants.STEPS_PER_HOUR;
+import agents.flexibility.GenericDevice.StateViolation;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -92,26 +93,36 @@ public class GenericDeviceCache {
 	/** Returns the maximum reachable internal energy content by applying maximum charging power for the specified duration and
 	 * considering the initial energy content, self discharge, and inward / outward flows. The transitions is assumed to start at
 	 * the currently cached time - all related values are assumed to not change during the transition's duration. The energy content
-	 * is capped at the upper energy content limit that applies to the {@link GenericDevice}.
+	 * is capped at the upper energy content limit that applies to the {@link GenericDevice}. If underflows can be prevented by
+	 * cutting outflows, the lower energy content limit is also considered.
 	 * 
 	 * @param initialEnergyContentInMWH at the beginning of transition
 	 * @return maximum reachable energy content for given initial energy content in MWh */
 	public double getMaxTargetEnergyContentInMWH(double initialEnergyContentInMWH) {
 		double targetEnergyInMWH = initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate) + maxNetChargingEnergyInMWH;
-		return Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
+		targetEnergyInMWH = Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
+		if (device.onUnderflow == StateViolation.CUT) {
+			targetEnergyInMWH = Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
+		}
+		return targetEnergyInMWH;
 	}
 
 	/** Returns the minimum reachable internal energy content by applying maximum discharging power for the specified duration and
 	 * considering the initial energy content, self discharge, and inward / outward flows. The transitions is assumed to start at
 	 * the currently cached time - all related values are assumed to not change during the transition's duration. The energy content
-	 * is capped at the lower energy content limit that applies to the {@link GenericDevice}.
+	 * is capped at the lower energy content limit that applies to the {@link GenericDevice}. If overflows can be prevented by
+	 * cutting inflows, the upper energy content limit is also considered.
 	 * 
 	 * @param initialEnergyContentInMWH at the beginning of transition
 	 * @return minimum allowed energy content for given initial energy content in MWh */
 	public double getMinTargetEnergyContentInMWH(double initialEnergyContentInMWH) {
 		double targetEnergyInMWH = initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate)
 				+ maxNetDischargingEnergyInMWH;
-		return Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
+		targetEnergyInMWH = Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
+		if (device.onOverflow == StateViolation.CUT) {
+			targetEnergyInMWH = Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
+		}
+		return targetEnergyInMWH;
 	}
 
 	/** Simulates a transition at the currently cached time ignoring its current energy level, but starting from a given initial

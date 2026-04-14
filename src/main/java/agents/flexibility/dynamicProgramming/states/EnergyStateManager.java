@@ -8,7 +8,6 @@ import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
-import agents.flexibility.dynamicProgramming.states.StateManagerBuilder.StateTracking;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
@@ -26,23 +25,19 @@ public class EnergyStateManager implements StateManager {
 	private final StateDiscretiser stateDiscretiser;
 	private final TransitionEvaluator transitionEvaluator;
 	private final StateEvaluations stateEvaluations;
-	private final StateTracking onUnderflow;
-	private final StateTracking onOverflow;
 
 	private int numberOfTimeSteps;
 	private boolean hasSelfDischarge;
 	private TimeStamp timeAtFinalState;
 
 	public EnergyStateManager(GenericDevice device, AssessmentFunction assessmentFunction, double planningHorizonInHours,
-			double energyResolutionInMWH, WaterValues waterValues, StateTracking onUnderflow, StateTracking onOverflow) {
+			double energyResolutionInMWH, WaterValues waterValues) {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, false);
 		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
 		this.stateEvaluations = new StateEvaluations(stateDiscretiser, deviceCache, assessmentFunction, waterValues);
 		this.planningHorizonInHours = planningHorizonInHours;
-		this.onUnderflow = onUnderflow;
-		this.onOverflow = onOverflow;
 	}
 
 	@Override
@@ -80,6 +75,15 @@ public class EnergyStateManager implements StateManager {
 		final double initialEnergyContentInMWH = stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex);
 		final double lowestEnergyContentInMWH = deviceCache.getMinTargetEnergyContentInMWH(initialEnergyContentInMWH);
 		final double highestEnergyContentInMWH = deviceCache.getMaxTargetEnergyContentInMWH(initialEnergyContentInMWH);
+		if (highestEnergyContentInMWH < lowestEnergyContentInMWH) {
+			if (highestEnergyContentInMWH < deviceCache.getEnergyContentLowerLimitInMWH()) {
+				return new int[] {STATE_UNDERFLOW};
+			} else if (lowestEnergyContentInMWH > deviceCache.getEnergyContentUpperLimitInMWH()) {
+				return new int[] {STATE_OVERFLOW};
+			} else {
+				throw new RuntimeException(ERR_INCONSISTENT);
+			}
+		}
 		return stateDiscretiser.getEnergyStateLimits(lowestEnergyContentInMWH, highestEnergyContentInMWH);
 	}
 

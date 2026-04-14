@@ -8,7 +8,6 @@ import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
-import agents.flexibility.dynamicProgramming.states.StateManagerBuilder.StateTracking;
 import agents.flexibility.dynamicProgramming.states.StateManagerBuilder.Type;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
@@ -18,7 +17,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class EnergyAndTimeStateManager implements StateManager {
-	private static final String ERR_SELF_DISCHARGE = "Self-discharge is not compatible with state manager of type: ";
+	static final String ERR_SELF_DISCHARGE = "Self-discharge is not compatible with state manager of type: ";
 
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
@@ -27,23 +26,18 @@ public class EnergyAndTimeStateManager implements StateManager {
 	private final StateDiscretiser stateDiscretiser;
 	private final TransitionEvaluator transitionEvaluator;
 	private final StateEvaluations stateEvaluations;
-	private final StateTracking onUnderflow;
-	private final StateTracking onOverflow;
 
 	private int numberOfTimeSteps;
 	private TimeStamp timeAtFinalState;
 
 	public EnergyAndTimeStateManager(GenericDevice device, AssessmentFunction assessmentFunction,
-			double planningHorizonInHours, double energyResolutionInMWH, WaterValues waterValues, StateTracking onUnderflow,
-			StateTracking onOverflow) {
+			double planningHorizonInHours, double energyResolutionInMWH, WaterValues waterValues) {
 		this.device = device;
 		this.deviceCache = new GenericDeviceCache(device);
 		this.stateDiscretiser = new StateDiscretiser(energyResolutionInMWH, device.hasProlonging());
 		this.transitionEvaluator = new TransitionEvaluator(stateDiscretiser, deviceCache, assessmentFunction);
 		this.planningHorizonInHours = planningHorizonInHours;
 		this.stateEvaluations = new StateEvaluations(stateDiscretiser, deviceCache, assessmentFunction, waterValues);
-		this.onUnderflow = onUnderflow;
-		this.onOverflow = onOverflow;
 	}
 
 	@Override
@@ -90,6 +84,15 @@ public class EnergyAndTimeStateManager implements StateManager {
 		final double initialEnergyContentInMWH = stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex);
 		final double lowestEnergyContentInMWH = deviceCache.getMinTargetEnergyContentInMWH(initialEnergyContentInMWH);
 		final double highestEnergyContentInMWH = deviceCache.getMaxTargetEnergyContentInMWH(initialEnergyContentInMWH);
+		if (highestEnergyContentInMWH < lowestEnergyContentInMWH) {
+			if (highestEnergyContentInMWH < deviceCache.getEnergyContentLowerLimitInMWH()) {
+				return new int[] {STATE_UNDERFLOW};
+			} else if (lowestEnergyContentInMWH > deviceCache.getEnergyContentUpperLimitInMWH()) {
+				return new int[] {STATE_OVERFLOW};
+			} else {
+				throw new RuntimeException(ERR_INCONSISTENT);
+			}
+		}
 		return stateDiscretiser.getFollowUpStates(initialStateIndex, lowestEnergyContentInMWH, highestEnergyContentInMWH);
 	}
 

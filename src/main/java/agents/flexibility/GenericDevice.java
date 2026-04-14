@@ -50,8 +50,6 @@ public class GenericDevice {
 	enum StateViolation {
 		/** Shed excess energy inflows or reduce too large energy outflows */
 		CUT,
-		/** Fully consider the inflows / outflows, even if the state violates given energy content limits */
-		TRACK_STATE,
 		/** Consider violating the energy limits an error */
 		CRASH,
 	}
@@ -204,9 +202,6 @@ public class GenericDevice {
 			double exceedance = targetEnergyContentInMWH - upperEnergyContentLimitInMWH;
 			if (onOverflow == StateViolation.CRASH) {
 				throw new RuntimeException(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
-			} else if (onOverflow == StateViolation.TRACK_STATE) {
-				logger.warn(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
-				return targetEnergyContentInMWH;
 			} else if (onOverflow == StateViolation.CUT) {
 				return upperEnergyContentLimitInMWH;
 			}
@@ -214,9 +209,6 @@ public class GenericDevice {
 			double exceedance = lowerEnergyContentLimitInMWH - targetEnergyContentInMWH;
 			if (onUnderflow == StateViolation.CRASH) {
 				throw new RuntimeException(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
-			} else if (onUnderflow == StateViolation.TRACK_STATE) {
-				logger.warn(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
-				return targetEnergyContentInMWH;
 			} else if (onUnderflow == StateViolation.CUT) {
 				return lowerEnergyContentLimitInMWH;
 			}

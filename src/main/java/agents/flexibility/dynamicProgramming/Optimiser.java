@@ -71,12 +71,17 @@ public final class Optimiser {
 		for (int initialStateIndex : stateManager.getInitialStates()) {
 			double bestAssessmentValue = initialAssessmentValue;
 			int bestFinalStateIndex = Integer.MIN_VALUE;
-			for (int finalStateIndex : stateManager.getFinalStates(initialStateIndex)) {
-				double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
-						+ bestValuesNextPeriod[finalStateIndex];
-				if (compare(value, bestAssessmentValue)) {
-					bestAssessmentValue = value;
-					bestFinalStateIndex = finalStateIndex;
+			int[] finalStates = stateManager.getFinalStates(initialStateIndex);
+			if (finalStates.length == 1 && finalStates[0] < 0) {
+				bestFinalStateIndex = finalStates[0];
+			} else {
+				for (int finalStateIndex : finalStates) {
+					double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
+							+ bestValuesNextPeriod[finalStateIndex];
+					if (compare(value, bestAssessmentValue)) {
+						bestAssessmentValue = value;
+						bestFinalStateIndex = finalStateIndex;
+					}
 				}
 			}
 			stateManager.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);
@@ -99,12 +104,16 @@ public final class Optimiser {
 			double bestAssessmentValue = initialAssessmentValue;
 			int bestFinalStateIndex = StateManager.STATE_INFEASIBLE;
 			int[] finalBoundaries = stateManager.getFinalStates(initialStateIndex);
-			for (int finalStateIndex = finalBoundaries[0]; finalStateIndex <= finalBoundaries[1]; finalStateIndex++) {
-				double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
-						+ bestValuesNextPeriod[finalStateIndex];
-				if (compare(value, bestAssessmentValue)) {
-					bestAssessmentValue = value;
-					bestFinalStateIndex = finalStateIndex;
+			if (finalBoundaries.length == 1) {
+				bestFinalStateIndex = finalBoundaries[0];
+			} else {
+				for (int finalStateIndex = finalBoundaries[0]; finalStateIndex <= finalBoundaries[1]; finalStateIndex++) {
+					double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
+							+ bestValuesNextPeriod[finalStateIndex];
+					if (compare(value, bestAssessmentValue)) {
+						bestAssessmentValue = value;
+						bestFinalStateIndex = finalStateIndex;
+					}
 				}
 			}
 			stateManager.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);

@@ -15,6 +15,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class StateEvaluations {
+	static final String ERR_OVERFLOW = "Unavoidable energy overflow during planning at time: ";
+	static final String ERR_UNDERFLOW = "Unavoidable energy underflow during planning at time: ";
+	static final String ERR_INFEASIBLE = "Could not find a valid next state for dispatch at time: ";
+
 	/** Used to avoid rounding errors in floating point calculation of transition steps */
 	static final double PRECISION_GUARD = 1E-6;
 
@@ -132,6 +136,8 @@ public class StateEvaluations {
 			int currentEnergyLevelIndex = stateDiscretiser.energyToNearestEnergyIndex(currentInternalEnergyInMWH);
 			int stateIndex = stateDiscretiser.getStateIndex(currentEnergyLevelIndex, currentShiftTimeIndex);
 			int nextStateIndex = bestNextState[timeIndex][stateIndex];
+			throwOnInvalidState(nextStateIndex, time);
+
 			double plannedEnergyDeltaInMWH = stateDiscretiser.calcEnergyDeltaInMWH(stateIndex, nextStateIndex);
 			double nextInternalEnergyInMWH = calcNextEnergyInMWH(deviceCache, currentInternalEnergyInMWH,
 					plannedEnergyDeltaInMWH);
@@ -150,6 +156,17 @@ public class StateEvaluations {
 		}
 		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH,
 				expectedElectricityPriceInEURperMWH);
+	}
+
+	/** @throws RuntimeException if given state is not a valid */
+	private void throwOnInvalidState(int stateIndex, TimeStamp time) {
+		if (stateIndex == StateManager.STATE_OVERFLOW) {
+			throw new RuntimeException(ERR_OVERFLOW + time);
+		} else if (stateIndex == StateManager.STATE_OVERFLOW) {
+			throw new RuntimeException(ERR_UNDERFLOW + time);
+		} else if (stateIndex == StateManager.STATE_INFEASIBLE) {
+			throw new RuntimeException(ERR_INFEASIBLE + time);
+		}
 	}
 
 	/** Returns next energy level based on current one and planned energy delta; if current energy level is already out of bounds,

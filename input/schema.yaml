@@ -3082,9 +3082,6 @@ AgentTypes:
               CUT:
                 MetaData:
                   Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a dammed hydro power plant with an overflow valve"
-              TRACK_STATE:
-                MetaData:
-                  Description: "Fully consider the inflow, even if the state of the device exceeds the maximum energy conent; example: building that exceeds maximum temperatures due to high external temperatures"
               CRASH:
                 MetaData:
                   Description: "Consider a exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
@@ -3099,9 +3096,6 @@ AgentTypes:
               CUT:
                 MetaData:
                   Description: "Reduce effective outflow to not underflow the minimum allowed energy content"
-              TRACK_STATE:
-                MetaData:
-                  Description: "Fully consider the outflow, even if the state of the device falls below the minimum energy conent; example: building that falls below minimum temperatures due to low external temperatures"
               CRASH:
                 MetaData:
                   Description: "Consider a falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
@@ -3187,32 +3181,6 @@ AgentTypes:
                 AttributeType: time_series
                 Mandatory: true
                 List: false
-          OnOverflowTracking:
-            MetaData:
-              Description: "How to plan schedule dispatch in case the device exceeds its maximum energy content"
-            AttributeType: enum
-            Mandatory: false
-            List: false
-            Values:
-              NO_DISPATCH:
-                MetaData:
-                  Description: "Do not actively operate the device"
-              MAX_POWER:
-                MetaData:
-                  Description: "Discharge with maximum power; take efforts to return to the upper energy content limit as fast as possible"
-          OnUnderflowTracking:
-            MetaData:
-              Description: "How to plan schedule dispatch in case the device falls below its minimum energy content"
-            AttributeType: enum
-            Mandatory: false
-            List: false
-            Values:
-              NO_DISPATCH:
-                MetaData:
-                  Description: "Do not actively operate the device"
-              MAX_POWER: 
-                MetaData:
-                  Description: "Charge with maximum power; take efforts to return to the lower energy content limit as fast as possible"
       Bidding:
         AttributeType: block
         Mandatory: true

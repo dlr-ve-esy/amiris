@@ -17,25 +17,8 @@ public class StateManagerBuilder {
 	static final String PARAM_TYPE = "Type";
 	static final String PARAM_HORIZON = "PlanningHorizonInHours";
 	static final String PARAM_RESOLUTION = "EnergyResolutionInMWH";
-	static final String PARAM_OVERFLOW_TRACKING = "OnOverflowTracking";
-	static final String PARAM_UNDERFLOW_TRACKING = "OnUnderflowTracking";
 
 	static final String GROUP_WATER_VALUES = "WaterValues";
-
-	/** How to plan schedule dispatch in case the device operates outside its energy content limits */
-	enum StateTracking {
-		/** Do not actively operate the device */
-		NO_DISPATCH,
-		/** (Dis-)charge with maximum power to return to values within device's energy content limits */
-		MAX_POWER
-	}
-
-	public static final Tree parameters = Make.newTree().add(Make.newEnum(PARAM_TYPE, Type.class),
-			Make.newDouble(PARAM_HORIZON), Make.newDouble(PARAM_RESOLUTION),
-			Make.newEnum(PARAM_OVERFLOW_TRACKING, StateTracking.class).optional(),
-			Make.newEnum(PARAM_UNDERFLOW_TRACKING, StateTracking.class).optional())
-			.addAs(GROUP_WATER_VALUES, WaterValues.parameters)
-			.buildTree();
 
 	/** Available {StateManager}s */
 	enum Type {
@@ -45,6 +28,11 @@ public class StateManagerBuilder {
 		ENERGY_AND_TIME
 	}
 
+	public static final Tree parameters = Make.newTree().add(Make.newEnum(PARAM_TYPE, Type.class),
+			Make.newDouble(PARAM_HORIZON), Make.newDouble(PARAM_RESOLUTION))
+			.addAs(GROUP_WATER_VALUES, WaterValues.parameters)
+			.buildTree();
+
 	public static final String ERR_NOT_IMPLEMENTED = "StateManager is not implemented: ";
 
 	public static StateManager build(GenericDevice device, AssessmentFunction assessment, ParameterData input)
@@ -53,17 +41,11 @@ public class StateManagerBuilder {
 		double planningHorizon = input.getDouble(PARAM_HORIZON);
 		double energyResolution = input.getDouble(PARAM_RESOLUTION);
 		WaterValues waterValues = new WaterValues(input.getOptionalGroupList(GROUP_WATER_VALUES));
-		StateTracking overflow = input.getEnumOrDefault(PARAM_UNDERFLOW_TRACKING, StateTracking.class,
-				StateTracking.MAX_POWER);
-		StateTracking underflow = input.getEnumOrDefault(PARAM_UNDERFLOW_TRACKING, StateTracking.class,
-				StateTracking.MAX_POWER);
 		switch (type) {
 			case STATE_OF_CHARGE:
-				return new EnergyStateManager(device, assessment, planningHorizon, energyResolution, waterValues, underflow,
-						overflow);
+				return new EnergyStateManager(device, assessment, planningHorizon, energyResolution, waterValues);
 			case ENERGY_AND_TIME:
-				return new EnergyAndTimeStateManager(device, assessment, planningHorizon, energyResolution, waterValues,
-						underflow, overflow);
+				return new EnergyAndTimeStateManager(device, assessment, planningHorizon, energyResolution, waterValues);
 			default:
 				throw new RuntimeException(ERR_NOT_IMPLEMENTED + type);
 		}

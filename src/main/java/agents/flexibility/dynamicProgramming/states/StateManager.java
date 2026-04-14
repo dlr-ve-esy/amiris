@@ -14,6 +14,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public interface StateManager {
 	public static final int STATE_INFEASIBLE = Integer.MIN_VALUE;
+	public static final int STATE_OVERFLOW = Integer.MIN_VALUE + 1;
+	public static final int STATE_UNDERFLOW = Integer.MIN_VALUE + 2;
+
+	static final String ERR_INCONSISTENT = "Inconsistent energy levels during dispatch planning; this should not have happend.";
 
 	/** Contains the course of the internal energy levels, external energy deltas, and water values over a dispatch */
 	public static class DispatchSchedule {
@@ -67,6 +71,7 @@ public interface StateManager {
 	 * <li>if true, a complete list of available final state indices is returned</li>
 	 * <li>if false, only the first and last (inclusive) final state index is returned</li>
 	 * </ul>
+	 * If an underflow or overflow of the associated device occurs, instead a <b>single</b> corresponding state is returned
 	 * 
 	 * @param initialStateIndex index of state at the begin of a transition
 	 * @return final state indices reachable from given initial state at prepared time */

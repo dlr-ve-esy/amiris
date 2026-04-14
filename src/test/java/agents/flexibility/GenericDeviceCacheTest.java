@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import agents.flexibility.GenericDevice.StateViolation;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
 import de.dlr.gitlab.fame.time.Constants.Interval;
 import de.dlr.gitlab.fame.time.TimePeriod;
@@ -111,6 +112,22 @@ public class GenericDeviceCacheTest {
 	}
 
 	@Test
+	public void getMaxTargetEnergyContentInMWH_UnderflowCrash_returnsValueBelowLowerLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 10, 0, 0, -10);
+		when(mockDevice.onUnderflow()).thenReturn(StateViolation.CRASH);
+		cacheFor(ONE_HOUR);
+		assertEquals(-10, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
+	public void getMaxTargetEnergyContentInMWH_UnderflowCut_returnsLowerLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 10, 0, 0, -10);
+		when(mockDevice.onUnderflow()).thenReturn(StateViolation.CUT);
+		cacheFor(ONE_HOUR);
+		assertEquals(0, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
 	public void simulateTransition_useMaxTargetEnergy_returnsMaxPower() {
 		setupGenericDeviceCache(200, 0, 1, 0, 500, 0, 0.1, 0);
 		cacheFor(TWO_HOURS);
@@ -196,6 +213,22 @@ public class GenericDeviceCacheTest {
 		setupGenericDeviceCache(0, 200, 1, 1, 0, -500, 0.1, -50);
 		cacheFor(QUARTER_HOUR);
 		assertEquals(-13.800, deviceCache.getMinTargetEnergyContentInMWH(50), 1E-2);
+	}
+
+	@Test
+	public void getMinTargetEnergyContentInMWH_OverflowCrash_returnsAboveUpperLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
+		when(mockDevice.onOverflow()).thenReturn(StateViolation.CRASH);
+		cacheFor(ONE_HOUR);
+		assertEquals(10, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
+	public void getMinTargetEnergyContentInMWH_OverflowCut_returnsUpperLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
+		when(mockDevice.onOverflow()).thenReturn(StateViolation.CUT);
+		cacheFor(ONE_HOUR);
+		assertEquals(0, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
 	}
 
 	@Test

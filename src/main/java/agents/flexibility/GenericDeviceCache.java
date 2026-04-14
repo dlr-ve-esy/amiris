@@ -101,7 +101,7 @@ public class GenericDeviceCache {
 	public double getMaxTargetEnergyContentInMWH(double initialEnergyContentInMWH) {
 		double targetEnergyInMWH = initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate) + maxNetChargingEnergyInMWH;
 		targetEnergyInMWH = Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
-		if (device.onUnderflow == StateViolation.CUT) {
+		if (device.onUnderflow() == StateViolation.CUT) {
 			targetEnergyInMWH = Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
 		}
 		return targetEnergyInMWH;
@@ -119,7 +119,7 @@ public class GenericDeviceCache {
 		double targetEnergyInMWH = initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate)
 				+ maxNetDischargingEnergyInMWH;
 		targetEnergyInMWH = Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
-		if (device.onOverflow == StateViolation.CUT) {
+		if (device.onOverflow() == StateViolation.CUT) {
 			targetEnergyInMWH = Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
 		}
 		return targetEnergyInMWH;

@@ -71,8 +71,8 @@ public class GenericDevice {
 	private boolean enableProlonging;
 	private double lastProlongingCostInEUR;
 
-	public final StateViolation onOverflow;
-	public final StateViolation onUnderflow;
+	private final StateViolation onOverflow;
+	private final StateViolation onUnderflow;
 
 	/** Input parameters of a storage {@link Device} */
 	public static final Tree parameters = Make.newTree()
@@ -419,5 +419,19 @@ public class GenericDevice {
 	 * @return true if prolonging is allowed */
 	public boolean hasProlonging() {
 		return enableProlonging;
+	}
+
+	/** Returns configured overflow behaviour
+	 * 
+	 * @return how to deal with potential overflow of the device's energy reservoir */
+	public StateViolation onOverflow() {
+		return onOverflow;
+	}
+
+	/** Returns configured underflow behaviour
+	 * 
+	 * @return how to deal with potential underflow of the device's energy reservoir */
+	public StateViolation onUnderflow() {
+		return onUnderflow;
 	}
 }

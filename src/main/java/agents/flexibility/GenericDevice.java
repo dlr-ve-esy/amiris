@@ -189,8 +189,7 @@ public class GenericDevice {
 	}
 
 	/** Checks targeted energy content against upper and lower energy boundaries of the device. If targeted energy is out of bounds,
-	 * the result depends on configured overflow / underflow behaviour: energy may be a) silently cut to ensure bounds, b) kept
-	 * unchanged but logged with a warning, c) result in an exception.
+	 * it is cut to ensure bounds. Depending on the configured overflow / underflow behaviour, an error might be logged.
 	 * 
 	 * @param time at which the energy content shall be applied
 	 * @param targetEnergyContentInMWH to be checked for consistency with energy content limits

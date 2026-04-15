@@ -217,7 +217,7 @@ public class GenericDeviceCacheTest {
 
 	@Test
 	public void getMinTargetEnergyContentInMWH_OverflowCrash_returnsAboveUpperLimit() {
-		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
+		setupGenericDeviceCache(0, 0, 1, 1, 2, 0, 0, 10);
 		when(mockDevice.onOverflow()).thenReturn(StateViolation.ERROR);
 		cacheFor(ONE_HOUR);
 		assertEquals(10, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
@@ -225,10 +225,10 @@ public class GenericDeviceCacheTest {
 
 	@Test
 	public void getMinTargetEnergyContentInMWH_OverflowCut_returnsUpperLimit() {
-		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
+		setupGenericDeviceCache(0, 0, 1, 1, 2, 0, 0, 10);
 		when(mockDevice.onOverflow()).thenReturn(StateViolation.CUT);
 		cacheFor(ONE_HOUR);
-		assertEquals(0, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
+		assertEquals(2, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
 	}
 
 	@Test

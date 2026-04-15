@@ -160,12 +160,13 @@ public class StateEvaluations {
 
 	/** @throws RuntimeException if given state is not valid */
 	private void throwOnInvalidState(int stateIndex, TimeStamp time) {
-		if (stateIndex == StateManager.STATE_OVERFLOW) {
-			throw new RuntimeException(ERR_OVERFLOW + time);
-		} else if (stateIndex == StateManager.STATE_OVERFLOW) {
-			throw new RuntimeException(ERR_UNDERFLOW + time);
-		} else if (stateIndex == StateManager.STATE_INFEASIBLE) {
-			throw new RuntimeException(ERR_INFEASIBLE + time);
+		switch (stateIndex) {
+			case StateManager.STATE_OVERFLOW:
+				throw new RuntimeException(ERR_OVERFLOW + time);
+			case StateManager.STATE_UNDERFLOW:
+				throw new RuntimeException(ERR_UNDERFLOW + time);
+			case StateManager.STATE_INFEASIBLE:
+				throw new RuntimeException(ERR_INFEASIBLE + time);
 		}
 	}
 

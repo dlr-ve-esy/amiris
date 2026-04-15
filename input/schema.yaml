@@ -3081,7 +3081,7 @@ AgentTypes:
             Values:
               CUT:
                 MetaData:
-                  Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a dammed hydro power plant with an overflow valve"
+                  Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a reservoir hydro power plant with an overflow valve"
               ERROR:
                 MetaData:
                   Description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
@@ -3095,7 +3095,7 @@ AgentTypes:
             Values:
               CUT:
                 MetaData:
-                  Description: "Reduce effective outflow to not underflow the minimum allowed energy content"
+                  Description: "Reduce effective outflow to not fall below the minimum allowed energy content"
               ERROR:
                 MetaData:
                   Description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"

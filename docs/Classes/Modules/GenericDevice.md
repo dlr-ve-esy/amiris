@@ -71,11 +71,11 @@ In addition, these scalar parameters exists:
 * `MaximumShiftTimeInHours`: maximum allowed time for the flexibility device to be in an unbalanced state, e.g. maximum time for load shifting, in hours; no limit in case of 0 or negative values; defaults to -1 (specified in schema).
 * `EnableProlonging`: if positive, enables prolonged shifts of flexibility device beyond maximum shift time; defaults to 1 (specified in schema); ignored in case of unlimited shift time.
 * `OnOverflow`: How to deal with violation of maximum energy content limit due to excessive energy inflow; choose one of
-  * `ERROR`: (default); Consider exceeding the maximum energy content to be an error; if this cannot be avoided dispatch planning will fail
+  * `ERROR`: (default, specified in schema); Consider exceeding the maximum energy content to be an error; if this cannot be avoided dispatch planning will fail
   * `CUT`: Shed excess inflow to not exceed the maximum allowed energy content
 * `OnUnderflow`: How to deal with violation of minimum energy content limit due to excessive energy outflow; choose one of
-  * `ERROR`: (default); Consider falling below the minimum energy content to be an error; if this cannot be avoided dispatch planning will fail
-  * `CUT`: Reduce effective outflow to not underflow the minimum allowed energy content
+  * `ERROR`: (default, specified in schema); Consider falling below the minimum energy content to be an error; if this cannot be avoided dispatch planning will fail
+  * `CUT`: Reduce effective outflow to not fall below the minimum allowed energy content
 
 # See also
 

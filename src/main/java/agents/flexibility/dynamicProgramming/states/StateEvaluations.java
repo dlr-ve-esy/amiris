@@ -158,7 +158,7 @@ public class StateEvaluations {
 				expectedElectricityPriceInEURperMWH);
 	}
 
-	/** @throws RuntimeException if given state is not a valid */
+	/** @throws RuntimeException if given state is not valid */
 	private void throwOnInvalidState(int stateIndex, TimeStamp time) {
 		if (stateIndex == StateManager.STATE_OVERFLOW) {
 			throw new RuntimeException(ERR_OVERFLOW + time);

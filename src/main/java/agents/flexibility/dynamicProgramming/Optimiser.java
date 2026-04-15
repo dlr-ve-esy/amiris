@@ -43,7 +43,12 @@ public final class Optimiser {
 		initialAssessmentValue = isMaximisation ? -Double.MAX_VALUE : Double.MAX_VALUE;
 	}
 
-	public BidSchedule createSchedule(TimePeriod startingPeriod) {
+	/** Create an optimal {@link BidSchedule} based on the available information
+	 * 
+	 * @param startingPeriod first time period of the schedule that is to be created
+	 * @return optimised {@link BidSchedule}
+	 * @throws DispatchPlanningError in case to valid schedule can be found */
+	public BidSchedule createSchedule(TimePeriod startingPeriod) throws DispatchPlanningError {
 		optimise(startingPeriod);
 		int numberOfSchedulingSteps = calcHorizonInPeriodSteps(startingPeriod, bidScheduler.getScheduleHorizonInHours());
 		DispatchSchedule dispatchSchedule = stateManager.getBestDispatchSchedule(numberOfSchedulingSteps);

@@ -6,6 +6,7 @@ package agents.flexibility.dynamicProgramming.states;
 import java.util.Arrays;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.states.StateManager.DispatchSchedule;
 import de.dlr.gitlab.fame.time.TimePeriod;
@@ -117,9 +118,10 @@ public class StateEvaluations {
 	 * @param schedulingSteps number of time periods in the dispatch schedule
 	 * @param initialEnergyLevel energy level of the device at the beginning of the schedule
 	 * @param initialShiftTimeSteps shift time in time steps of the device at the beginning of the schedule
-	 * @return best dispatch schedule obtained from previously stored evaluations */
+	 * @return best dispatch schedule obtained from previously stored evaluations
+	 * @throws DispatchPlanningError if no valid dispatch schedule can be created */
 	public DispatchSchedule buildDispatchSchedule(int schedulingSteps, double initialEnergyLevel,
-			long initialShiftTimeSteps) {
+			long initialShiftTimeSteps) throws DispatchPlanningError {
 		double currentInternalEnergyInMWH = initialEnergyLevel;
 		int currentShiftTimeIndex = stateDiscretiser.roundToNearestShiftTimeIndex(initialShiftTimeSteps);
 
@@ -158,15 +160,15 @@ public class StateEvaluations {
 				expectedElectricityPriceInEURperMWH);
 	}
 
-	/** @throws RuntimeException if given state is not valid */
-	private void throwOnInvalidState(int stateIndex, TimeStamp time) {
+	/** @throws DispatchPlanningError if given state is not valid */
+	private void throwOnInvalidState(int stateIndex, TimeStamp time) throws DispatchPlanningError {
 		switch (stateIndex) {
 			case StateManager.STATE_OVERFLOW:
-				throw new RuntimeException(ERR_OVERFLOW + time);
+				throw new DispatchPlanningError(ERR_OVERFLOW + time);
 			case StateManager.STATE_UNDERFLOW:
-				throw new RuntimeException(ERR_UNDERFLOW + time);
+				throw new DispatchPlanningError(ERR_UNDERFLOW + time);
 			case StateManager.STATE_INFEASIBLE:
-				throw new RuntimeException(ERR_INFEASIBLE + time);
+				throw new DispatchPlanningError(ERR_INFEASIBLE + time);
 		}
 	}
 

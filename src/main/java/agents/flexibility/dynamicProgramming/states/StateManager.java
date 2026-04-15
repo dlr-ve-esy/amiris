@@ -5,6 +5,7 @@ package agents.flexibility.dynamicProgramming.states;
 
 import java.util.ArrayList;
 import agents.flexibility.GenericDevice;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
@@ -104,8 +105,9 @@ public interface StateManager {
 	/** Returns the {@link DispatchSchedule} from the starting period and the current state of the {@link GenericDevice}
 	 * 
 	 * @param schedulingSteps number of scheduling steps
-	 * @return dispatch schedule extending over the given number of scheduling steps */
-	DispatchSchedule getBestDispatchSchedule(int schedulingSteps);
+	 * @return dispatch schedule extending over the given number of scheduling steps
+	 * @throws DispatchPlanningError if no valid dispatch can be created */
+	DispatchSchedule getBestDispatchSchedule(int schedulingSteps) throws DispatchPlanningError;
 
 	/** Returns starting time of each planning interval in the planning horizon
 	 * 

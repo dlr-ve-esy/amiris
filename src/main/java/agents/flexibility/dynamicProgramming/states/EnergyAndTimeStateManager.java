@@ -6,6 +6,7 @@ package agents.flexibility.dynamicProgramming.states;
 import java.util.ArrayList;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.states.StateManagerBuilder.Type;
@@ -127,7 +128,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	}
 
 	@Override
-	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) {
+	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) throws DispatchPlanningError {
 		return stateEvaluations.buildDispatchSchedule(schedulingSteps, device.getCurrentInternalEnergyInMWH(),
 				device.getCurrentShiftTimeInSteps());
 	}

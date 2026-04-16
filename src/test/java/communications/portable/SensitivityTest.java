@@ -4,6 +4,7 @@
 package communications.portable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static testUtils.Exceptions.assertThrowsMessage;
 import org.junit.jupiter.api.Test;
@@ -200,5 +201,45 @@ public class SensitivityTest {
 		MarketClearingAssessment assessment = buildAssessment(emptyArray, emptyArray, emptyArray, emptyArray);
 		sensitivity = new Sensitivity(assessment, 2.0);
 		assertTrue(Double.isNaN(sensitivity.getPriceInEURperMWH(-1.0)));
+	}
+
+	@Test
+	public void isValid_noSupplyData_returnsFalse() {
+		MarketClearingAssessment assessment = buildAssessment(array(0, 1, 2, 5, 10), array(0, 1, 20, 500, 1000), emptyArray,
+				emptyArray);
+		sensitivity = new Sensitivity(assessment, 1.0);
+		assertFalse(sensitivity.isValid());
+	}
+
+	@Test
+	public void isValid_OneSupplyDatum_returnsFalse() {
+		MarketClearingAssessment assessment = buildAssessment(array(0, 1, 2, 5, 10), array(0, 1, 20, 500, 1000), array(0),
+				array(0));
+		sensitivity = new Sensitivity(assessment, 1.0);
+		assertFalse(sensitivity.isValid());
+	}
+
+	@Test
+	public void isValid_noDemandData_returnsFalse() {
+		MarketClearingAssessment assessment = buildAssessment(emptyArray, emptyArray, array(0, 1, 2, 5, 10),
+				array(0, 1, 20, 500, 1000));
+		sensitivity = new Sensitivity(assessment, 1.0);
+		assertFalse(sensitivity.isValid());
+	}
+
+	@Test
+	public void isValid_OneDemandDatum_returnsFalse() {
+		MarketClearingAssessment assessment = buildAssessment(array(0), array(0), array(0, 1),
+				array(0, 1));
+		sensitivity = new Sensitivity(assessment, 1.0);
+		assertFalse(sensitivity.isValid());
+	}
+
+	@Test
+	public void isValid_AtLeastTwoDataPoints_returnsTrue() {
+		MarketClearingAssessment assessment = buildAssessment(array(0, 1), array(0, 2), array(0, 1),
+				array(0, 5));
+		sensitivity = new Sensitivity(assessment, 1.0);
+		assertTrue(sensitivity.isValid());
 	}
 }

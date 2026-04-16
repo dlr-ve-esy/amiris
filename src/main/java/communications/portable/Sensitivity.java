@@ -203,4 +203,11 @@ public class Sensitivity implements Portable {
 		}
 		return Double.NaN;
 	}
+
+	/** Returns true if this {@link Sensitivity} is valid for assessment of additional demand and supply, false otherwise
+	 * 
+	 * @return false if either added demand or added supply cannot be assessed */
+	public boolean isValid() {
+		return supplyPowers.length > 1 && demandPowers.length > 1;
+	}
 }

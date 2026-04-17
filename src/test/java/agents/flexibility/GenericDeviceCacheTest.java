@@ -233,7 +233,7 @@ public class GenericDeviceCacheTest {
 
 	@Test
 	public void simulateTransition_noSelfDischargeFullEfficiency_correctCalc() {
-		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
+		setupGenericDeviceCache(500, 500, 1, 1, 0, 0, 0, 10);
 		cacheFor(ONE_HOUR);
 		assertEquals(40, deviceCache.simulateTransition(50, 100), 1E-12);
 		cacheFor(QUARTER_HOUR);
@@ -243,8 +243,22 @@ public class GenericDeviceCacheTest {
 	}
 
 	@Test
+	public void simulateTransition_largeInflow_resultWithinGridPowerLimits() {
+		setupGenericDeviceCache(100, 100, 1, 1, 0, 0, 0, 200);
+		cacheFor(ONE_HOUR);
+		assertEquals(-100, deviceCache.simulateTransition(50, 50), 1E-12);
+	}
+
+	@Test
+	public void simulateTransition_largeOutflow_resultWithinGridPowerLimits() {
+		setupGenericDeviceCache(100, 100, 1, 1, 0, 0, 0, -200);
+		cacheFor(ONE_HOUR);
+		assertEquals(100, deviceCache.simulateTransition(50, 50), 1E-12);
+	}
+
+	@Test
 	public void simulateTransition_noSelfDischargeImperfectEfficiency_correctCalc() {
-		setupGenericDeviceCache(0, 0, 0.5, 0.8, 0, 0, 0, 10);
+		setupGenericDeviceCache(1000, 1000, 0.5, 0.8, 0, 0, 0, 10);
 		cacheFor(ONE_HOUR);
 		assertEquals(80, deviceCache.simulateTransition(50, 100), 1E-12);
 		cacheFor(QUARTER_HOUR);
@@ -255,7 +269,7 @@ public class GenericDeviceCacheTest {
 
 	@Test
 	public void simulateTransition_withSelfDischargeImperfectEfficiency_correctCalc() {
-		setupGenericDeviceCache(0, 0, 0.5, 0.8, 0, 0, 0.1, 10);
+		setupGenericDeviceCache(1000, 1000, 0.5, 0.8, 0, 0, 0.1, 10);
 		cacheFor(ONE_HOUR);
 		assertEquals(90, deviceCache.simulateTransition(50, 100), 1E-2);
 		cacheFor(QUARTER_HOUR);

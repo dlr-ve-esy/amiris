@@ -22,6 +22,8 @@ public class GenericDeviceCache {
 	private double energyContentUpperLimitInMWH;
 	private double energyContentLowerLimitInMWH;
 	private double effectiveSelfDischargeRate;
+	private double maxExternalChargingEnergyInMWH;
+	private double maxExternalDischargingEnergyInMWH;
 	private double maxNetChargingEnergyInMWH;
 	private double maxNetDischargingEnergyInMWH;
 	private double netInflowEnergyInMWH;
@@ -51,15 +53,22 @@ public class GenericDeviceCache {
 		dischargingEfficiency = device.getDischargingEfficiency(time);
 		energyContentUpperLimitInMWH = device.getEnergyContentUpperLimitInMWH(time);
 		energyContentLowerLimitInMWH = device.getEnergyContentLowerLimitInMWH(time);
-		double netInflowPowerInMW = device.getNetInflowInMW(time);
 		effectiveSelfDischargeRate = 1. - Math.pow(1 - device.getSelfDischargeRate(time), intervalDurationInHours);
-		double maxNetChargingPowerInMW = netInflowPowerInMW
-				+ device.getExternalChargingPowerInMW(time) * chargingEfficiency;
-		maxNetChargingEnergyInMWH = maxNetChargingPowerInMW * intervalDurationInHours;
-		maxNetDischargingEnergyInMWH = (netInflowPowerInMW
-				- device.getExternalDischargingPowerInMW(time) / dischargingEfficiency) * intervalDurationInHours;
+
+		double netInflowPowerInMW = device.getNetInflowInMW(time);
+		double externalChargingPowerInMW = device.getExternalChargingPowerInMW(time);
+		double externalDischargingPowerInMW = device.getExternalDischargingPowerInMW(time);
+
+		double maxInternalChargingPowerInMW = netInflowPowerInMW + externalChargingPowerInMW * chargingEfficiency;
+		double maxInternalDischargingPowerInMW = netInflowPowerInMW - externalDischargingPowerInMW / dischargingEfficiency;
+
+		maxNetChargingEnergyInMWH = maxInternalChargingPowerInMW * intervalDurationInHours;
+		maxNetDischargingEnergyInMWH = maxInternalDischargingPowerInMW * intervalDurationInHours;
+
 		netInflowEnergyInMWH = netInflowPowerInMW * intervalDurationInHours;
 		variableCostInEURperMWH = device.getVariableCostInEURperMWH(time);
+		maxExternalChargingEnergyInMWH = externalChargingPowerInMW * intervalDurationInHours;
+		maxExternalDischargingEnergyInMWH = externalDischargingPowerInMW * intervalDurationInHours;
 	}
 
 	/** @throws RuntimeException if {@link #intervalDurationInHours} is not set */
@@ -127,16 +136,18 @@ public class GenericDeviceCache {
 
 	/** Simulates a transition at the currently cached time ignoring its current energy level, but starting from a given initial
 	 * energy content. Returns required external energy delta (i.e. charging if positive) to reach given target energy content. Does
-	 * <b>not</b> ensure power limits or energy limits.
+	 * <b>not</b> ensure energy limits but considers power limits.
 	 * 
 	 * @param initialEnergyContentInMWH at the beginning of transition
 	 * @param targetEnergyContentInMWH at the end of transition
 	 * @return external energy difference for transition from initial to final internal energy content level at given time */
 	public double simulateTransition(double initialEnergyContentInMWH, double targetEnergyContentInMWH) {
 		double selfDischargeInMWH = initialEnergyContentInMWH * effectiveSelfDischargeRate;
-		double internalEnergyDelta = targetEnergyContentInMWH - initialEnergyContentInMWH - netInflowEnergyInMWH
+		double internalEnergyDeltaInMWH = targetEnergyContentInMWH - initialEnergyContentInMWH - netInflowEnergyInMWH
 				+ selfDischargeInMWH;
-		return internalToExternalEnergy(internalEnergyDelta);
+		double externalEnergyDeltaInMWH = internalToExternalEnergy(internalEnergyDeltaInMWH);
+		return Math.min(maxExternalChargingEnergyInMWH,
+				Math.max(-maxExternalDischargingEnergyInMWH, externalEnergyDeltaInMWH));
 	}
 
 	/** Returns external energy delta equivalent of given internal energy delta based on (dis-)charging efficiency at currently

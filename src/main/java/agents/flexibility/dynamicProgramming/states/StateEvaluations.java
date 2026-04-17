@@ -18,7 +18,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class StateEvaluations {
 	static final String ERR_OVERFLOW = "Unavoidable energy overflow during planning at time: ";
 	static final String ERR_UNDERFLOW = "Unavoidable energy underflow during planning at time: ";
-	static final String ERR_INFEASIBLE = "Could not find a valid next state for dispatch at time: ";
+	static final String ERR_INFEASIBLE = "Maybe too large inflows / outflows after: ";
 
 	/** Used to avoid rounding errors in floating point calculation of transition steps */
 	static final double PRECISION_GUARD = 1E-6;
@@ -162,13 +162,15 @@ public class StateEvaluations {
 
 	/** @throws DispatchPlanningError if given state is not valid */
 	private void throwOnInvalidState(int stateIndex, TimeStamp time) throws DispatchPlanningError {
-		switch (stateIndex) {
-			case StateManager.STATE_OVERFLOW:
-				throw new DispatchPlanningError(ERR_OVERFLOW + time);
-			case StateManager.STATE_UNDERFLOW:
-				throw new DispatchPlanningError(ERR_UNDERFLOW + time);
-			case StateManager.STATE_INFEASIBLE:
-				throw new DispatchPlanningError(ERR_INFEASIBLE + time);
+		if (stateIndex < 0) {
+			switch (stateIndex) {
+				case StateManager.STATE_OVERFLOW:
+					throw new DispatchPlanningError(ERR_OVERFLOW + time);
+				case StateManager.STATE_UNDERFLOW:
+					throw new DispatchPlanningError(ERR_UNDERFLOW + time);
+				default:
+					throw new DispatchPlanningError(ERR_INFEASIBLE + time);
+			}
 		}
 	}
 

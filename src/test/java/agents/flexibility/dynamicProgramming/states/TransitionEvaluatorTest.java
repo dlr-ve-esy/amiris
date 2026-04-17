@@ -109,7 +109,7 @@ public class TransitionEvaluatorTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource(value = {"-2:-12:2:0:2", "0:-12:2:0:2", "12:2:0:2:-2", "12:0:0:2:-2"}, delimiter = ':')
+	@CsvSource(value = {"-2:-12:2:0:2", "0:-12:2:0:2", "12:2:0:2:-2", "12:0:0:2:-2", "-2:-12:0:0:0"}, delimiter = ':')
 	public void getTransitionValue_cachedWithOutflow_returnsCorrectValue(double maxChargingInMWH,
 			double maxDischargingInMWH, int initialIndex, int finalIndex, double expectedValue) {
 		mockDiscretisation(1);

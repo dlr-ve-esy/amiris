@@ -3,7 +3,7 @@
 SPDX-License-Identifier: CC0-1.0 -->
 # Changelog
 
-## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - TBA
+## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - 2026-04-20
 ### Changed
 - `EnergyStateManager`: Also use `StateDiscretiser` to reduce code duplications #227 (@dlr-cjs, @dlr_jk)
 - `SensitivityForecaster`: Log an error if sensitivity cannot be calculated due to missing supply or demand data #237 (@dlr-cjs, @dlr_jk)

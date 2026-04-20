@@ -6,7 +6,7 @@ Metadata:
   version: "4.1.0"
   title: "open Agent-based Market model for the Investigation of Renewable and Integrated energy Systems"
   homepage: "https://helmholtz.software/software/amiris"
-  documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/wikis/home"
+  documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/blob/v4.1.0/docs/home.md"
   sourceCode: "https://gitlab.com/dlr-ve/esy/amiris/amiris"
   publisher: "German Aerospace Center (DLR)"
   publisherLogo: https://www.dlr.de/static/media/Logo-en.bc10c5b6.svg
@@ -3642,4 +3642,3 @@ AgentTypes:
       description: "Trader that operates an energy storage device, e.g., a battery storage, pumped-hydro storage using heuristic dispatch strategies."
       subject: [{name: "flexibility", "@id": "OEO_00360007"}, {name: "trader", "@id": "OEO_00040005"}]
       keywords: ["electricity", "trading", "flexibility"]
-      

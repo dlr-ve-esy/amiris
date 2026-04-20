@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2024-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package communications.portable;
@@ -11,12 +11,14 @@ import communications.message.TransmissionCapacity;
 import de.dlr.gitlab.fame.communication.transfer.ComponentCollector;
 import de.dlr.gitlab.fame.communication.transfer.ComponentProvider;
 import de.dlr.gitlab.fame.communication.transfer.Portable;
+import de.dlr.gitlab.fame.time.TimeStamp;
 
 /** Specifies the data that EnergyExchange agents have to send to the MarketCoupling agent in order to minimise price variance
  * across markets. The same data type is return from the MarketCoupling agent to the registered EnergyExchange(s).
  * 
  * @author A. Achraf El Ghazi, Felix Nitsch */
 public class CouplingData implements Portable, Cloneable {
+	private TimeStamp clearingTime;
 	private SupplyOrderBook supplyOrderBook;
 	private DemandOrderBook demandOrderBook;
 	private TransmissionBook transmissionBook;
@@ -28,11 +30,13 @@ public class CouplingData implements Portable, Cloneable {
 
 	/** Create a CouplingData object
 	 * 
+	 * @param clearingTime at which the supply, demand and transmissions are valid
 	 * @param demandOrderBook of the demand bids
 	 * @param supplyOrderBook of the supply bids
 	 * @param transmissionBook of the transmission capacities */
-	public CouplingData(DemandOrderBook demandOrderBook, SupplyOrderBook supplyOrderBook,
+	public CouplingData(TimeStamp clearingTime, DemandOrderBook demandOrderBook, SupplyOrderBook supplyOrderBook,
 			TransmissionBook transmissionBook) {
+		this.clearingTime = clearingTime;
 		this.demandOrderBook = demandOrderBook;
 		this.supplyOrderBook = supplyOrderBook;
 		this.transmissionBook = transmissionBook;
@@ -42,6 +46,7 @@ public class CouplingData implements Portable, Cloneable {
 
 	@Override
 	public void addComponentsTo(ComponentCollector collector) {
+		collector.storeComponents(clearingTime);
 		collector.storeComponents(demandOrderBook);
 		collector.storeComponents(supplyOrderBook);
 		collector.storeComponents(transmissionBook);
@@ -51,11 +56,17 @@ public class CouplingData implements Portable, Cloneable {
 
 	@Override
 	public void populate(ComponentProvider provider) {
+		clearingTime = provider.nextComponent(TimeStamp.class);
 		demandOrderBook = provider.nextComponent(DemandOrderBook.class);
 		supplyOrderBook = provider.nextComponent(SupplyOrderBook.class);
 		transmissionBook = provider.nextComponent(TransmissionBook.class);
 		importOrderBook = provider.nextComponent(TransferOrderBook.class);
 		exportOrderBook = provider.nextComponent(TransferOrderBook.class);
+	}
+
+	/** @return time of market clearing this {@link CouplingData} is associated with */
+	public TimeStamp getClearingTime() {
+		return clearingTime;
 	}
 
 	/** @return the demandOrderBook of this object */
@@ -162,6 +173,7 @@ public class CouplingData implements Portable, Cloneable {
 	/** @return a deep copy of CouplingRequest caller */
 	public CouplingData clone() {
 		CouplingData clone = new CouplingData();
+		clone.clearingTime = clearingTime;
 		clone.setDemandOrderBook(demandOrderBook.clone());
 		clone.setSupplyOrderBook(supplyOrderBook.clone());
 		clone.setTransmissionBook(transmissionBook.clone());

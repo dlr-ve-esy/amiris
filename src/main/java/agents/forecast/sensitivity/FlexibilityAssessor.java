@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.forecast.sensitivity;
@@ -17,7 +17,6 @@ import util.TimedDataMap;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class FlexibilityAssessor {
-	static final String WARN_MISSING_REGISTRATION = "Agent with ID %s was not registered with SensitivityForecaster; it is recommended that all clients register, or none.";
 	static final String WARN_INFEASIBLE_WEIGHT = "Weight of initial estimate must not be smaller than 1 but was: ";
 	private static Logger logger = LoggerFactory.getLogger(FlexibilityAssessor.class);
 
@@ -54,7 +53,7 @@ public class FlexibilityAssessor {
 	/** Ensure given weight is at least one, else log a warning */
 	private int getFeasibleWeight(int weight) {
 		if (weight < 1) {
-			logger.warn(WARN_INFEASIBLE_WEIGHT, weight);
+			logger.warn(WARN_INFEASIBLE_WEIGHT + weight);
 		}
 		return Math.max(1, weight);
 	}
@@ -133,7 +132,7 @@ public class FlexibilityAssessor {
 	}
 
 	/** Calculate the sum of a client's multiplier history and the number of elements in that history; the number of elements is
-	 * greater or equal than one
+	 * greater than or equal to one
 	 * 
 	 * @return sum of multipliers, number of summands */
 	private double[] calcMultiplierComponents(long clientId, ArrayList<Double> multipliers) {
@@ -146,9 +145,6 @@ public class FlexibilityAssessor {
 			}
 		}
 		if (previousSummandsWeight < 1.) {
-			if (!maxEnergyDeltaPerClient.isEmpty()) {
-				logger.warn(WARN_MISSING_REGISTRATION, clientId);
-			}
 			return new double[] {1.0, 1.0};
 		}
 		return new double[] {sum, previousSummandsWeight};

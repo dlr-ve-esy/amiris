@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package communications.portable;
@@ -14,6 +14,8 @@ import de.dlr.gitlab.fame.communication.transfer.Portable;
  * @author Johannes Kochems, Christoph Schimeczek */
 public class Sensitivity implements Portable {
 	static final String ERR_INTERPOLATION_TYPE = "Interpolation type not implemented: ";
+	static final String ERR_INTERPOLATION_TYPE_MISSING = "Cannot perform interpolation: InterpolationType was not set.";
+	static final double EPS = 1E-10;
 
 	/** Available types of interpolation used during value calculations */
 	public enum InterpolationType {
@@ -77,7 +79,7 @@ public class Sensitivity implements Portable {
 		this.interpolationType = interpolationType;
 	}
 
-	/** Returns sensitivity value for given requested energy delta
+	/** Returns sensitivity value for given requested energy delta; Returns NaN if requested energy delta exceeds merit order data
 	 * 
 	 * @param requestedEnergyInMWH demand &gt; 0; supply &lt; 0
 	 * @return sensitivity value */
@@ -107,6 +109,9 @@ public class Sensitivity implements Portable {
 
 	/** @return y-value interpolated for given position x on a line determined by (x1,y1) and (x2,y2) */
 	private double interpolateValue(double x1, double y1, double x2, double y2, double x) {
+		if (interpolationType == null) {
+			throw new RuntimeException(ERR_INTERPOLATION_TYPE_MISSING + interpolationType);
+		}
 		switch (interpolationType) {
 			case CUMULATIVE:
 				return y1 + (y2 - y1) / (x2 - x1) * (x - x1);
@@ -149,18 +154,60 @@ public class Sensitivity implements Portable {
 	@Override
 	public void populate(ComponentProvider provider) {
 		multiplier = provider.nextDouble();
-		demandPowers = readArray(provider, provider.nextInt());
-		demandValues = readArray(provider, provider.nextInt());
-		supplyPowers = readArray(provider, provider.nextInt());
-		supplyValues = readArray(provider, provider.nextInt());
+		demandPowers = readArray(provider);
+		demandValues = readArray(provider);
+		supplyPowers = readArray(provider);
+		supplyValues = readArray(provider);
 	}
 
-	/** @return array with given length read from given provider */
-	private final double[] readArray(ComponentProvider provider, int length) {
+	/** @return array from given provider assuming it was stored using {@link #storeDoubleArray(ComponentCollector, double[])} */
+	private final double[] readArray(ComponentProvider provider) {
+		int length = provider.nextInt();
 		double[] array = new double[length];
 		for (int i = 0; i < length; i++) {
 			array[i] = provider.nextDouble();
 		}
 		return array;
+	}
+
+	/** Returns price in EUR/MWh for given merit order segment at the requested energy delta
+	 * 
+	 * @param requestedEnergyInMWH demand &gt; 0; supply &lt; 0
+	 * @return price */
+	public double getPriceInEURperMWH(double requestedEnergyInMWH) {
+		double modifiedEnergy = multiplier * requestedEnergyInMWH;
+		if (modifiedEnergy > 0) {
+			return getPriceAddedDemand(modifiedEnergy);
+		} else if (modifiedEnergy < 0) {
+			return getPriceAddedSupply(-modifiedEnergy);
+		}
+		return getPriceAddedSupply(EPS);
+	}
+
+	/** @return price in EUR/MWh for given additional demand */
+	private double getPriceAddedDemand(double additionalDemandInMWH) {
+		for (int index = 1; index < demandPowers.length; index++) {
+			if (demandPowers[index] >= additionalDemandInMWH) {
+				return (demandValues[index] - demandValues[index - 1]) / (demandPowers[index] - demandPowers[index - 1]);
+			}
+		}
+		return Double.NaN;
+	}
+
+	/** @return price in EUR/MWh for given additional supply */
+	private double getPriceAddedSupply(double additionalSupplyInMWH) {
+		for (int index = 1; index < supplyPowers.length; index++) {
+			if (supplyPowers[index] >= additionalSupplyInMWH) {
+				return (supplyValues[index] - supplyValues[index - 1]) / (supplyPowers[index] - supplyPowers[index - 1]);
+			}
+		}
+		return Double.NaN;
+	}
+
+	/** Returns true if this {@link Sensitivity} is valid for assessment of additional demand and supply, false otherwise
+	 * 
+	 * @return false if either added demand or added supply cannot be assessed */
+	public boolean isValid() {
+		return supplyPowers.length > 1 && demandPowers.length > 1;
 	}
 }

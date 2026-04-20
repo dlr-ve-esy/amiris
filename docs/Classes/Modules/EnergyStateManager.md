@@ -28,28 +28,22 @@ Hence,
 * `useStateList()` will return `false`
 * `getInitialStates()` and `getFinalStates()` will return only the IDs of the first and last state to be considered, not the full list, giving [Optimiser](./Optimiser.md) a higher speed.
 
+`EnergyStateManager` utilises a [StateDiscretiser](./StateDiscretiser.md) to match energy content to discretised states.
+If no valid state can be reached from a given initial state when calling `getFinalStates()` due to an energy reservoir overflow or underflow, a reserved state is returned to indicate the corresponding issue.
+
 ### Caching
 
-If self-discharge is not modelled, `EnergyStateManager` will operate faster and cache all transition values for a given time step during `prepareFor()`.
+If self-discharge is not modelled, the [TransitionEvaluator](./TransitionEvaluator.md) utilised by `EnergyStateManager` will operate faster and cache all transition values for a given time step during `prepareFor()`.
 In any case, `EnergyStateManager` pre-caches the properties of its `GenericDevice` using a [GenericDeviceCache](./GenericDeviceCache.md) at any given time step.
 **Warning**: If the `GenericDevice`'s lower or upper energy content limit is not constant, the algorithm will not consider changes in the number of states at the end of its planning interval.
 This can lead to imperfect planning results and the `GenericDevice` might temporarily operate outside of its (changed) energy limits.
-`EnergyStateManager` will ensure that no energy is lost or gained due to this behaviour and will correct its state along with its normal dispatch.
-An according warning will be raised in this case.
-
-See also [StateManager](./StateManager.md).
 
 ### Dispatch scheduling
 
-When creating a dispatch schedule, `EnergyStateManager` considers the actual SOC of the associated `GenericDevice`.
-However, the actual SOC might not exactly match a discretised energy state used during the optimisation.
-Therefore, `EnergyStateManager` will base its schedule using the discretised energy state closest to the actual SOC.
-It will perform "parallel shifts" and use the same transitions as originally planned.
-However, if the transition would exceed the energy limits of the `GenericDevice` the transition will be adjusted to respect these limits.
+The [StateEvaluations](./StateEvaluations.md) module used by `EnergyStateManager` will ensure that no energy is lost or gained during dispatch and find the optimal state path based on the previously evaluated states.
 
-![Dispatch scheduling and state correction](../../uploads/DynamicProgramming_Correction.png)
+See also [StateManager](./StateManager.md).
 
-Illustration of parallel shift transitions (green, red) of the device schedule if the device's SOC does not exactly match a discrete state during planning (black).
 
 # Input from file
 
@@ -58,6 +52,9 @@ See [StateManagerBuilder](./StateManagerBuilder.md)
 # See also
 
 * [StateManager](./StateManager.md)
+* [StateDiscretiser](./StateDiscretiser.md)
+* [TransitionEvaluator](./TransitionEvaluator.md)
+* [StateEvaluations](/StateEvaluations.md)
 * [GenericDevice](./GenericDevice.md)
 * [GenericDeviceCache](./GenericDeviceCache.md)
 * [Optimiser](./Optimiser.md)

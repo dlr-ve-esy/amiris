@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.trader;
@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import agents.flexibility.BidSchedule;
 import agents.flexibility.GenericDevice;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunctionBuilder;
@@ -46,11 +47,18 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Felix Nitsch, Christoph Schimeczek, Johannes Kochems */
 public class GenericFlexibilityTrader extends Trader implements SensitivityForecastClient {
+	static final String ERR_PLANNING = "Dispatch planning failed for: ";
+
+	static final String GROUP_DEVICE = "Device";
+	static final String GROUP_ASSESSMENT = "Assessment";
+	static final String GROUP_STATES = "StateDiscretisation";
+	static final String GROUP_BIDS = "Bidding";
+
 	@Input private static final Tree parameters = Make.newTree()
-			.addAs("Device", GenericDevice.parameters)
-			.addAs("Assessment", AssessmentFunctionBuilder.parameters)
-			.addAs("StateDiscretisation", StateManagerBuilder.parameters)
-			.addAs("Bidding", BidSchedulerBuilder.parameters)
+			.addAs(GROUP_DEVICE, GenericDevice.parameters)
+			.addAs(GROUP_ASSESSMENT, AssessmentFunctionBuilder.parameters)
+			.addAs(GROUP_STATES, StateManagerBuilder.parameters)
+			.addAs(GROUP_BIDS, BidSchedulerBuilder.parameters)
 			.buildTree();
 
 	/** Output columns of {@link GenericFlexibilityTrader}s */
@@ -59,7 +67,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		/** Total received money in EUR */
 		ReceivedMoneyInEUR,
 		OfferedChargePriceInEURperMWH, OfferedDischargePriceInEURperMWH, AwardedChargeEnergyInMWH,
-		AwardedDischargeEnergyInMWH, StoredEnergyInMWH, VariableCostsInEUR, DispatchMultiplier
+		AwardedDischargeEnergyInMWH, StoredEnergyInMWH, VariableCostsInEUR, DispatchMultiplier,
+		/** Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch */
+		ElectricityPricePredictionInEURperMWH
 	}
 
 	private static final TimeSpan OPERATION_PERIOD = new TimeSpan(1, Interval.HOURS);
@@ -78,10 +88,10 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		super(dataProvider);
 		ParameterData input = parameters.join(dataProvider);
 
-		device = new GenericDevice(input.getGroup("Device"));
-		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup("Assessment"));
-		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup("StateDiscretisation"));
-		var bidScheduler = BidSchedulerBuilder.build(input.getGroup("Bidding"));
+		device = new GenericDevice(input.getGroup(GROUP_DEVICE));
+		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT), device);
+		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup(GROUP_STATES));
+		var bidScheduler = BidSchedulerBuilder.build(input.getGroup(GROUP_BIDS));
 		strategist = new Optimiser(stateManager, bidScheduler, assessmentFunction.getTargetType());
 
 		call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);
@@ -141,7 +151,10 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 			excuteBeforeBidPreparation(targetTime);
 			Bid demandBid = prepareHourlyDemandBids(targetTime);
 			Bid supplyBid = prepareHourlySupplyBids(targetTime);
-			store(OutputColumns.OfferedEnergyInMWH, supplyBid.getEnergyAmountInMWH() - demandBid.getEnergyAmountInMWH());
+			double offeredEnergy = supplyBid.getEnergyAmountInMWH() - demandBid.getEnergyAmountInMWH();
+			store(OutputColumns.OfferedEnergyInMWH, offeredEnergy);
+			store(Outputs.ElectricityPricePredictionInEURperMWH,
+					bidSchedule.getExpectedElectricityPricesInEURperMWH(targetTime));
 			fulfilNext(contractToFulfil,
 					new BidsAtTime(targetTime, getId(), Arrays.asList(supplyBid), Arrays.asList(demandBid)));
 		}
@@ -154,7 +167,11 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 	private void excuteBeforeBidPreparation(TimeStamp targetTime) {
 		if (bidSchedule == null || !bidSchedule.isApplicable(targetTime, device.getCurrentInternalEnergyInMWH())) {
 			assessmentFunction.clearBefore(now());
-			bidSchedule = strategist.createSchedule(new TimePeriod(targetTime, OPERATION_PERIOD));
+			try {
+				bidSchedule = strategist.createSchedule(new TimePeriod(targetTime, OPERATION_PERIOD));
+			} catch (DispatchPlanningError e) {
+				throw new RuntimeException(ERR_PLANNING + this, e);
+			}
 		}
 	}
 
@@ -166,7 +183,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double demandPower = bidSchedule.getScheduledEnergyPurchaseInMWH(requestedTime);
 		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
 		Bid demandBid = new Bid(demandPower, price, Double.NaN);
-		store(Outputs.OfferedChargePriceInEURperMWH, price);
+		if (demandPower > 0) {
+			store(Outputs.OfferedChargePriceInEURperMWH, price);
+		}
 		return demandBid;
 	}
 
@@ -178,7 +197,9 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double supplyPower = bidSchedule.getScheduledEnergySalesInMWH(requestedTime);
 		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
 		Bid supplyBid = new Bid(supplyPower, price, Double.NaN);
-		store(Outputs.OfferedDischargePriceInEURperMWH, price);
+		if (supplyPower > 0) {
+			store(Outputs.OfferedDischargePriceInEURperMWH, price);
+		}
 		return supplyBid;
 	}
 
@@ -193,7 +214,10 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		double externalEnergyDeltaInMWH = awardedChargeEnergyInMWH - awardedDischargeEnergyInMWH;
 		double powerPriceInEURperMWH = awards.powerPriceInEURperMWH;
 		double revenuesInEUR = powerPriceInEURperMWH * awardedDischargeEnergyInMWH;
-		double costsInEUR = powerPriceInEURperMWH * awardedChargeEnergyInMWH;
+		double operationalCostInEUR = (awardedChargeEnergyInMWH + awardedDischargeEnergyInMWH)
+				* device.getVariableCostInEURperMWH(awards.beginOfDeliveryInterval);
+		double prolongingCostInEUR = device.getLastProlongingCostInEUR();
+		double costsInEUR = powerPriceInEURperMWH * awardedChargeEnergyInMWH + operationalCostInEUR + prolongingCostInEUR;
 
 		device.transition(awards.beginOfDeliveryInterval, externalEnergyDeltaInMWH, OPERATION_PERIOD);
 

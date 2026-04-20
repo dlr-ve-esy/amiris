@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2024-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.loadShifting;
@@ -59,8 +59,8 @@ public class LoadShiftingPortfolio {
 		energyLimitDownInMWH = input.getDouble("EnergyLimitDownInMWH");
 		energyResolutionInMWH = input.getDouble("EnergyResolutionInMWH");
 		setEnergyShiftStorageLevelInMWH(input.getDouble("InitialEnergyLevelInMWH"));
-		setCurrentShiftTimeInHours(input.getInteger("InitialShiftTimeInHours"));
 		maximumShiftTimeInHours = input.getInteger("MaximumShiftTimeInHours");
+		setCurrentShiftTimeInHours(input.getInteger("InitialShiftTimeInHours"));
 		variableShiftCostsInEURPerMWH = input.getTimeSeries("VariableShiftCostsInEURPerMWH");
 		baselineLoadSeries = input.getTimeSeries("BaselineLoadTimeSeries");
 		baselinePeakLoadInMW = input.getDouble("BaselinePeakLoadInMW");

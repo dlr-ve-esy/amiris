@@ -56,7 +56,8 @@
             "type": "Role",
             "schema:author": "https://orcid.org/0000-0002-9803-1336",
             "roleName": "Developer",
-            "startDate": "2018-01-01"
+            "startDate": "2018-01-01",
+            "endDate": "2025-12-31"
         },
         {
             "id": "https://orcid.org/0000-0001-9093-5042",
@@ -127,7 +128,8 @@
             "type": "Role",
             "schema:author": "https://orcid.org/0000-0001-5064-9148",
             "roleName": "Developer",
-            "startDate": "2021-03-01"
+            "startDate": "2021-03-01",
+            "endDate": "2025-12-31"
         },
         {
             "id": "https://orcid.org/0000-0001-7283-4707",
@@ -303,7 +305,7 @@
     "issueTracker": "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/issues",
     "relatedLink": "https://forum.openmod.org/tag/amiris",
     "referencePublication": "https://doi.org/10.21105/joss.05041",
-    "dateModified": "2025-09-09",
-    "version": "4.0.0",
-    "releaseNotes": "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0"
+    "dateModified": "2026-04-20",
+    "version": "4.1.0",
+    "releaseNotes": "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0"
 }

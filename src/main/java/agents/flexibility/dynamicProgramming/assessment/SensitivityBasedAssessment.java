@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.assessment;
 
 import java.util.ArrayList;
 import java.util.TreeMap;
+import agents.flexibility.GenericDevice;
 import communications.message.PointInTime;
 import communications.portable.Sensitivity;
 import communications.portable.Sensitivity.InterpolationType;
@@ -17,10 +18,17 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public abstract class SensitivityBasedAssessment implements AssessmentFunction {
 	private final TreeMap<TimeStamp, Sensitivity> sensitivityForecasts = new TreeMap<>();
 	protected Sensitivity currentSensitivity;
+	protected GenericDevice device;
+	protected double currentVariableCostInEURperMWH;
+
+	public SensitivityBasedAssessment(GenericDevice device) {
+		this.device = device;
+	}
 
 	@Override
 	public void prepareFor(TimeStamp time) {
 		currentSensitivity = sensitivityForecasts.get(time);
+		currentVariableCostInEURperMWH = device.getVariableCostInEURperMWH(time);
 	}
 
 	@Override
@@ -59,5 +67,10 @@ public abstract class SensitivityBasedAssessment implements AssessmentFunction {
 	@Override
 	public final double getMultiplier() {
 		return currentSensitivity.getMultiplier();
+	}
+
+	@Override
+	public double getElectricityPriceAt(TimeStamp time, double externalEnergyDeltaInMWH) {
+		return sensitivityForecasts.get(time).getPriceInEURperMWH(externalEnergyDeltaInMWH);
 	}
 }

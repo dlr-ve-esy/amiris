@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.assessment;
 
+import agents.flexibility.GenericDevice;
 import agents.flexibility.dynamicProgramming.Optimiser.Target;
 import agents.forecast.sensitivity.SensitivityForecastProvider.ForecastType;
 import communications.portable.Sensitivity.InterpolationType;
@@ -12,10 +13,15 @@ import communications.portable.Sensitivity.InterpolationType;
  * 
  * @author Christoph Schimeczek */
 public class MaxProfit extends SensitivityBasedAssessment {
+	public MaxProfit(GenericDevice device) {
+		super(device);
+	}
+
 	@Override
 	public double assessTransition(double externalEnergyDeltaInMWH) {
 		double sign = -Math.signum(externalEnergyDeltaInMWH);
-		return sign * currentSensitivity.getValue(externalEnergyDeltaInMWH);
+		return sign * currentSensitivity.getValue(externalEnergyDeltaInMWH)
+				- Math.abs(externalEnergyDeltaInMWH) * currentVariableCostInEURperMWH;
 	}
 
 	@Override
@@ -31,5 +37,10 @@ public class MaxProfit extends SensitivityBasedAssessment {
 	@Override
 	protected InterpolationType getInterpolationType() {
 		return InterpolationType.DIRECT;
+	}
+
+	@Override
+	public double getSignOfCostValue() {
+		return -1.;
 	}
 }

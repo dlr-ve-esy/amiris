@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2022-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -275,6 +276,37 @@ public class UtilTest {
 			var pair = result.get(new TimeStamp(time));
 			assertEquals(time, pair.getFirstItem().validAt.getStep());
 			assertEquals(time, pair.getSecondItem().validAt.getStep());
+		}
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = {-1, 0, 2, 10})
+	public void truncateIntArray_arrayEmpty_returnEmptyArray(int newLength) {
+		assertEquals(0, Util.truncateIntArray(new int[] {}, newLength).length);
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = {0, 2, 10})
+	public void truncateIntArray_newLengthZero_returnEmptyArray(int originalLength) {
+		assertEquals(0, Util.truncateIntArray(new int[originalLength], 0).length);
+	}
+
+	@Test
+	public void truncateIntArray_newLengthSmaller_returnReducedSize() {
+		int[] original = new int[] {0, 1, 2, 3, 4, 5};
+		assertArrayEquals(new int[] {0}, Util.truncateIntArray(original, 1));
+		assertArrayEquals(new int[] {0, 1, 2}, Util.truncateIntArray(original, 3));
+		assertArrayEquals(new int[] {0, 1, 2, 3, 4}, Util.truncateIntArray(original, 5));
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = {6, 8, 10, 100})
+	public void truncateIntArray_newLengthEqualOrLarger_returnOriginal(int newLength) {
+		int[] original = new int[] {0, 1, 2, 3, 4, 5};
+		int[] result = Util.truncateIntArray(original, newLength);
+		assertEquals(original.length, result.length);
+		for (int i = 0; i < original.length; i++) {
+			assertEquals(original[i], result[i]);
 		}
 	}
 }

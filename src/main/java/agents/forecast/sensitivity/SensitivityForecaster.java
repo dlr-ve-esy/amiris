@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.forecast.sensitivity;
@@ -6,6 +6,8 @@ package agents.forecast.sensitivity;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import agents.forecast.MarketForecaster;
 import communications.message.AmountAtTime;
 import communications.message.ForecastClientRegistration;
@@ -27,7 +29,9 @@ import util.TimedDataMap;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class SensitivityForecaster extends MarketForecaster implements SensitivityForecastProvider {
-	static final String ERR_UNREGISTERED = "Client '%s' is not registered at SensitivityForecaster '%s'. Add `ForecastRegistration` contract before `SensitivityRequest`.";
+	static final String ERR_UNREGISTERED = "Client '%d' is not registered at SensitivityForecaster '%s'. Add `ForecastRegistration` contract before `SensitivityRequest`.";
+	static final String WARN_INVALID = "Merit-order sensitivity in forcaster %s at time %s is not valid for either demand or supply. Ensure positive values for both!";
+	private static Logger logger = LoggerFactory.getLogger(SensitivityForecaster.class);
 
 	@Input private static final Tree parameters = Make.newTree().add(Make.newGroup("MultiplierEstimation").optional()
 			.add(Make.newDouble("IgnoreAwardFactor").optional()
@@ -89,7 +93,11 @@ public class SensitivityForecaster extends MarketForecaster implements Sensitivi
 			for (Message message : requests) {
 				TimeStamp time = message.getDataItemOfType(PointInTime.class).validAt;
 				MarketClearingAssessment assessment = getAssessmentFor(getForecastTypeOfClient(clientId), time);
-				fulfilNext(contract, new Sensitivity(assessment, multiplier), new PointInTime(time));
+				Sensitivity sensitivity = new Sensitivity(assessment, multiplier);
+				if (!sensitivity.isValid()) {
+					logger.error(String.format(WARN_INVALID, this, time));
+				}
+				fulfilNext(contract, sensitivity, new PointInTime(time));
 			}
 		}
 		flexibilityAssessor.clearBefore(now());

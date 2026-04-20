@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2024-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.loadShifting.strategists;
@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import agents.loadShifting.LoadShiftingPortfolio;
 import agents.loadShifting.strategists.LoadShiftStateManager.LoadShiftState;
+import agents.markets.meritOrder.Constants;
 import agents.markets.meritOrder.sensitivities.MeritOrderSensitivity;
 import agents.markets.meritOrder.sensitivities.PriceSensitivity;
 import agents.markets.meritOrder.sensitivities.StepPower;
@@ -166,9 +167,7 @@ public class ShiftProfitMaximiser extends LoadShiftingStrategist {
 
 	/** @return electricity price in the specified {@link TimePeriod} for the specified state transition */
 	private double calcPriceInPeriod(TimePeriod timePeriod, int stateDelta) {
-		double[] chargePrices = calcChargePrices(timePeriod);
-		int priceArrayIndex = (stateManager.getNumberOfPowerStates() - 1) / 2 + stateDelta;
-		return chargePrices[priceArrayIndex];
+		return stateDelta > 0 ? Constants.SCARCITY_PRICE_IN_EUR_PER_MWH : Constants.MINIMAL_PRICE_IN_EUR_PER_MWH;
 	}
 
 	/** @return a {@link PriceSensitivity} item */

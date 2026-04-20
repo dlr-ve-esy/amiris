@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.bidding;
@@ -31,6 +31,7 @@ public class EnsureDispatch implements BidScheduler {
 		bidSchedule.setRequestedEnergyPerPeriod(dispatchSchedule.externalEnergyDeltasInMWH);
 		bidSchedule.setBidsScheduleInEURperMWH(biddingPricePerPeriodInEURperMWH);
 		bidSchedule.setExpectedInitialInternalEnergyScheduleInMWH(dispatchSchedule.initialInternalEnergiesInMWH);
+		bidSchedule.setExpectedElectricityPricesInEURperMWH(dispatchSchedule.assumedElectricityPriceInEURperMWH);
 		return bidSchedule;
 	}
 

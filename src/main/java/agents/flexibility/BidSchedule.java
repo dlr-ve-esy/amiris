@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility;
@@ -26,6 +26,8 @@ public class BidSchedule {
 	private double[] biddingPricePerPeriodInEURperMWH;
 	/** Energy level of the flexibility device expected at each period */
 	protected double[] expectedInitialInternalEnergyPerPeriodInMWH;
+	/** Expected electricity prices based on forecast and flexibility dispatch */
+	protected double[] expectedElectricityPricesInEURperMWH;
 
 	/** Creates a {@link BidSchedule}
 	 * 
@@ -79,6 +81,16 @@ public class BidSchedule {
 		ensureIsNull(this.expectedInitialInternalEnergyPerPeriodInMWH);
 		ensureCorrectLength(expectedInitialInternalEnergyPerPeriodInMWH);
 		this.expectedInitialInternalEnergyPerPeriodInMWH = expectedInitialInternalEnergyPerPeriodInMWH.clone();
+	}
+
+	/** Set expected electricity price depending on the forecasted merit order and flexibility device dispatch
+	 * 
+	 * @param expectedElectricityPricesInEURperMWH prices expected when dispatching
+	 * @throws RuntimeException if this value was set previously or if its length does not match {@link #durationInPeriods} */
+	public void setExpectedElectricityPricesInEURperMWH(double[] expectedElectricityPricesInEURperMWH) {
+		ensureIsNull(this.expectedElectricityPricesInEURperMWH);
+		ensureCorrectLength(expectedElectricityPricesInEURperMWH);
+		this.expectedElectricityPricesInEURperMWH = expectedElectricityPricesInEURperMWH.clone();
 	}
 
 	/** Returns true if this schedule is defined for the given time, and if the given energy level matches the scheduled energy one
@@ -152,5 +164,17 @@ public class BidSchedule {
 	 * @return start time */
 	public TimeStamp getTimeOfFirstElement() {
 		return timeOfFirstElement;
+	}
+
+	/** Returns expected electricity price depending on the forecasted merit order and flexibility device dispatch, if set. Returns
+	 * NaN in case no electricity price expectation values are set.
+	 * 
+	 * @param time must match schedule time element, use {@link #isApplicable(TimeStamp, double)} to check for validity
+	 * @return expected electricity price */
+	public double getExpectedElectricityPricesInEURperMWH(TimeStamp time) {
+		if (expectedElectricityPricesInEURperMWH != null) {
+			return expectedElectricityPricesInEURperMWH[calcElementInSchedule(time)];
+		}
+		return Double.NaN;
 	}
 }

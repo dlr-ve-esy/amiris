@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming;
@@ -18,16 +18,6 @@ import de.dlr.gitlab.fame.time.TimePeriod;
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public final class Optimiser {
-	static final String ERR_NO_FEASIBLE_SOLUTION = "No feasible transition found.";
-	static final String ERR_OPTIMISATION = "Optimisation failed for TimePeriod: ";
-
-	@SuppressWarnings("serial")
-	private class OptimisationError extends Exception {
-		public OptimisationError(String message) {
-			super(message);
-		}
-	}
-
 	/** Optimisation target */
 	public enum Target {
 		/** Maximise the value of a target function */
@@ -53,51 +43,60 @@ public final class Optimiser {
 		initialAssessmentValue = isMaximisation ? -Double.MAX_VALUE : Double.MAX_VALUE;
 	}
 
-	public BidSchedule createSchedule(TimePeriod startingPeriod) {
+	/** Create an optimal {@link BidSchedule} based on the available information
+	 * 
+	 * @param startingPeriod first time period of the schedule that is to be created
+	 * @return optimised {@link BidSchedule}
+	 * @throws DispatchPlanningError in case to valid schedule can be found */
+	public BidSchedule createSchedule(TimePeriod startingPeriod) throws DispatchPlanningError {
 		optimise(startingPeriod);
 		int numberOfSchedulingSteps = calcHorizonInPeriodSteps(startingPeriod, bidScheduler.getScheduleHorizonInHours());
 		DispatchSchedule dispatchSchedule = stateManager.getBestDispatchSchedule(numberOfSchedulingSteps);
 		return bidScheduler.createBidSchedule(startingPeriod, dispatchSchedule);
 	}
 
-	/** Optimise dispatch following an optimisation target */
-	private void optimise(TimePeriod startingPeriod) {
+	/** Optimise dispatch, proceeding backwards in time
+	 *
+	 * @param startingPeriod first time period of the planning horizon that is to be optimised
+	 * @throws DispatchPlanningError in case to valid transition can be found */
+	private void optimise(TimePeriod startingPeriod) throws DispatchPlanningError {
 		stateManager.initialise(startingPeriod);
 		for (int k = 0; k < stateManager.getNumberOfForecastTimeSteps(); k++) {
-			int step = stateManager.getNumberOfForecastTimeSteps() - k - 1; // step backwards in time
+			int step = stateManager.getNumberOfForecastTimeSteps() - k - 1;
 			TimePeriod timePeriod = startingPeriod.shiftByDuration(step);
 			stateManager.prepareFor(timePeriod.getStartTime());
 			double[] bestValuesNextPeriod = stateManager.getBestValuesNextPeriod();
-			try {
-				if (stateManager.useStateList()) {
-					optimiseWithStateList(bestValuesNextPeriod);
-				} else {
-					optimiseWithBoundaries(bestValuesNextPeriod);
-				}
-			} catch (OptimisationError e) {
-				throw new RuntimeException(ERR_OPTIMISATION + timePeriod, e);
+			boolean hasValidTransition = stateManager.useStateList() ? optimiseWithStateList(bestValuesNextPeriod)
+					: optimiseWithBoundaries(bestValuesNextPeriod);
+			if (!hasValidTransition) {
+				assessProblemAndThrow(timePeriod, bestValuesNextPeriod);
 			}
 		}
 	}
 
 	/** Optimise using lists of initial and final state indices */
-	private void optimiseWithStateList(double[] bestValuesNextPeriod) throws OptimisationError {
+	private boolean optimiseWithStateList(double[] bestValuesNextPeriod) {
+		boolean hasValidTransition = false;
 		for (int initialStateIndex : stateManager.getInitialStates()) {
 			double bestAssessmentValue = initialAssessmentValue;
 			int bestFinalStateIndex = Integer.MIN_VALUE;
-			for (int finalStateIndex : stateManager.getFinalStates(initialStateIndex)) {
-				double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
-						+ bestValuesNextPeriod[finalStateIndex];
-				if (compare(value, bestAssessmentValue)) {
-					bestAssessmentValue = value;
-					bestFinalStateIndex = finalStateIndex;
+			int[] finalStates = stateManager.getFinalStates(initialStateIndex);
+			if (finalStates.length == 1 && finalStates[0] < 0) {
+				bestFinalStateIndex = finalStates[0];
+			} else {
+				for (int finalStateIndex : finalStates) {
+					double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
+							+ bestValuesNextPeriod[finalStateIndex];
+					if (compare(value, bestAssessmentValue)) {
+						bestAssessmentValue = value;
+						bestFinalStateIndex = finalStateIndex;
+					}
 				}
 			}
-			if (bestFinalStateIndex == Integer.MIN_VALUE) {
-				throw new OptimisationError(ERR_NO_FEASIBLE_SOLUTION);
-			}
 			stateManager.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);
+			hasValidTransition = hasValidTransition || bestFinalStateIndex >= 0;
 		}
+		return hasValidTransition;
 	}
 
 	/** @return true if given value is better than provided bestValue, false otherwise */
@@ -110,25 +109,38 @@ public final class Optimiser {
 	}
 
 	/** Optimise using lowest and highest state index */
-	private void optimiseWithBoundaries(double[] bestValuesNextPeriod) throws OptimisationError {
+	private boolean optimiseWithBoundaries(double[] bestValuesNextPeriod) {
+		boolean hasValidTransition = false;
 		int[] initialBoundaries = stateManager.getInitialStates();
 		for (int initialStateIndex = initialBoundaries[0]; initialStateIndex <= initialBoundaries[1]; initialStateIndex++) {
 			double bestAssessmentValue = initialAssessmentValue;
-			int bestFinalStateIndex = Integer.MIN_VALUE;
+			int bestFinalStateIndex = StateManager.STATE_INFEASIBLE;
 			int[] finalBoundaries = stateManager.getFinalStates(initialStateIndex);
-			for (int finalStateIndex = finalBoundaries[0]; finalStateIndex <= finalBoundaries[1]; finalStateIndex++) {
-				double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
-						+ bestValuesNextPeriod[finalStateIndex];
-				if (compare(value, bestAssessmentValue)) {
-					bestAssessmentValue = value;
-					bestFinalStateIndex = finalStateIndex;
+			if (finalBoundaries.length == 1) {
+				bestFinalStateIndex = finalBoundaries[0];
+			} else {
+				for (int finalStateIndex = finalBoundaries[0]; finalStateIndex <= finalBoundaries[1]; finalStateIndex++) {
+					double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
+							+ bestValuesNextPeriod[finalStateIndex];
+					if (compare(value, bestAssessmentValue)) {
+						bestAssessmentValue = value;
+						bestFinalStateIndex = finalStateIndex;
+					}
 				}
 			}
-			if (bestFinalStateIndex == Integer.MIN_VALUE) {
-				throw new OptimisationError(ERR_NO_FEASIBLE_SOLUTION);
-			}
 			stateManager.updateBestFinalState(initialStateIndex, bestFinalStateIndex, bestAssessmentValue);
+			hasValidTransition = hasValidTransition || bestFinalStateIndex >= 0;
 		}
+		return hasValidTransition;
+	}
+
+	/** Assesses problems in the dispatch planning; then throws a {@link DispatchPlanningError}
+	 * 
+	 * @throws DispatchPlanningError indicating problems in the dispatch */
+	private void assessProblemAndThrow(TimePeriod timePeriod, double[] bestValuesNextPeriod)
+			throws DispatchPlanningError {
+		String error = OptimisationProblemAssessor.identifyProblems(stateManager, bestValuesNextPeriod);
+		throw new DispatchPlanningError(error + " Time: " + timePeriod);
 	}
 
 	/** Calculates how many specified time periods fit into the given time horizon

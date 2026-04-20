@@ -1,14 +1,13 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2024-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.markets;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.TreeMap;
 import agents.markets.meritOrder.DemandBalancer;
 import agents.markets.meritOrder.books.TransmissionBook;
 import communications.message.TransmissionCapacity;
@@ -25,27 +24,35 @@ import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
 import de.dlr.gitlab.fame.service.output.ComplexIndex;
 import de.dlr.gitlab.fame.service.output.Output;
+import de.dlr.gitlab.fame.time.TimeStamp;
 
 /** Market coupling Agent that receives MeritOrderBooks from registered individual DayAheadMarket(s). It computes coupled
  * electricity prices aiming at minimising price differences between markets. Sends individual, coupled prices back to its client
  * markets.
  * 
- * @author A. Achraf El Ghazi, Felix Nitsch */
+ * @author A. Achraf El Ghazi, Felix Nitsch, Christoph Schimeczek, Johannes Kochems, Milena Sipovac */
 public class MarketCoupling extends Agent {
 	static final String MULTIPLE_REQUESTS = "Only one coupling request is allow per market, but multiple received from: ";
 	static final String NO_AGENT_FOR_ZONE = "No DayAheadMarket agent found for market zone: ";
 	static final double DEFAULT_DEMAND_SHIFT_OFFSET = 1.0;
+	static final double DEFAULT_MAX_SHIFT = Double.MAX_VALUE;
 
 	/** Products of {@link MarketCoupling} */
 	@Product
 	public static enum Products {
+		/** Result of the coupled market clearing forecasts */
+		MarketCouplingForecastResult,
 		/** Result of the market coupling */
 		MarketCouplingResult
-	};
+	}
+
+	static final String PARAM_MIN_OFFSET = "MinimumDemandOffsetInMWH";
+	static final String PARAM_MAX_SHIFT = "MaximumShiftedEnergyPerIterationInMWH";
 
 	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newDouble("MinimumDemandOffsetInMWH").optional()
-					.help("Offset added to the demand shift that ensures a price change at the involved markets."))
+			.add(Make.newDouble(PARAM_MIN_OFFSET).optional()
+					.help("Offset added to the demand shift that ensures a price change at the involved markets."),
+					Make.newDouble(PARAM_MAX_SHIFT).optional())
 			.buildTree();
 
 	@Output
@@ -54,7 +61,7 @@ public class MarketCoupling extends Agent {
 		AvailableTransferCapacityInMWH,
 		/** Complex output; the actual used transfer capacity between two markets in MWH */
 		UsedTransferCapacityInMWH
-	};
+	}
 
 	private static enum TransferKey {
 		OriginAgentId, TargetAgentId
@@ -76,11 +83,34 @@ public class MarketCoupling extends Agent {
 	public MarketCoupling(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
 		ParameterData input = parameters.join(dataProvider);
-		double minEffectiveDemandOffset = input.getDoubleOrDefault("MinimumDemandOffsetInMWH", DEFAULT_DEMAND_SHIFT_OFFSET);
-		demandBalancer = new DemandBalancer(minEffectiveDemandOffset);
+		double minEffectiveDemandOffset = input.getDoubleOrDefault(PARAM_MIN_OFFSET, DEFAULT_DEMAND_SHIFT_OFFSET);
+		double maxEnergyShift = input.getDoubleOrDefault(PARAM_MAX_SHIFT, DEFAULT_MAX_SHIFT);
+		demandBalancer = new DemandBalancer(minEffectiveDemandOffset, maxEnergyShift);
 
-		call(this::clearCoupledMarkets).on(Products.MarketCouplingResult)
-				.use(DayAheadMarketMultiZone.Products.TransmissionAndBids);
+		call(this::forecastCoupledMarkets).on(Products.MarketCouplingForecastResult)
+				.use(MarketCouplingClient.Products.TransmissionAndBidForecasts);
+		call(this::clearCoupledAndWriteResults).on(Products.MarketCouplingResult)
+				.use(MarketCouplingClient.Products.TransmissionAndBids);
+	}
+
+	private void forecastCoupledMarkets(ArrayList<Message> input, List<Contract> contracts) {
+		TreeMap<TimeStamp, ArrayList<Message>> messagesByClearingTime = sortMessagesByClearingTimeStamp(input);
+		for (ArrayList<Message> messages : messagesByClearingTime.values()) {
+			clearCoupledMarkets(messages, contracts, false);
+		}
+	}
+
+	/** Groups given messages by their targeted time of delivery into an ordered Map
+	 * 
+	 * @param messages to group by
+	 * @return a Map of Messages sorted by {@link TimeStamp} of the associated clearing times */
+	protected TreeMap<TimeStamp, ArrayList<Message>> sortMessagesByClearingTimeStamp(ArrayList<Message> messages) {
+		TreeMap<TimeStamp, ArrayList<Message>> messageByTimeStamp = new TreeMap<>();
+		for (Message message : messages) {
+			TimeStamp deliveryTime = message.getFirstPortableItemOfType(CouplingData.class).getClearingTime();
+			messageByTimeStamp.computeIfAbsent(deliveryTime, __ -> new ArrayList<Message>()).add(message);
+		}
+		return messageByTimeStamp;
 	}
 
 	/** Action for the joint clearing of coupled markets
@@ -94,29 +124,23 @@ public class MarketCoupling extends Agent {
 	 * 
 	 * @param input received CouplingRequests of the contracted EnergyExchanges
 	 * @param contracts with said EnergyExchanges */
-	private void clearCoupledMarkets(ArrayList<Message> input, List<Contract> contracts) {
-		ensureOneMessagePerSender(input);
+	private void clearCoupledMarkets(ArrayList<Message> input, List<Contract> contracts, boolean writeOutput) {
+		couplingRequests.clear();
+		initialTransmissionBookByMarket.clear();
 		for (Message message : input) {
 			CouplingData couplingRequest = message.getFirstPortableItemOfType(CouplingData.class);
 			initialTransmissionBookByMarket.put(message.getSenderId(), couplingRequest.getTransmissionBook());
 			couplingRequests.put(message.getSenderId(), couplingRequest.clone());
 		}
 		demandBalancer.balance(couplingRequests);
-		writeCouplingResults();
+		if (writeOutput) {
+			writeCouplingResults();
+		}
 		sendCoupledBidsToExchanges(contracts);
 	}
 
-	/** Ensures that the given list if messages contains at most one message per sender
-	 * 
-	 * @param messages to check
-	 * @throws RuntimeException if more than one message is received per sender */
-	private void ensureOneMessagePerSender(ArrayList<Message> messages) {
-		Set<Long> couplingCandidates = new HashSet<>();
-		for (Message message : messages) {
-			if (!couplingCandidates.add(message.getSenderId())) {
-				throw new RuntimeException(MULTIPLE_REQUESTS + message.getSenderId());
-			}
-		}
+	private void clearCoupledAndWriteResults(ArrayList<Message> input, List<Contract> contracts) {
+		clearCoupledMarkets(input, contracts, true);
 	}
 
 	/** Write results of market coupling to output **/

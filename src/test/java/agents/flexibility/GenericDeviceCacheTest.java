@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility;
@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import agents.flexibility.GenericDevice.StateViolation;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
 import de.dlr.gitlab.fame.time.Constants.Interval;
 import de.dlr.gitlab.fame.time.TimePeriod;
@@ -111,6 +112,22 @@ public class GenericDeviceCacheTest {
 	}
 
 	@Test
+	public void getMaxTargetEnergyContentInMWH_UnderflowCrash_returnsValueBelowLowerLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 10, 0, 0, -10);
+		when(mockDevice.onUnderflow()).thenReturn(StateViolation.ERROR);
+		cacheFor(ONE_HOUR);
+		assertEquals(-10, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
+	public void getMaxTargetEnergyContentInMWH_UnderflowCut_returnsLowerLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 10, 0, 0, -10);
+		when(mockDevice.onUnderflow()).thenReturn(StateViolation.CUT);
+		cacheFor(ONE_HOUR);
+		assertEquals(0, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
 	public void simulateTransition_useMaxTargetEnergy_returnsMaxPower() {
 		setupGenericDeviceCache(200, 0, 1, 0, 500, 0, 0.1, 0);
 		cacheFor(TWO_HOURS);
@@ -199,8 +216,24 @@ public class GenericDeviceCacheTest {
 	}
 
 	@Test
+	public void getMinTargetEnergyContentInMWH_OverflowCrash_returnsAboveUpperLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 2, 0, 0, 10);
+		when(mockDevice.onOverflow()).thenReturn(StateViolation.ERROR);
+		cacheFor(ONE_HOUR);
+		assertEquals(10, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
+	public void getMinTargetEnergyContentInMWH_OverflowCut_returnsUpperLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 2, 0, 0, 10);
+		when(mockDevice.onOverflow()).thenReturn(StateViolation.CUT);
+		cacheFor(ONE_HOUR);
+		assertEquals(2, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
+	}
+
+	@Test
 	public void simulateTransition_noSelfDischargeFullEfficiency_correctCalc() {
-		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
+		setupGenericDeviceCache(500, 500, 1, 1, 0, 0, 0, 10);
 		cacheFor(ONE_HOUR);
 		assertEquals(40, deviceCache.simulateTransition(50, 100), 1E-12);
 		cacheFor(QUARTER_HOUR);
@@ -210,8 +243,22 @@ public class GenericDeviceCacheTest {
 	}
 
 	@Test
+	public void simulateTransition_largeInflow_resultWithinGridPowerLimits() {
+		setupGenericDeviceCache(100, 100, 1, 1, 0, 0, 0, 200);
+		cacheFor(ONE_HOUR);
+		assertEquals(-100, deviceCache.simulateTransition(50, 50), 1E-12);
+	}
+
+	@Test
+	public void simulateTransition_largeOutflow_resultWithinGridPowerLimits() {
+		setupGenericDeviceCache(100, 100, 1, 1, 0, 0, 0, -200);
+		cacheFor(ONE_HOUR);
+		assertEquals(100, deviceCache.simulateTransition(50, 50), 1E-12);
+	}
+
+	@Test
 	public void simulateTransition_noSelfDischargeImperfectEfficiency_correctCalc() {
-		setupGenericDeviceCache(0, 0, 0.5, 0.8, 0, 0, 0, 10);
+		setupGenericDeviceCache(1000, 1000, 0.5, 0.8, 0, 0, 0, 10);
 		cacheFor(ONE_HOUR);
 		assertEquals(80, deviceCache.simulateTransition(50, 100), 1E-12);
 		cacheFor(QUARTER_HOUR);
@@ -222,7 +269,7 @@ public class GenericDeviceCacheTest {
 
 	@Test
 	public void simulateTransition_withSelfDischargeImperfectEfficiency_correctCalc() {
-		setupGenericDeviceCache(0, 0, 0.5, 0.8, 0, 0, 0.1, 10);
+		setupGenericDeviceCache(1000, 1000, 0.5, 0.8, 0, 0, 0.1, 10);
 		cacheFor(ONE_HOUR);
 		assertEquals(90, deviceCache.simulateTransition(50, 100), 1E-2);
 		cacheFor(QUARTER_HOUR);

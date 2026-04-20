@@ -41,7 +41,7 @@ Finally, run your newly built AMIRIS:
 * adjust the paths in your console command to:
 
 ```
-java -jar "target/amiris-core_x.y.z-jar-with-dependencies.jar" -f input/examples/Germany2019/config.pb
+java -jar "target/amiris-core_x.y.z-jar-with-dependencies.jar" -f input/examples/backtest/Germany2019/config.pb
 ```
 
 where
@@ -78,7 +78,7 @@ To verify AMIRIS is working properly follow these steps:
 * enable complex model outputs:
     * create or modify `fameSetup.yaml`:  set `output-complex: True`
 * run the "Simple" scenario file:
-    * `amiris run -j amiris-core_x.y.z-jar-with-dependencies -s examples/Simple/scenario.yaml -o simple`
+    * `amiris run -j amiris-core_x.y.z-jar-with-dependencies -s examples/demo/Simple/scenario.yaml -o simple`
     * here "x.y.z" denotes your installed version of AMIRIS
     * this will create a new subfolder named "simple" in the current directory with the results of the Simple scenario
 * download the reference result from AMIRIS main branch

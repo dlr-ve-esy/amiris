@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2024-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.markets.meritOrder;
@@ -53,14 +53,17 @@ public class DemandBalancer {
 	 * addition of this offset first guarantee price change */
 	private static final String CLEARING_ID = "MarketCoupling - DemandBalancer:";
 	private final double minEffectiveDemandOffset;
+	private final double maxEnergyShiftPerIterationInMWH;
 	private Map<Long, CouplingData> couplingRequests;
 	private Map<Long, ClearingDetails> clearingResults = new HashMap<>();
 
 	/** Creates new {@link DemandBalancer}
 	 * 
-	 * @param minEffectiveDemandOffset added to the demand shift in order to enforce price changes */
-	public DemandBalancer(double minEffectiveDemandOffset) {
-		this.minEffectiveDemandOffset = minEffectiveDemandOffset;
+	 * @param minEffectiveDemandOffsetInMWH added to the demand shift in order to enforce price changes
+	 * @param maxEnergyShiftPerIterationInMWH limits the energy amount shifted per market coupling iteration */
+	public DemandBalancer(double minEffectiveDemandOffsetInMWH, double maxEnergyShiftPerIterationInMWH) {
+		this.minEffectiveDemandOffset = minEffectiveDemandOffsetInMWH;
+		this.maxEnergyShiftPerIterationInMWH = maxEnergyShiftPerIterationInMWH;
 	}
 
 	/** Maximises the overall welfare by balancing the demand among all participant {@link DayAheadMarket}s under given transmission
@@ -245,6 +248,9 @@ public class DemandBalancer {
 		if (availableSupplyOfCheap < requestedDemandOfCheap + toShiftDemand) {
 			toShiftDemand = availableSupplyOfCheap - requestedDemandOfCheap;
 		}
+
+		toShiftDemand = Math.min(maxEnergyShiftPerIterationInMWH, toShiftDemand);
+
 		toShiftDemand = Math.floor(toShiftDemand * 10) / 10.0;
 		if (toShiftDemand < MIN_SHIFT_AMOUNT_IN_MWH) {
 			return null;

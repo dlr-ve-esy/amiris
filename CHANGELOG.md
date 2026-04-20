@@ -1,7 +1,44 @@
-<!-- SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: CC0-1.0 -->
 # Changelog
+
+## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - 2026-04-20
+### Changed
+- `EnergyStateManager`: Also use `StateDiscretiser` to reduce code duplications #227 (@dlr-cjs, @dlr_jk)
+- `SensitivityForecaster`: Log an error if sensitivity cannot be calculated due to missing supply or demand data #237 (@dlr-cjs, @dlr_jk)
+- `Optimiser`: Throw an exception indicating the problematic time if dispatch planning yields no valid transition #231 (@dlr-cjs)
+- tests: Improve unit tests for merit order kernel #218 (@dlr-cjs)
+- docs: Improve get-started section based on user feedback #210 (@dlr-cjs)
+- docs: Update diagrams of model and workflow #236 (@dlr-cjs, @dlr_fn)
+
+### Added
+- `GenericFlexibilityTrader`: Implement load shifting with generic flexibility #205 (@dlr-cjs, @dlr_jk)
+- `GenericFlexibilityTrader`: Add variable cost as optional input #206 (@dlr-cjs, @dlr_jk)
+- `GenericFlexibilityTrader`: Add maximum shift time and energy shift prolonging as optional inputs #207 (@dlr-cjs, @dlr_jk)
+- `GenericFlexibilityTrader`: Add output column `ElectricityPricePredictionInEURperMWH` #219 (@dlr-cjs, @jgower11)
+- `GenericFlexibilityTrader`: Add ability to cut energy overflow and underflow; add associated input attributes `Device.OnOverflow`, `Device.OnUnderflow` #230 (@dlr-cjs)
+- agents.forecast.sensitivity: Add `SensitivityForecasterFile` that provides forecasts in sensitivity format read from file  #220 (@dlr-cjs)
+- `DayAheadMarketMultiZone`: Add product `TransmissionCapacities` to be sent out to connected forecasters #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- Add new ability `MarketCouplingClient` to enable market coupling interactions also from forecasters  #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- `MarketForecaster`: Add ability to interact with `MarketCoupling` #143 (@dlr-cjs, @dlr_fn, @dlr_jk, @milenasipovac)
+- `MarketCoupling`: Add optional parameter to limit shifted energy per iteration in market coupling algorithm #234 (@dlr-cjs)
+- CI: Add compatibility check with JDK 25
+- docs: Add content milestones to `History.md` #198 (@dlr-cjs)
+
+### Fixed
+- docs: Update Paths to example scenarios #217 (@dlr-cjs)
+- `EnergyStateManager`: Correct crash due to missing offset in energy levels #225 (@dlr-cjs, @dlr_jk)
+- `LoadShiftingTrader`: Fix shift time initialisation and bid price limits #191 (@dlr-cjs, @dlr_jk)
+- `FlexibilityAssessor`: Fix improper formatted warning messages #204 (@dlr-cjs)
+- `MeritOrderKernel`: Fix inconsistent clearing result on cut at same power #221 (@dlr-cjs)
+- `MarketCoupling`: Fix accidental interaction of multiple market coupling events #226 (@dlr-cjs, @dlr_jk)
+- `GenericDevice`: Fix too early triggering of prolonging #229 (@dlr-cjs, @dlr_jk)
+- `EnergyAndTimeStateManager`: Fix incorrect handling of prolongig costs # (@dlr-cjs, @dlr_jk)
+- `TransitionEvaluator`: Fix crash on strong inflows or outflows #228 (@dlr-cjs)
+- `StateManager`: Fix incorrect handling of energy limits for initial states #233 (@dlr-cjs)
+- `AggregatorTrader`: Fix incorrect string comparison #235 (@dlr-cjs)
+- license headers: Use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_

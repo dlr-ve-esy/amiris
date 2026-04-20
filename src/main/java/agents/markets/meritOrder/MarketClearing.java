@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.markets.meritOrder;
@@ -87,7 +87,7 @@ public class MarketClearing {
 	 * @param input unsorted messages containing demand and supply bids
 	 * @param supplyBook to be filled with supply bids
 	 * @param demandBook to be filled with demand bids */
-	public void fillOrderBooksWithTraderBids(ArrayList<Message> input, SupplyOrderBook supplyBook,
+	public static void fillOrderBooksWithTraderBids(ArrayList<Message> input, SupplyOrderBook supplyBook,
 			DemandOrderBook demandBook) {
 		demandBook.clear();
 		supplyBook.clear();

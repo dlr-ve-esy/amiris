@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.assessment;
 
+import agents.flexibility.GenericDevice;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
@@ -26,15 +27,21 @@ public final class AssessmentFunctionBuilder {
 
 	public static final String ERR_NOT_IMPLEMENTED = "Assessment function is not implemented: ";
 
-	public static AssessmentFunction build(ParameterData input) throws MissingDataException {
+	/** Create an assessment function for a generic flexibility device
+	 * 
+	 * @param input of the assessment function
+	 * @param device to be assessed
+	 * @return new {@link AssessmentFunction}
+	 * @throws MissingDataException if any required parameter is missing */
+	public static AssessmentFunction build(ParameterData input, GenericDevice device) throws MissingDataException {
 		Type type = input.getEnum("Type", Type.class);
 		switch (type) {
 			case MAX_PROFIT_PRICE_TAKER:
-				return new MaxProfitPriceTaker();
+				return new MaxProfitPriceTaker(device);
 			case MIN_SYSTEM_COST:
-				return new MinSystemCost();
+				return new MinSystemCost(device);
 			case MAX_PROFIT:
-				return new MaxProfit();
+				return new MaxProfit(device);
 			default:
 				throw new RuntimeException(ERR_NOT_IMPLEMENTED + type);
 		}

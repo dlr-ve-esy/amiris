@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2025 German Aerospace Center <amiris@dlr.de>
+// SPDX-FileCopyrightText: 2025-2026 German Aerospace Center <amiris@dlr.de>
 //
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.bidding;
@@ -31,6 +31,7 @@ public class StorageContentValue implements BidScheduler {
 		bidSchedule.setRequestedEnergyPerPeriod(schedule.externalEnergyDeltasInMWH);
 		bidSchedule.setBidsScheduleInEURperMWH(biddingPricePerPeriodInEURperMWH);
 		bidSchedule.setExpectedInitialInternalEnergyScheduleInMWH(schedule.initialInternalEnergiesInMWH);
+		bidSchedule.setExpectedElectricityPricesInEURperMWH(schedule.assumedElectricityPriceInEURperMWH);
 		return bidSchedule;
 	}
 

@@ -18,7 +18,7 @@ You can test if you have Python available by using the command `python --version
 This should show your Python version if the Python command was found.
 Make sure the version of your Python is covered by the AMIRIS [Requirements](../Get-Started.md#requirements).
 Note that if you use a Python environment manager you can have several Python versions on your system side by side.
-If you do not have a Python environment manager installed on your system, you may use e.g. [conda](https://docs.conda.io/en/latest/miniconda.html), or [mamba](https://github.com/conda-forge/miniforge#mambaforge), or [Poetry](https://python-poetry.org/).
+If you do not have a Python environment manager installed on your system, you may use e.g. [conda](https://docs.conda.io/en/latest/miniconda.html), [mamba](https://github.com/conda-forge/miniforge#mambaforge), or [Poetry](https://python-poetry.org/).
 
 ## Environment
 
@@ -33,7 +33,6 @@ If you are using mamba instead of conda, simple replace "conda" in the first com
 ## Install AMIRIS-Py
 
 [AMIRIS-Py](https://gitlab.com/dlr-ve/esy/amiris/amiris-py/-/blob/main/README.md) enables you to install and execute AMIRIS with one command.
-If you like it more tedious, you may also run AMIRIS using FAME scripts directly, see [here](./FameioSetup.md).
 To install it, make sure you are in your AMIRIS Python environment (called "amirisEnv" above) and run
 
 ```
@@ -47,7 +46,7 @@ This will grant you a new shell command `amiris`.
 1. Create a new folder on your disk called, e.g., "AMIRIS": `mkdir AMIRIS`
 2. Navigate to this newly created folder: `cd AMIRIS`
 3. Activate your Python-enabled shell that includes amiris-py: `conda activate amirisEnv`
-4. Download the latest AMIRIS build use: `amiris install`
+4. Download the latest AMIRIS build use: `amiris download`
 
 This downloads the latest [AMIRIS model](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/jobs/artifacts/main/download?job=deploy:jdk11) and the latest version of [AMIRIS examples](https://gitlab.com/dlr-ve/esy/amiris/examples) into the current folder.
 As a result, your "AMIRIS" folder should look like this:
@@ -55,10 +54,13 @@ As a result, your "AMIRIS" folder should look like this:
 ```
 AMIRIS
 ├─── examples
-│    ├─── Austria2019/
-│    ├─── Germany2019/
-│    ├─── ...
-│    ├─── Simple/
+│    ├─── demo/
+│    │    ├─── Simple/
+│    │    └─── SimpleCoupled/
+│    ├─── backtest/
+│    │    ├─── Austria2019/
+│    │    ├─── ...
+│    │    └─── Germany2019/
 │    └─── README.md
 └─── amiris-core_x.y.z-with-dependencies.jar
 ```
@@ -67,14 +69,15 @@ You are now ready to run AMIRIS simulations.
 
 ## Update AMIRIS
 
-Feel free to give the AMIRIS project a "star" :star: and hit the notification bell :bell: in order to get notifications on new releases. If you want to update your existing model version use
+Feel free to give the AMIRIS project a "star" :star: and hit the notification bell :bell: in order to get notifications on new releases.
+**In the future**: If you want to update your existing model version use
 
-* `amiris download -m model` for the latest model, and
-* `amiris download -m examples` for the latest examples.
+* `amiris download -m model` to download the latest model, and
+* `amiris download -m examples` to get the latest examples.
 
 ## Run AMIRIS
 
-![AMIRIS-Py Workflow](../uploads/amirispy.png)
+![AMIRIS-Py Workflow](../uploads/Workflow_amirispy.png)
 The image above shows the workflow when running simulations with AMIRIS-Py.
 AMIRIS-Py will load the specified scenario configuration, read linked timeseries files, and run the simulation.
 Once finished, AMIRIS-Py will automatically extract the simulation results to CSV files.
@@ -82,7 +85,7 @@ Once finished, AMIRIS-Py will automatically extract the simulation results to CS
 To run AMIRIS, excecute:
 
 ```
-amiris run -s ./examples/Simple/scenario.yaml -o simple
+amiris run -s ./examples/demo/Simple/scenario.yaml -o simple
 ```
 
 This runs AMIRIS using any Java archive (jar) file named `amiris<*>.jar` in the current folder.

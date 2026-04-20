@@ -29,7 +29,7 @@ public class OptimisationProblemAssessor {
 	}
 
 	/** true if any initial state exists */
-	public static boolean hasAnyInitialState(StateManager stateManager) {
+	private static boolean hasAnyInitialState(StateManager stateManager) {
 		int[] initialStateList = getInitialStateList(stateManager);
 		return initialStateList.length > 0;
 	}

@@ -11,9 +11,9 @@ import agents.flexibility.dynamicProgramming.states.StateManager;
 public class OptimisationProblemAssessor {
 	static final String ERR_NO_INITIAL_STATES = "No initial states exist. Check consistency of upper and lower energy limits.";
 	static final String ERR_NO_FINAL_STATES = "No final states can be reached. Check charging and discharging power limits as well as inflow / outflow.";
-	static final String ERR_NO_TRANSITIONS = "No valid transitions: %d transitions exceeded merit order limits, %d final states had no feasible follow-up path. Check competition multiplier history or merit order situation. Merit-order might be empty or of insufficient length.";
+	static final String ERR_NO_TRANSITIONS = "No valid transitions: %d transitions exceeded merit order limits, %d final states had no feasible follow-up path. Check competition multiplier history or merit order situation: Merit order might provide insufficient (dis-)charging options.";
 
-	/** Identifies dispatch planning problems and returns a error message specifying problem
+	/** Identifies dispatch planning problems and returns an error message specifying problem
 	 * 
 	 * @param stateManager that was used when the dispatch planning failed
 	 * @param bestValuesNextPeriod that was used when the dispatch planning failed

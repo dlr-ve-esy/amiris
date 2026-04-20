@@ -6,6 +6,7 @@ package agents.flexibility.dynamicProgramming.states;
 import java.util.ArrayList;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import de.dlr.gitlab.fame.time.TimePeriod;
@@ -75,6 +76,15 @@ public class EnergyStateManager implements StateManager {
 		final double initialEnergyContentInMWH = stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex);
 		final double lowestEnergyContentInMWH = deviceCache.getMinTargetEnergyContentInMWH(initialEnergyContentInMWH);
 		final double highestEnergyContentInMWH = deviceCache.getMaxTargetEnergyContentInMWH(initialEnergyContentInMWH);
+		if (highestEnergyContentInMWH < lowestEnergyContentInMWH) {
+			if (highestEnergyContentInMWH < deviceCache.getEnergyContentLowerLimitInMWH()) {
+				return new int[] {STATE_UNDERFLOW};
+			} else if (lowestEnergyContentInMWH > deviceCache.getEnergyContentUpperLimitInMWH()) {
+				return new int[] {STATE_OVERFLOW};
+			} else {
+				throw new RuntimeException(ERR_INCONSISTENT);
+			}
+		}
 		return stateDiscretiser.getEnergyStateLimits(lowestEnergyContentInMWH, highestEnergyContentInMWH);
 	}
 
@@ -99,7 +109,7 @@ public class EnergyStateManager implements StateManager {
 	}
 
 	@Override
-	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) {
+	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) throws DispatchPlanningError {
 		return stateEvaluations.buildDispatchSchedule(schedulingSteps, device.getCurrentInternalEnergyInMWH(), 0L);
 	}
 

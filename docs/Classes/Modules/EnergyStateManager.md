@@ -29,6 +29,7 @@ Hence,
 * `getInitialStates()` and `getFinalStates()` will return only the IDs of the first and last state to be considered, not the full list, giving [Optimiser](./Optimiser.md) a higher speed.
 
 `EnergyStateManager` utilises a [StateDiscretiser](./StateDiscretiser.md) to match energy content to discretised states.
+If no valid state can be reached from a given initial state when calling `getFinalStates()` due to an energy reservoir overflow or underflow, a reserved state is returned to indicate the corresponding issue.
 
 ### Caching
 

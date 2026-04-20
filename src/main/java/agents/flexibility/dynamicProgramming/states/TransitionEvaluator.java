@@ -18,6 +18,7 @@ public class TransitionEvaluator {
 
 	private double[] transitionValuesCharging;
 	private double[] transitionValuesDischarging;
+	private double transitionValueConstantEnergy;
 	private boolean cachedValuesAvailable;
 
 	/** Instantiates a {@link TransitionEvaluator}
@@ -53,12 +54,13 @@ public class TransitionEvaluator {
 	/** Caches the transition values for (dis-)charging depending on state deltas */
 	private void cacheTransitionValuesNoSelfDischarge() {
 		int[] maxSteps = calcMaxSteps();
+		transitionValueConstantEnergy = calcValueFor(0, 0);
 		transitionValuesCharging = new double[maxSteps[0] + 1];
-		for (int chargingSteps = 0; chargingSteps <= maxSteps[0]; chargingSteps++) {
+		for (int chargingSteps = 1; chargingSteps <= maxSteps[0]; chargingSteps++) {
 			transitionValuesCharging[chargingSteps] = calcValueFor(0, chargingSteps);
 		}
 		transitionValuesDischarging = new double[maxSteps[1] + 1];
-		for (int dischargingSteps = 0; dischargingSteps <= maxSteps[1]; dischargingSteps++) {
+		for (int dischargingSteps = 1; dischargingSteps <= maxSteps[1]; dischargingSteps++) {
 			transitionValuesDischarging[dischargingSteps] = calcValueFor(0, -dischargingSteps);
 		}
 	}
@@ -111,6 +113,12 @@ public class TransitionEvaluator {
 	/** @return cached value of transition, if {@link #cachedValuesAvailable} */
 	private double getCachedValueFor(int initialStateIndex, int finalStateIndex) {
 		int stateDelta = finalStateIndex - initialStateIndex;
-		return stateDelta >= 0 ? transitionValuesCharging[stateDelta] : transitionValuesDischarging[-stateDelta];
+		if (stateDelta > 0) {
+			return transitionValuesCharging[stateDelta];
+		} else if (stateDelta < 0) {
+			return transitionValuesDischarging[-stateDelta];
+		} else {
+			return transitionValueConstantEnergy;
+		}
 	}
 }

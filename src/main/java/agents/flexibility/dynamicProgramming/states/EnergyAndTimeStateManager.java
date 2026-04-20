@@ -6,6 +6,7 @@ package agents.flexibility.dynamicProgramming.states;
 import java.util.ArrayList;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.states.StateManagerBuilder.Type;
@@ -17,7 +18,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
 public class EnergyAndTimeStateManager implements StateManager {
-	private static final String ERR_SELF_DISCHARGE = "Self-discharge is not compatible with state manager of type: ";
+	static final String ERR_SELF_DISCHARGE = "Self-discharge is not compatible with state manager of type: ";
 
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
@@ -84,6 +85,15 @@ public class EnergyAndTimeStateManager implements StateManager {
 		final double initialEnergyContentInMWH = stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex);
 		final double lowestEnergyContentInMWH = deviceCache.getMinTargetEnergyContentInMWH(initialEnergyContentInMWH);
 		final double highestEnergyContentInMWH = deviceCache.getMaxTargetEnergyContentInMWH(initialEnergyContentInMWH);
+		if (highestEnergyContentInMWH < lowestEnergyContentInMWH) {
+			if (highestEnergyContentInMWH < deviceCache.getEnergyContentLowerLimitInMWH()) {
+				return new int[] {STATE_UNDERFLOW};
+			} else if (lowestEnergyContentInMWH > deviceCache.getEnergyContentUpperLimitInMWH()) {
+				return new int[] {STATE_OVERFLOW};
+			} else {
+				throw new RuntimeException(ERR_INCONSISTENT);
+			}
+		}
 		return stateDiscretiser.getFollowUpStates(initialStateIndex, lowestEnergyContentInMWH, highestEnergyContentInMWH);
 	}
 
@@ -118,7 +128,7 @@ public class EnergyAndTimeStateManager implements StateManager {
 	}
 
 	@Override
-	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) {
+	public DispatchSchedule getBestDispatchSchedule(int schedulingSteps) throws DispatchPlanningError {
 		return stateEvaluations.buildDispatchSchedule(schedulingSteps, device.getCurrentInternalEnergyInMWH(),
 				device.getCurrentShiftTimeInSteps());
 	}

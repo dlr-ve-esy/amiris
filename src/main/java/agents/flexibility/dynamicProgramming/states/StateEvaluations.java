@@ -6,6 +6,7 @@ package agents.flexibility.dynamicProgramming.states;
 import java.util.Arrays;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.states.StateManager.DispatchSchedule;
 import de.dlr.gitlab.fame.time.TimePeriod;
@@ -15,6 +16,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class StateEvaluations {
+	static final String ERR_OVERFLOW = "Unavoidable energy overflow during planning at time: ";
+	static final String ERR_UNDERFLOW = "Unavoidable energy underflow during planning at time: ";
+	static final String ERR_INFEASIBLE = "Maybe too large inflows / outflows after: ";
+
 	/** Used to avoid rounding errors in floating point calculation of transition steps */
 	static final double PRECISION_GUARD = 1E-6;
 
@@ -113,9 +118,10 @@ public class StateEvaluations {
 	 * @param schedulingSteps number of time periods in the dispatch schedule
 	 * @param initialEnergyLevel energy level of the device at the beginning of the schedule
 	 * @param initialShiftTimeSteps shift time in time steps of the device at the beginning of the schedule
-	 * @return best dispatch schedule obtained from previously stored evaluations */
+	 * @return best dispatch schedule obtained from previously stored evaluations
+	 * @throws DispatchPlanningError if no valid dispatch schedule can be created */
 	public DispatchSchedule buildDispatchSchedule(int schedulingSteps, double initialEnergyLevel,
-			long initialShiftTimeSteps) {
+			long initialShiftTimeSteps) throws DispatchPlanningError {
 		double currentInternalEnergyInMWH = initialEnergyLevel;
 		int currentShiftTimeIndex = stateDiscretiser.roundToNearestShiftTimeIndex(initialShiftTimeSteps);
 
@@ -132,6 +138,8 @@ public class StateEvaluations {
 			int currentEnergyLevelIndex = stateDiscretiser.energyToNearestEnergyIndex(currentInternalEnergyInMWH);
 			int stateIndex = stateDiscretiser.getStateIndex(currentEnergyLevelIndex, currentShiftTimeIndex);
 			int nextStateIndex = bestNextState[timeIndex][stateIndex];
+			throwOnInvalidState(nextStateIndex, time);
+
 			double plannedEnergyDeltaInMWH = stateDiscretiser.calcEnergyDeltaInMWH(stateIndex, nextStateIndex);
 			double nextInternalEnergyInMWH = calcNextEnergyInMWH(deviceCache, currentInternalEnergyInMWH,
 					plannedEnergyDeltaInMWH);
@@ -150,6 +158,20 @@ public class StateEvaluations {
 		}
 		return new DispatchSchedule(externalEnergyDeltaInMWH, internalEnergiesInMWH, specificValuesInEURperMWH,
 				expectedElectricityPriceInEURperMWH);
+	}
+
+	/** @throws DispatchPlanningError if given state is not valid */
+	private void throwOnInvalidState(int stateIndex, TimeStamp time) throws DispatchPlanningError {
+		if (stateIndex < 0) {
+			switch (stateIndex) {
+				case StateManager.STATE_OVERFLOW:
+					throw new DispatchPlanningError(ERR_OVERFLOW + time);
+				case StateManager.STATE_UNDERFLOW:
+					throw new DispatchPlanningError(ERR_UNDERFLOW + time);
+				default:
+					throw new DispatchPlanningError(ERR_INFEASIBLE + time);
+			}
+		}
 	}
 
 	/** Returns next energy level based on current one and planned energy delta; if current energy level is already out of bounds,

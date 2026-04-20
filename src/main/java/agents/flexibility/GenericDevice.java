@@ -43,6 +43,16 @@ public class GenericDevice {
 	static final String PARAM_SHIFT_TIME = "MaximumShiftTimeInHours";
 	static final String PARAM_ENABLE_PROLONGING = "EnableProlonging";
 	static final String PARAM_PENALTY_COST = "PenaltyCostInEURperMWH";
+	static final String PARAM_OVERFLOW = "OnOverflow";
+	static final String PARAM_UNDERFLOW = "OnUnderflow";
+
+	/** How to deal with violations of upper or lower energy content limits */
+	enum StateViolation {
+		/** Shed excess energy inflows or reduce too large energy outflows */
+		CUT,
+		/** Consider violating the energy limits an error */
+		ERROR,
+	}
 
 	private static Logger logger = LoggerFactory.getLogger(GenericDevice.class);
 	private TimeSeries externalChargingPowerInMW;
@@ -61,13 +71,17 @@ public class GenericDevice {
 	private boolean enableProlonging;
 	private double lastProlongingCostInEUR;
 
+	private final StateViolation onOverflow;
+	private final StateViolation onUnderflow;
+
 	/** Input parameters of a storage {@link Device} */
 	public static final Tree parameters = Make.newTree()
 			.add(Make.newSeries(PARAM_CHARGING_POWER), Make.newSeries(PARAM_DISCHARGING_POWER),
 					Make.newSeries(PARAM_CHARGING_EFFICIENCY), Make.newSeries(PARAM_DISCHARGING_EFFICIENCY),
 					Make.newSeries(PARAM_UPPER_LIMIT), Make.newSeries(PARAM_LOWER_LIMIT), Make.newSeries(PARAM_SELF_DISCHARGE),
 					Make.newSeries(PARAM_INFLOW), Make.newDouble(PARAM_INITIAL_ENERGY), Make.newSeries(PARAM_VARIABLE_COST),
-					Make.newDouble(PARAM_SHIFT_TIME), Make.newInt(PARAM_ENABLE_PROLONGING), Make.newSeries(PARAM_PENALTY_COST))
+					Make.newDouble(PARAM_SHIFT_TIME), Make.newInt(PARAM_ENABLE_PROLONGING), Make.newSeries(PARAM_PENALTY_COST),
+					Make.newEnum(PARAM_OVERFLOW, StateViolation.class), Make.newEnum(PARAM_UNDERFLOW, StateViolation.class))
 			.buildTree();
 
 	/** Instantiates new {@link GenericDevice}
@@ -88,6 +102,8 @@ public class GenericDevice {
 		maximumShiftTimeInSteps = (long) (new TimeSpan(1, Interval.HOURS).getSteps() * input.getDouble(PARAM_SHIFT_TIME));
 		enableProlonging = input.getInteger(PARAM_ENABLE_PROLONGING) >= 1;
 		penaltyCostInEURperMWH = input.getTimeSeries(PARAM_PENALTY_COST);
+		onOverflow = input.getEnum(PARAM_OVERFLOW, StateViolation.class);
+		onUnderflow = input.getEnum(PARAM_UNDERFLOW, StateViolation.class);
 	}
 
 	/** Performs an actual transition from current energy content at given time using a given external energy delta. Enforces energy
@@ -101,7 +117,7 @@ public class GenericDevice {
 		double netChargingEnergyInMWH = calcNetChargingEnergyInMWH(time, externalEnergyDeltaInMWH, duration);
 		double selfDischargeLossInMWH = calcSelfDischargeLossInMWH(time, duration);
 		double finalEnergyContentInMWH = currentEnergyContentInMWH + netChargingEnergyInMWH - selfDischargeLossInMWH;
-		finalEnergyContentInMWH = ensureEnergyWithinLimits(time, finalEnergyContentInMWH);
+		finalEnergyContentInMWH = checkEnergyBoundaries(time, finalEnergyContentInMWH);
 		double internalEnergyDeltaInMWH = finalEnergyContentInMWH - currentEnergyContentInMWH
 				+ selfDischargeLossInMWH - netInflowPowerInMW.getValueLinear(time) * calcDurationInHours(duration);
 		updateShiftTimeAndProlongingCost(currentEnergyContentInMWH, finalEnergyContentInMWH, duration, time);
@@ -172,20 +188,27 @@ public class GenericDevice {
 		return selfDischargeRate;
 	}
 
-	/** Logs an error if the given internal target energy content exceeds its upper or lower limit.
+	/** Checks targeted energy content against upper and lower energy boundaries of the device. If targeted energy is out of bounds,
+	 * it is cut to ensure bounds. Depending on the configured overflow / underflow behaviour, an error might be logged.
 	 * 
 	 * @param time at which the energy content shall be applied
 	 * @param targetEnergyContentInMWH to be checked for consistency with energy content limits
-	 * @return valid energy content closest to provided energy content target */
-	private double ensureEnergyWithinLimits(TimeStamp time, double targetEnergyContentInMWH) {
-		if (targetEnergyContentInMWH > energyContentUpperLimitInMWH.getValueLinear(time) + TOLERANCE) {
-			double exceedance = (targetEnergyContentInMWH - energyContentUpperLimitInMWH.getValueLinear(time));
-			logger.error(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
-			targetEnergyContentInMWH = energyContentUpperLimitInMWH.getValueLinear(time);
-		} else if (targetEnergyContentInMWH < energyContentLowerLimitInMWH.getValueLinear(time) - TOLERANCE) {
-			double exceedance = (energyContentLowerLimitInMWH.getValueLinear(time) - targetEnergyContentInMWH);
-			logger.error(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
-			targetEnergyContentInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
+	 * @return updated energy content - depending on configured behaviour */
+	private double checkEnergyBoundaries(TimeStamp time, double targetEnergyContentInMWH) {
+		double upperEnergyContentLimitInMWH = energyContentUpperLimitInMWH.getValueLinear(time);
+		double lowerEnergyContentLimitInMWH = energyContentLowerLimitInMWH.getValueLinear(time);
+		if (targetEnergyContentInMWH > upperEnergyContentLimitInMWH + TOLERANCE) {
+			double exceedance = targetEnergyContentInMWH - upperEnergyContentLimitInMWH;
+			if (onOverflow == StateViolation.ERROR) {
+				logger.error(time + ERR_EXCEED_UPPER_ENERGY_LIMIT + exceedance);
+			}
+			return upperEnergyContentLimitInMWH;
+		} else if (targetEnergyContentInMWH < lowerEnergyContentLimitInMWH - TOLERANCE) {
+			double exceedance = lowerEnergyContentLimitInMWH - targetEnergyContentInMWH;
+			if (onUnderflow == StateViolation.ERROR) {
+				logger.error(time + ERR_EXCEED_LOWER_ENERGY_LIMIT + exceedance);
+			}
+			return lowerEnergyContentLimitInMWH;
 		}
 		return targetEnergyContentInMWH;
 	}
@@ -393,5 +416,19 @@ public class GenericDevice {
 	 * @return true if prolonging is allowed */
 	public boolean hasProlonging() {
 		return enableProlonging;
+	}
+
+	/** Returns configured overflow behaviour
+	 * 
+	 * @return how to deal with potential overflow of the device's energy reservoir */
+	public StateViolation onOverflow() {
+		return onOverflow;
+	}
+
+	/** Returns configured underflow behaviour
+	 * 
+	 * @return how to deal with potential underflow of the device's energy reservoir */
+	public StateViolation onUnderflow() {
+		return onUnderflow;
 	}
 }

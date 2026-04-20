@@ -3071,6 +3071,34 @@ AgentTypes:
               description: "Penalty cost for operating a flexibility device outside of maximum shift time"
               unit: EUR/MWh
               isAbout: [ { name: "variable cost", "@id": "OEO_00020145" }, { name: "time series", "@id": "OEO_00030034" } ]
+          OnOverflow: 
+            MetaData:
+              Description: "How to deal with violation of maximum energy content limit due to excessive energy inflow"
+            AttributeType: enum
+            Mandatory: true
+            List: false
+            Default: ERROR
+            Values:
+              CUT:
+                MetaData:
+                  Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a reservoir hydro power plant with an overflow valve"
+              ERROR:
+                MetaData:
+                  Description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
+          OnUnderflow:
+            MetaData:
+              Description: "How to deal with violation of minimum energy content limit due to excessive energy outflow"
+            AttributeType: enum
+            Mandatory: true
+            List: false
+            Default: ERROR
+            Values:
+              CUT:
+                MetaData:
+                  Description: "Reduce effective outflow to not fall below the minimum allowed energy content"
+              ERROR:
+                MetaData:
+                  Description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
       Assessment:
         AttributeType: block
         Mandatory: true

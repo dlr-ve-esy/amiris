@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import agents.flexibility.BidSchedule;
 import agents.flexibility.GenericDevice;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunctionBuilder;
@@ -46,6 +47,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Felix Nitsch, Christoph Schimeczek, Johannes Kochems */
 public class GenericFlexibilityTrader extends Trader implements SensitivityForecastClient {
+	static final String ERR_PLANNING = "Dispatch planning failed for: ";
+
 	static final String GROUP_DEVICE = "Device";
 	static final String GROUP_ASSESSMENT = "Assessment";
 	static final String GROUP_STATES = "StateDiscretisation";
@@ -164,7 +167,11 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 	private void excuteBeforeBidPreparation(TimeStamp targetTime) {
 		if (bidSchedule == null || !bidSchedule.isApplicable(targetTime, device.getCurrentInternalEnergyInMWH())) {
 			assessmentFunction.clearBefore(now());
-			bidSchedule = strategist.createSchedule(new TimePeriod(targetTime, OPERATION_PERIOD));
+			try {
+				bidSchedule = strategist.createSchedule(new TimePeriod(targetTime, OPERATION_PERIOD));
+			} catch (DispatchPlanningError e) {
+				throw new RuntimeException(ERR_PLANNING + this, e);
+			}
 		}
 	}
 

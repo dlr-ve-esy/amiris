@@ -3,6 +3,10 @@
 SPDX-License-Identifier: CC0-1.0 -->
 # Changelog
 
+## [4.1.1](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.1) - 2026-04-23
+### Fixed
+- `Sensitivity`: fix overestimated value impact by appropriate consideration of multiplier #241 (@dlr-cjs, @dlr_jk)
+
 ## [4.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0) - 2026-04-20
 ### Changed
 - `EnergyStateManager`: Also use `StateDiscretiser` to reduce code duplications #227 (@dlr-cjs, @dlr_jk)

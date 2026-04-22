@@ -137,7 +137,7 @@ public class SensitivityTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource(value = {"3.5:700", "2:640", "1:38", "0.75:28.5", "0.25:0.5"}, delimiter = ':')
+	@CsvSource(value = {"3.5:350", "2:320", "1:19", "0.75:14.25", "0.25:0.25"}, delimiter = ':')
 	public void getValue_multiplierTwoDirect_returnsCorrectValue(double requestedEnergy, double expectedValue) {
 		MarketClearingAssessment assessment = buildAssessment(array(0, 1, 2, 5, 10), array(0, 1, 20, 500, 1000),
 				array(0, 1, 2, 5, 10), array(0, 1, 20, 500, 1000));
@@ -159,7 +159,7 @@ public class SensitivityTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource(value = {"3.5:700", "2:340", "1:20", "0.75:10.5", "0.25:0.5"}, delimiter = ':')
+	@CsvSource(value = {"3.5:350", "2:170", "1:10", "0.75:5.25", "0.25:0.25"}, delimiter = ':')
 	public void getValue_multiplierTwoCumulative_returnsCorrectValue(double requestedEnergy, double expectedValue) {
 		MarketClearingAssessment assessment = buildAssessment(array(0, 1, 2, 5, 10), array(0, 1, 20, 500, 1000),
 				array(0, 1, 2, 5, 10), array(0, 1, 20, 500, 1000));

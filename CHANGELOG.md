@@ -1,6 +1,6 @@
 <!-- SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 
-SPDX-License-Identifier: CC0-1.0 -->
+SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 
 ## [4.1.1](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.1) - 2026-04-23

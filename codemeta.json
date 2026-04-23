@@ -305,7 +305,7 @@
     "issueTracker": "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/issues",
     "relatedLink": "https://forum.openmod.org/tag/amiris",
     "referencePublication": "https://doi.org/10.21105/joss.05041",
-    "dateModified": "2026-04-20",
-    "version": "4.1.0",
-    "releaseNotes": "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.0"
+    "dateModified": "2026-04-23",
+    "version": "4.1.1",
+    "releaseNotes": "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.1"
 }

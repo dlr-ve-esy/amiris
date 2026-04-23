@@ -86,9 +86,9 @@ public class Sensitivity implements Portable {
 	public double getValue(double requestedEnergyInMWH) {
 		double modifiedEnergy = multiplier * requestedEnergyInMWH;
 		if (modifiedEnergy > 0) {
-			return getValueAddedDemand(modifiedEnergy);
+			return getValueAddedDemand(modifiedEnergy) / Math.abs(multiplier);
 		} else if (modifiedEnergy < 0) {
-			return getValueAddedSupply(-modifiedEnergy);
+			return getValueAddedSupply(-modifiedEnergy) / Math.abs(multiplier);
 		}
 		return 0;
 	}

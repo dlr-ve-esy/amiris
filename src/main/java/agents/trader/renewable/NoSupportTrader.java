@@ -36,9 +36,9 @@ public class NoSupportTrader extends AggregatorTrader {
 	}
 
 	@Override
-	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid, boolean hasErrors) {
+	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid) {
 		double truePowerPotential = marginal.getPowerPotentialInMW();
-		double powerOffered = getPowerWithError(truePowerPotential, hasErrors);
+		double powerOffered = getPowerWithError(truePowerPotential);
 		return new Bid(powerOffered, marginal.getMarginalCostInEURperMWH(), marginal.getMarginalCostInEURperMWH());
 	}
 

@@ -58,12 +58,12 @@ public class RenewableTrader extends AggregatorTrader {
 	}
 
 	@Override
-	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid, boolean hasErrors) {
+	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid) {
 		ClientData clientData = clientMap.get(producerUuid);
 		BiddingStrategy strategy = getStrategy(clientData);
 		double bidPrice = strategy.calcBiddingPrice(marginal.getMarginalCostInEURperMWH(), targetTime, clientData);
 		double truePowerPotential = marginal.getPowerPotentialInMW();
-		double powerOffered = getPowerWithError(truePowerPotential, hasErrors);
+		double powerOffered = getPowerWithError(truePowerPotential);
 		return new Bid(powerOffered, bidPrice, marginal.getMarginalCostInEURperMWH());
 	}
 

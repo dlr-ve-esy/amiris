@@ -254,9 +254,8 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 	 * @param marginal pair of true cost and power potential
 	 * @param targetTime associated with the marginal and bid
 	 * @param producerUuid id of plant operator associated with marginal
-	 * @param hasErrors if true errors will be added to the power of the bid
 	 * @return created bid */
-	protected abstract Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid, boolean hasErrors);
+	protected abstract Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid);
 
 	/** Sends supply {@link Bid}s to {@link DayAheadMarket}
 	 * 
@@ -278,11 +277,9 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 	/** Calculate a power with errors from forecast
 	 * 
 	 * @param truePowerPotential perfect foresight power potential without any errors
-	 * @param hasPowerError if true, an error is added to the power
-	 * @return power potential modified by power forecast error, if applicable - otherwise the original true potential without
-	 *         errors */
-	protected double getPowerWithError(double truePowerPotential, boolean hasPowerError) {
-		return hasPowerError ? errorGenerator.calcPowerWithError(truePowerPotential) : truePowerPotential;
+	 * @return power potential modified by power forecast error, if applicable - otherwise the given true potential */
+	protected double getPowerWithError(double truePowerPotential) {
+		return errorGenerator != null ? errorGenerator.calcPowerWithError(truePowerPotential) : truePowerPotential;
 	}
 
 	/** Store {@link YieldPotential}s for RES market value calculation **/

@@ -66,7 +66,7 @@ public abstract class Trader extends Agent implements DayAheadMarketTrader {
 			if (time == null) {
 				time = marginalsAtTime.getDeliveryTime();
 			} else {
-				if (time != marginalsAtTime.getDeliveryTime()) {
+				if (!time.equals(marginalsAtTime.getDeliveryTime())) {
 					throw new RuntimeException(ERR_DELIVERY_TIME_MISMATCH);
 				}
 			}

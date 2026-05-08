@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed
-- Fix hard-coded deactivation of power forecast errors #247 (@dlr-cjs)
+- Fix hard-coded deactivation of power forecast errors #247 (@dlr-cjs) 
 
 ## [4.1.1](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.1) - 2026-04-23
 ### Fixed

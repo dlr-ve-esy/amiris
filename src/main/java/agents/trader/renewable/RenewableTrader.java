@@ -29,8 +29,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class RenewableTrader extends AggregatorTrader {
 	static final String ERR_SUPPORT_INSTRUMENT = " is not configured for support instrument: ";
 
+	static final String PARAM_REVENUE_SHARE = "ShareOfRevenues";
+
 	/** Inputs specific to {@link RenewableTrader}s */
-	public static final Tree parameters = Make.newTree().add(Make.newDouble("ShareOfRevenues"),
+	public static final Tree parameters = Make.newTree().add(Make.newDouble(PARAM_REVENUE_SHARE),
 			PremiumBased.marketValueForecastParam, PremiumBased.fileForecastParams).buildTree();
 
 	/** The share of market revenues the {@link RenewableTrader} keeps to himself */
@@ -44,7 +46,7 @@ public class RenewableTrader extends AggregatorTrader {
 	public RenewableTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
 		ParameterData input = parameters.join(dataProvider);
-		shareOfRevenues = input.getDouble("ShareOfRevenues");
+		shareOfRevenues = input.getDouble(PARAM_REVENUE_SHARE);
 		configureStrategies(input);
 	}
 

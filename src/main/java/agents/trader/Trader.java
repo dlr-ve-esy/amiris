@@ -22,6 +22,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * @author Christoph Schimeczek */
 public abstract class Trader extends Agent implements DayAheadMarketTrader {
 	static final String ERR_NO_CONTRACT_IN_LIST = "No contract existing for agent: ";
+	static final String ERR_DELIVERY_TIME_MISMATCH = "ExtractMarginalsAtTime() required identical delivery time stamps for all messages.";
 
 	/** Products of {@link Trader}s */
 	@Product
@@ -51,14 +52,24 @@ public abstract class Trader extends Agent implements DayAheadMarketTrader {
 		return marginalsByTimeStamp;
 	}
 
-	/** Reads {@link MarginalsAtTime} from given messages, assuming they are valid at the same time stamp
+	/** Reads {@link MarginalsAtTime} from given messages, ensured they are valid at the same time stamp
 	 * 
 	 * @param messages containing MarginalsAtTime to be extracted
-	 * @return List of MarginalsAtTime contained in given messages */
+	 * @return List of MarginalsAtTime contained in given messages
+	 * @throw RuntimeException if time stamp does not match for all marginals * */
 	protected ArrayList<MarginalsAtTime> extractMarginalsAtTime(ArrayList<Message> messages) {
 		ArrayList<MarginalsAtTime> result = new ArrayList<>(messages.size());
+		TimeStamp time = null;
 		for (Message message : messages) {
-			result.add(message.getFirstPortableItemOfType(MarginalsAtTime.class));
+			MarginalsAtTime marginalsAtTime = message.getFirstPortableItemOfType(MarginalsAtTime.class);
+			result.add(marginalsAtTime);
+			if (time == null) {
+				time = marginalsAtTime.getDeliveryTime();
+			} else {
+				if (time != marginalsAtTime.getDeliveryTime()) {
+					throw new RuntimeException(ERR_DELIVERY_TIME_MISMATCH);
+				}
+			}
 		}
 		return result;
 	}

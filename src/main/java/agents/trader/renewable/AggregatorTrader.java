@@ -67,7 +67,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 
 	/** Columns of the output file */
 	@Output
-	protected static enum OutputColumns {
+	private static enum OutputColumns {
 		/** overall received support payments from policy agent */
 		ReceivedSupportInEUR,
 		/** overall support refunded to policy agent (in CFD scheme) */
@@ -112,14 +112,15 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		}
 	}
 
-	/** Prepared Bids */
-	protected final TreeMap<TimeStamp, List<ProducerBid>> preparedBidsByTime = new TreeMap<>();
 	/** Map to store all client, i.e. {@link RenewablePlantOperator}, specific data */
 	protected final HashMap<Long, ClientData> clientMap = new HashMap<>();
+
+	/** Prepared Bids */
+	private final TreeMap<TimeStamp, List<ProducerBid>> preparedBidsByTime = new TreeMap<>();
 	/** Stores the power prices from {@link DayAheadMarket} */
-	protected final TreeMap<TimeStamp, Double> powerPrices = new TreeMap<>();
+	private final TreeMap<TimeStamp, Double> powerPrices = new TreeMap<>();
 	/** Adds random errors (normally distributed) to the amount of offered power */
-	protected PowerForecastError errorGenerator;
+	private PowerForecastError errorGenerator;
 
 	/** Creates an {@link AggregatorTrader}
 	 * 

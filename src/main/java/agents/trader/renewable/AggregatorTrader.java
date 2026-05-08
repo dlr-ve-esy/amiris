@@ -342,7 +342,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 				energyToDispatch = Math.max(0, energyToDispatch - dispatchedEnergy);
 				logClientDispatchAndRevenues(dispatchedEnergy, award.powerPriceInEURperMWH, bid.producerUuid,
 						award.beginOfDeliveryInterval);
-				Contract matchingContract = getMatchingContract(contracts, bid.producerUuid);
+				Contract matchingContract = getContractWithReceiver(contracts, bid.producerUuid);
 				fulfilNext(matchingContract, new AmountAtTime(award.beginOfDeliveryInterval, dispatchedEnergy));
 			}
 		}

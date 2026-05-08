@@ -21,7 +21,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  *
  * @author Christoph Schimeczek */
 public abstract class Trader extends Agent implements DayAheadMarketTrader {
-	static final String ERR_NO_CONTRACT_IN_LIST = "No contract existing for agent: ";
+	static final String ERR_NO_CONTRACT_IN_LIST = "No contract found for agent: ";
 	static final String ERR_DELIVERY_TIME_MISMATCH = "ExtractMarginalsAtTime() required identical delivery time stamps for all messages.";
 
 	/** Products of {@link Trader}s */
@@ -52,11 +52,11 @@ public abstract class Trader extends Agent implements DayAheadMarketTrader {
 		return marginalsByTimeStamp;
 	}
 
-	/** Reads {@link MarginalsAtTime} from given messages, ensured they are valid at the same time stamp
+	/** Reads {@link MarginalsAtTime} from given messages and ensures they are valid at the same time stamp
 	 * 
 	 * @param messages containing MarginalsAtTime to be extracted
 	 * @return List of MarginalsAtTime contained in given messages
-	 * @throw RuntimeException if time stamp does not match for all marginals * */
+	 * @throws RuntimeException if delivery time does not match for all marginals */
 	protected ArrayList<MarginalsAtTime> extractMarginalsAtTime(ArrayList<Message> messages) {
 		ArrayList<MarginalsAtTime> result = new ArrayList<>(messages.size());
 		TimeStamp time = null;
@@ -74,7 +74,9 @@ public abstract class Trader extends Agent implements DayAheadMarketTrader {
 		return result;
 	}
 
-	/** @param allMarginals to have their {@link Marginal}s extracted and then sorted by costs, ascending
+	/** Return list of all marginals combined from given data and sorted by marginal cost, ascending
+	 * 
+	 * @param allMarginals to have their {@link Marginal}s extracted and then sorted by costs
 	 * @return {@link Marginal}s extracted from given data sorted in ascending order of their marginal cost */
 	protected ArrayList<Marginal> getSortedMarginalList(ArrayList<MarginalsAtTime> allMarginals) {
 		ArrayList<Marginal> marginals = new ArrayList<>();
@@ -85,15 +87,17 @@ public abstract class Trader extends Agent implements DayAheadMarketTrader {
 		return marginals;
 	}
 
-	/** @param contracts whose receivers are searched for given agentId
-	 * @param agentId to search for
+	/** Returns first contract that has the provided receiver's agentID
+	 * 
+	 * @param contracts whose receivers are searched for given id
+	 * @param receiverId to search for
 	 * @return first matching contract from given list of {@link Contract}s where the given agentID is receiver */
-	protected Contract getMatchingContract(List<Contract> contracts, long agentId) {
+	protected Contract getContractWithReceiver(List<Contract> contracts, long receiverId) {
 		for (Contract contract : contracts) {
-			if (agentId == contract.getReceiverId()) {
+			if (receiverId == contract.getReceiverId()) {
 				return contract;
 			}
 		}
-		throw new RuntimeException(ERR_NO_CONTRACT_IN_LIST + agentId);
+		throw new RuntimeException(ERR_NO_CONTRACT_IN_LIST + receiverId);
 	}
 }

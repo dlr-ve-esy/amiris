@@ -52,7 +52,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Johannes Kochems, Christoph Schimeczek, Felix Nitsch, Farzad Sarfarazi, Kristina Nienhaus */
 public abstract class AggregatorTrader extends TraderWithClients implements PowerPlantScheduler {
-	@Input private static final Tree parameters = Make.newTree().addAs("ForecastError", PowerForecastError.parameters)
+	static final String GROUP_FORECAST_ERROR = "ForecastError";
+
+	@Input private static final Tree parameters = Make.newTree()
+			.addAs(GROUP_FORECAST_ERROR, PowerForecastError.parameters)
 			.buildTree();
 
 	private static final double BIN_WIDTH = 1E-5;
@@ -64,7 +67,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 
 	/** Columns of the output file */
 	@Output
-	protected static enum OutputColumns {
+	private static enum OutputColumns {
 		/** overall received support payments from policy agent */
 		ReceivedSupportInEUR,
 		/** overall support refunded to policy agent (in CFD scheme) */
@@ -109,14 +112,15 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		}
 	}
 
-	/** Submitted Bids */
-	protected final TreeMap<TimeStamp, List<ProducerBid>> submittedBidsByTime = new TreeMap<>();
 	/** Map to store all client, i.e. {@link RenewablePlantOperator}, specific data */
 	protected final HashMap<Long, ClientData> clientMap = new HashMap<>();
+
+	/** Prepared Bids */
+	private final TreeMap<TimeStamp, List<ProducerBid>> preparedBidsByTime = new TreeMap<>();
 	/** Stores the power prices from {@link DayAheadMarket} */
-	protected final TreeMap<TimeStamp, Double> powerPrices = new TreeMap<>();
+	private final TreeMap<TimeStamp, Double> powerPrices = new TreeMap<>();
 	/** Adds random errors (normally distributed) to the amount of offered power */
-	protected PowerForecastError errorGenerator;
+	private PowerForecastError errorGenerator;
 
 	/** Creates an {@link AggregatorTrader}
 	 * 
@@ -125,7 +129,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		super(dataProvider);
 		ParameterData inputData = parameters.join(dataProvider);
 		try {
-			errorGenerator = new PowerForecastError(inputData.getGroup("ForecastError"), getNextRandomNumberGenerator());
+			errorGenerator = new PowerForecastError(inputData.getGroup(GROUP_FORECAST_ERROR), getNextRandomNumberGenerator());
 		} catch (MissingDataException e) {
 			errorGenerator = null;
 		}
@@ -218,35 +222,38 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		Contract contract = CommUtils.getExactlyOneEntry(contractsToFulfill);
 		TreeMap<TimeStamp, ArrayList<MarginalsAtTime>> marginalsByTimeStamp = sortMarginalsByTimeStamp(messages);
 		for (ArrayList<MarginalsAtTime> marginals : marginalsByTimeStamp.values()) {
-			submitHourlyBids(contract, marginals, false);
+			submitHourlyBids(contract, marginals);
 		}
 	}
 
-	/** Prepares hourly bids based on given marginals and sends them to the contracted partner
+	/** Prepares hourly bids based on given marginals and sends them to the contracted partner; if bids were previously calculated,
+	 * e.g., during forecast, these bids are reused. If no bids were previously calculated for the TimeStamp associated with the
+	 * provided marginals, the producer's bids are calculated based on the marginals and stored for later reuse. This ensures
+	 * consistent errors for forecast bids, actual bids, and dispatch assignment.
 	 * 
-	 * @param contract to fulfil
-	 * @param allMarginals to be used for bid calculation
-	 * @param hasErrors if true errors will be added to the power of the bid
-	 * @return submitted bids associated with producer UUID */
-	protected List<ProducerBid> submitHourlyBids(Contract contract, ArrayList<MarginalsAtTime> allMarginals,
-			boolean hasErrors) {
+	 * @param contract to fulfil - either with forecaster or day ahead market
+	 * @param allMarginals to be used for bid calculation; list must not be empty; entries must all have the same delivery time */
+	protected void submitHourlyBids(Contract contract, ArrayList<MarginalsAtTime> allMarginals) {
 		ArrayList<Bid> supplyBids = new ArrayList<>();
-		List<ProducerBid> producerBids = new ArrayList<>();
+		TimeStamp targetTime = allMarginals.get(0).getDeliveryTime();
 
-		TimeStamp targetTime = null;
-		for (MarginalsAtTime marginalsAtTime : allMarginals) {
-			targetTime = marginalsAtTime.getDeliveryTime();
-			long producerUuid = marginalsAtTime.getProducerUuid();
-			for (Marginal marginal : marginalsAtTime.getMarginals()) {
-				Bid bid = calcBids(marginal, targetTime, producerUuid, false);
-				producerBids.add(new ProducerBid(bid, producerUuid, marginal.getPowerPotentialInMW()));
-				supplyBids.add(bid);
+		if (preparedBidsByTime.containsKey(targetTime)) {
+			for (ProducerBid producerBid : preparedBidsByTime.get(targetTime)) {
+				supplyBids.add(producerBid.bid);
 			}
+		} else {
+			List<ProducerBid> producerBids = new ArrayList<>();
+			for (MarginalsAtTime marginalsAtTime : allMarginals) {
+				long producerUuid = marginalsAtTime.getProducerUuid();
+				for (Marginal marginal : marginalsAtTime.getMarginals()) {
+					Bid bid = calcBids(marginal, targetTime, producerUuid);
+					producerBids.add(new ProducerBid(bid, producerUuid, marginal.getPowerPotentialInMW()));
+					supplyBids.add(bid);
+				}
+			}
+			preparedBidsByTime.put(targetTime, producerBids);
 		}
-		if (targetTime != null) {
-			fulfilNext(contract, new BidsAtTime(targetTime, getId(), supplyBids, null));
-		}
-		return producerBids;
+		fulfilNext(contract, new BidsAtTime(targetTime, getId(), supplyBids, null));
 	}
 
 	/** Creates a {@link Bid} from given Marginal
@@ -254,9 +261,8 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 	 * @param marginal pair of true cost and power potential
 	 * @param targetTime associated with the marginal and bid
 	 * @param producerUuid id of plant operator associated with marginal
-	 * @param hasErrors if true errors will be added to the power of the bid
 	 * @return created bid */
-	protected abstract Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid, boolean hasErrors);
+	protected abstract Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid);
 
 	/** Sends supply {@link Bid}s to {@link DayAheadMarket}
 	 * 
@@ -265,24 +271,19 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 	private void prepareBids(ArrayList<Message> messages, List<Contract> contracts) {
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 		ArrayList<MarginalsAtTime> marginals = extractMarginalsAtTime(messages);
-		if (marginals.size() == 0) {
-			return;
+		if (marginals.size() > 0) {
+			submitHourlyBids(contract, marginals);
+			storeYieldPotentials(marginals);
+			storeOfferedEnergy(preparedBidsByTime.get(marginals.get(0).getDeliveryTime()));
 		}
-		List<ProducerBid> submittedBids = submitHourlyBids(contract, marginals, true);
-		TimeStamp deliveryTime = marginals.get(0).getDeliveryTime();
-		submittedBidsByTime.put(deliveryTime, submittedBids);
-		storeYieldPotentials(marginals);
-		storeOfferedEnergy(submittedBids);
 	}
 
 	/** Calculate a power with errors from forecast
 	 * 
 	 * @param truePowerPotential perfect foresight power potential without any errors
-	 * @param hasPowerError if true, an error is added to the power
-	 * @return power potential modified by power forecast error, if applicable - otherwise the original true potential without
-	 *         errors */
-	protected double getPowerWithError(double truePowerPotential, boolean hasPowerError) {
-		return hasPowerError ? errorGenerator.calcPowerWithError(truePowerPotential) : truePowerPotential;
+	 * @return power potential modified by power forecast error, if applicable - otherwise the given true potential */
+	protected double getPowerWithError(double truePowerPotential) {
+		return errorGenerator != null ? errorGenerator.calcPowerWithError(truePowerPotential) : truePowerPotential;
 	}
 
 	/** Store {@link YieldPotential}s for RES market value calculation **/
@@ -327,7 +328,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		AwardData award = message.getDataItemOfType(AwardData.class);
 		store(DayAheadMarketTrader.OutputColumns.AwardedEnergyInMWH, award.supplyEnergyInMWH);
 		double energyToDispatch = award.supplyEnergyInMWH;
-		List<ProducerBid> submittedBids = submittedBidsByTime.remove(award.beginOfDeliveryInterval);
+		List<ProducerBid> submittedBids = preparedBidsByTime.remove(award.beginOfDeliveryInterval);
 		submittedBids.sort(Comparator.comparingDouble(ProducerBid::getOfferPrice));
 
 		HashMap<Integer, List<ProducerBid>> bidsBinnedByOfferPrice = getBinnedBids(submittedBids);
@@ -341,7 +342,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 				energyToDispatch = Math.max(0, energyToDispatch - dispatchedEnergy);
 				logClientDispatchAndRevenues(dispatchedEnergy, award.powerPriceInEURperMWH, bid.producerUuid,
 						award.beginOfDeliveryInterval);
-				Contract matchingContract = getMatchingContract(contracts, bid.producerUuid);
+				Contract matchingContract = getContractWithReceiver(contracts, bid.producerUuid);
 				fulfilNext(matchingContract, new AmountAtTime(award.beginOfDeliveryInterval, dispatchedEnergy));
 			}
 		}

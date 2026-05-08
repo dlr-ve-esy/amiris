@@ -13,12 +13,12 @@ import de.dlr.gitlab.fame.agent.input.Tree;
  * 
  * @author Johannes Kochems, Christoph Schimeczek */
 public class PowerForecastError {
+	static final String PARAM_MEAN = "Mean";
+	static final String PARAM_STDEV = "StandardDeviation";
 
 	/** Specific inputs to parameterise {@link PowerForecastError} modelling */
 	public static final Tree parameters = Make.newTree().optional()
-			.add(Make.newDouble("Mean").optional().help("Relative offset of the power forecasts"),
-					Make.newDouble("StandardDeviation").optional()
-							.help("Standard deviation of the relative power forecasting errors"))
+			.add(Make.newDouble(PARAM_MEAN), Make.newDouble(PARAM_STDEV))
 			.buildTree();
 
 	private double mean;
@@ -31,8 +31,8 @@ public class PowerForecastError {
 	 * @param random random number generator - use FAME's RNG creation function to ensure reproducibility on identical seeds
 	 * @throws MissingDataException if any required data is not provided */
 	public PowerForecastError(ParameterData input, Random random) throws MissingDataException {
-		mean = input.getDouble("Mean");
-		standardDeviation = input.getDouble("StandardDeviation");
+		mean = input.getDouble(PARAM_MEAN);
+		standardDeviation = input.getDouble(PARAM_STDEV);
 		rng = random;
 	}
 

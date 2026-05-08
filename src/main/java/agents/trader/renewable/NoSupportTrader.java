@@ -20,7 +20,9 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  *
  * @author Johannes Kochems */
 public class NoSupportTrader extends AggregatorTrader {
-	static final Tree parameters = Make.newTree().add(Make.newDouble("ShareOfRevenues")).buildTree();
+	static final String PARAM_REVENUE_SHARE = "ShareOfRevenues";
+
+	static final Tree parameters = Make.newTree().add(Make.newDouble(PARAM_REVENUE_SHARE)).buildTree();
 
 	/** Share of market revenues the NoSupportTrader keeps to himself */
 	private final double shareOfRevenues;
@@ -32,13 +34,13 @@ public class NoSupportTrader extends AggregatorTrader {
 	public NoSupportTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
 		ParameterData input = parameters.join(dataProvider);
-		shareOfRevenues = input.getDouble("ShareOfRevenues");
+		shareOfRevenues = input.getDouble(PARAM_REVENUE_SHARE);
 	}
 
 	@Override
-	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid, boolean hasErrors) {
+	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid) {
 		double truePowerPotential = marginal.getPowerPotentialInMW();
-		double powerOffered = getPowerWithError(truePowerPotential, hasErrors);
+		double powerOffered = getPowerWithError(truePowerPotential);
 		return new Bid(powerOffered, marginal.getMarginalCostInEURperMWH(), marginal.getMarginalCostInEURperMWH());
 	}
 

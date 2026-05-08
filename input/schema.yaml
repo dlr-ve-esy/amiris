@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Metadata:
   name: "AMIRIS"
-  version: "4.1.1"
+  version: "4.1.2"
   title: "open Agent-based Market model for the Investigation of Renewable and Integrated energy Systems"
   homepage: "https://helmholtz.software/software/amiris"
   documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/blob/v4.1.0/docs/home.md"
@@ -940,12 +940,12 @@ AgentTypes:
         List: false
         Mandatory: false
         MetaData:
-          description: "Group of parameters to specify potential forecast errors."
+          description: "Group of parameters to specify forecast errors of the power potential."
           isAbout: [{name: "forecast error", "@id": "OEO_00010233"}]
         NestedAttributes:
           Mean:
             AttributeType: double
-            Mandatory: false
+            Mandatory: true
             List: false
             help: "Relative offset of the power forecasts"
             MetaData:
@@ -954,11 +954,12 @@ AgentTypes:
               isAbout: [{name: "arithmetic mean", "@id": "OEO_00140071"}]
           StandardDeviation:
             AttributeType: double
-            Mandatory: false
+            Mandatory: true
             List: false
             help: "Standard deviation of the relative power forecasting errors"
             MetaData:
               description: "Standard deviation of the relative power forecasting errors."
+              unit: 1
       MarketValueForecastMethod:
         AttributeType: enum
         List: false

@@ -24,9 +24,9 @@ public class SystemOperatorTrader extends AggregatorTrader {
 	}
 
 	@Override
-	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid, boolean hasErrors) {
+	protected Bid calcBids(Marginal marginal, TimeStamp targetTime, long producerUuid) {
 		double truePowerPotential = marginal.getPowerPotentialInMW();
-		double powerOffered = getPowerWithError(truePowerPotential, hasErrors);
+		double powerOffered = getPowerWithError(truePowerPotential);
 		return new Bid(powerOffered, Constants.MINIMAL_PRICE_IN_EUR_PER_MWH, marginal.getMarginalCostInEURperMWH());
 	}
 

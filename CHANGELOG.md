@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 - Build package with parallel execution capabilities in CI #250 
 - README: update funding agency name #243 (@dlr-cjs)
 - docs: Update Roadmap #244 (@dlr-cjs @dlr_jk)
+- improved Getting-Started section in docs (@dlr-cjs)
 
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed

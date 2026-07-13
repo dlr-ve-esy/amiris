@@ -1555,7 +1555,7 @@ AgentTypes:
       SetRegistration: &RPO_P_SetRegistration
         MetaData:
           description: "A registration message to the marketing agent"
-    Ouputs:
+    Outputs:
       AwardedEnergyInMWH: *PPO_O_AwardedEnergy
       OfferedEnergyInMWH: *PPO_O_OfferedEnergy
       ReceivedMoneyInEUR: *PPO_O_ReceivedMoney
@@ -1599,7 +1599,7 @@ AgentTypes:
       PotentialLogging: &VRPOP_P_Ppa_PotentialLogging
         MetaData:
           description: "Trigger for logging own power plant production potential."
-    Ouputs:
+    Outputs:
       AwardedEnergyInMWH: *PPO_O_AwardedEnergy
       OfferedEnergyInMWH: *PPO_O_OfferedEnergy
       ReceivedMoneyInEUR: *PPO_O_ReceivedMoney

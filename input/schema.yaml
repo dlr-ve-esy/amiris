@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 Metadata:
   name: "AMIRIS"
-  version: "4.1.2"
+  version: "4.2.0"
   title: "open Agent-based Market model for the Investigation of Renewable and Integrated energy Systems"
   homepage: "https://helmholtz.software/software/amiris"
   documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/blob/v4.1.0/docs/home.md"
@@ -322,12 +322,12 @@ AgentTypes:
           description: "Costs for ordered CO2-certificates."
           isAbout: [{name: "cost", "@id": "OEO_00040009"}, {name: "CO2 emission", "@id": "OEO_00260007"}]
     Outputs:
-      Co2EmissionsInTons:
+      Co2EmissionsInT:
         MetaData:
           description: "Registered CO2 emissions in tons"
           unit: t
           isAbout: [{name: "CO2 emission", "@id": "OEO_00260007"}]
-      Co2PriceInEURperTon:
+      Co2PriceInEURperT:
         MetaData:
           description: "CO2 price in EUR per ton"
           unit: EUR/t
@@ -677,7 +677,7 @@ AgentTypes:
             Mandatory: false
             List: false
             MetaData:
-              description: "The annuity factor."
+              description: "The annuity factor"
               unit: 1
               isAbout: [{name: "amortisation time", "@id": "OEO_00320073"}]
           AnnualFixedCostsInEURperMW:
@@ -686,7 +686,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "The annual fixed costs"
-              unit: EUR/MW
+              unit: EUR/MW/a
               isAbout: [{name: "fixed cost", "@id": "OEO_00020168"}]
       Device: &Device_G_Device
         AttributeType: block
@@ -882,9 +882,9 @@ AgentTypes:
           isAbout: [{name: "fixed cost", "@id": "OEO_00020168"}]
       InvestmentAnnuityInEUR: &FlexibilityTrader_O_InvestmentAnnuity
         MetaData:
-          description: "Investment annuity in EUR"
-          unit: EUR
-          isAbout: [{name: "", "@id": ""}]
+          description: "Annual share of investment cost"
+          unit: EUR/a
+          isAbout: [{name: "investment cost", "@id": "OEO_00020167"}]
       VariableCostsInEUR: &FlexibilityTrader_O_VariableCosts
         MetaData:
           description: "Variable operation and maintenance costs in EUR"
@@ -1347,37 +1347,7 @@ AgentTypes:
 
   ConventionalPlantOperator:
     Attributes:
-      Refinancing: &PPO_G_Refinancing
-        AttributeType: block
-        Mandatory: false
-        List: false
-        MetaData:
-          description: "Refinancing specifications"
-        NestedAttributes:
-          InvestmentExpensesInEURperMW:
-            AttributeType: double
-            Mandatory: false
-            List: false
-            MetaData:
-              description: "Investment expenses"
-              unit: EUR/MW
-              isAbout: [{name: "investment cost", "@id": "OEO_00020167"}]
-          AnnuityFactor:
-            AttributeType: double
-            Mandatory: false
-            List: false
-            MetaData:
-              description: "The annuity factor"
-              unit: 1
-              isAbout: [{name: "amortisation time", "@id": "OEO_00320073"}]
-          AnnualFixedCostsInEURperMW:
-            AttributeType: double
-            Mandatory: false
-            List: false
-            MetaData:
-              description: "The annual fixed costs"
-              unit: EUR/MW
-              isAbout: [{name: "fixed cost", "@id": "OEO_00020168"}]
+      Refinancing: *AnnualCostCalculator_G_Refinancing
     Products:
       MarginalCost: &PPO_P_MarginalCost
         MetaData:
@@ -1443,7 +1413,7 @@ AgentTypes:
       InvestmentAnnuityInEUR: &PPO_O_InvestmentAnnuity
         MetaData:
           description: "Annual share of investment cost"
-          unit: EUR
+          unit: EUR/a
           isAbout: [{name: "investment cost", "@id": "OEO_00020167"}]
       DispatchedEnergyInMWHperPlant:
         MetaData:
@@ -1583,7 +1553,7 @@ AgentTypes:
           description: "Price for selling power via a bilateral Power Purchase Agreement"
           unit: EUR/MWh
           isAbout: [{name: "electricity price", "@id": "OEO_00020117"}]
-      Refinancing: *PPO_G_Refinancing
+      Refinancing: *AnnualCostCalculator_G_Refinancing
     Products:
       MarginalCost: *PPO_P_MarginalCost
       MarginalCostForecast: *PPO_P_MarginalCostForecast
@@ -1649,7 +1619,7 @@ AgentTypes:
         MetaData:
           description: "Only used in mode FROM_FILE: determines the available power output by multiplication with InstalledPowerInMW."
           isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "dispatch assignment", "@id": "OEO_00140136"}]
-      Refinancing: *PPO_G_Refinancing
+      Refinancing: *AnnualCostCalculator_G_Refinancing
     Products:
       MarginalCost: *PPO_P_MarginalCost
       MarginalCostForecast: *PPO_P_MarginalCostForecast
@@ -2506,16 +2476,16 @@ AgentTypes:
             Mandatory: false
             List: false
             MetaData:
-              description: "Network charges based on peak consumption capacity for planning period (year) in EUR per MW"
-              unit: EUR/MW
+              description: "Network charges based on peak consumption capacity for planning period (year)"
+              unit: EUR/MW/a
               isAbout: [{name: "levy", "@id": "OEO_00020110"}]
           FixedNetworkChargesInEURPerYear:
             AttributeType: time_series
             Mandatory: false
             List: false
             MetaData:
-              description: "Fixed network charges based on peak consumption capacity for planning period in EUR per MW"
-              unit: EUR/MW
+              description: "Fixed network charges based on peak consumption capacity for planning period"
+              unit: EUR/MW/a
               isAbout: [{name: "levy", "@id": "OEO_00020110"}]
       BusinessModel: &EndUserTariff_G_BusinessModel
             AttributeType: block

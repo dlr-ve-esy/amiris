@@ -504,7 +504,7 @@ AgentTypes:
                 List: false
                 help: "Yield profile of the reference plant to calculate payback obligation from its market revenues"
                 MetaData:
-                  description: "A referencfe yield profile to calculate payback obligation from its market revenues."
+                  description: "A reference yield profile to calculate payback obligation from its market revenues."
                   unit: 1
                   isAbout: [{name: "yield profile", "@id": "OEO_00140139"}]
     Products:
@@ -594,7 +594,7 @@ AgentTypes:
             Mandatory: true
             List: false
             MetaData:
-              description: "The price at which the demand is offered, i.e. maximum willingness to pay for the assiciated energy."
+              description: "The price at which the demand is offered, i.e. maximum willingness to pay for the associated energy."
               unit: EUR/MWh
               isAbout: [{name: "cost", "@id": "OEO_00040009"}]
         MetaData:
@@ -2994,7 +2994,7 @@ AgentTypes:
             List: false
             Default: 0.
             MetaData:
-              description: "Net inflow energy into the flexibility device (no charging efficiency applied; positive values are inflows, negative values represent outflows"
+              description: "Net inflow energy into the flexibility device (no charging efficiency applied); positive values are inflows, negative values represent outflows"
               unit: MW
               isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "electrical energy", "@id": "OEO_00000139"}]
           InitialEnergyContentInMWH:

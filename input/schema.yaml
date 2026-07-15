@@ -1794,7 +1794,7 @@ AgentTypes:
               description: "Time at which the power plants becomes unavailable. No electricity is produced at that time or later."
               isAbout: [{name: "time stamp", "@id": "OEO_00140043"}]
           Id:
-            AttributeType: STRING
+            AttributeType: string
             Mandatory: false
             List: false
             MetaData:

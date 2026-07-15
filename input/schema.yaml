@@ -3044,7 +3044,7 @@ AgentTypes:
               isAbout: [ { name: "variable cost", "@id": "OEO_00020145" }, { name: "time series", "@id": "OEO_00030034" } ]
           OnOverflow: 
             MetaData:
-              Description: "How to deal with violation of maximum energy content limit due to excessive energy inflow"
+              description: "How to deal with violation of maximum energy content limit due to excessive energy inflow"
             AttributeType: enum
             Mandatory: true
             List: false
@@ -3052,13 +3052,13 @@ AgentTypes:
             Values:
               CUT:
                 MetaData:
-                  Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a reservoir hydro power plant with an overflow valve"
+                  description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a reservoir hydro power plant with an overflow valve"
               ERROR:
                 MetaData:
-                  Description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
+                  description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
           OnUnderflow:
             MetaData:
-              Description: "How to deal with violation of minimum energy content limit due to excessive energy outflow"
+              description: "How to deal with violation of minimum energy content limit due to excessive energy outflow"
             AttributeType: enum
             Mandatory: true
             List: false
@@ -3066,10 +3066,10 @@ AgentTypes:
             Values:
               CUT:
                 MetaData:
-                  Description: "Reduce effective outflow to not fall below the minimum allowed energy content"
+                  description: "Reduce effective outflow to not fall below the minimum allowed energy content"
               ERROR:
                 MetaData:
-                  Description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
+                  description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
       Assessment:
         AttributeType: block
         Mandatory: true
@@ -3086,13 +3086,13 @@ AgentTypes:
             Values:
               MAX_PROFIT_PRICE_TAKER:
                 MetaData:
-                  Description: "Maximises profit using an electricity price forecast neglecting any price impact of bids"
+                  description: "Maximises profit using an electricity price forecast neglecting any price impact of bids"
               MIN_SYSTEM_COST:
                 MetaData:
-                  Description: "Minimises total system costs using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
+                  description: "Minimises total system costs using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
               MAX_PROFIT:
                 MetaData:
-                  Description: "Maximises own profits using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
+                  description: "Maximises own profits using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
       StateDiscretisation:
         AttributeType: block
         Mandatory: true

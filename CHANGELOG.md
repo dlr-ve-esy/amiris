@@ -12,6 +12,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ### Added
 - `ElectrolysisTraderSensitivity`: Implement new agent #255 (@dlr-cjs, @dlr_jk)
+- Add `VariableCostInEURperMWH` to `ElectrolysisTrader`s #255 (@dlr-cjs, @dlr_jk)
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)

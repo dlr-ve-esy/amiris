@@ -1899,6 +1899,15 @@ AgentTypes:
               description: "Factor < 1 to convert electric energy to hydrogen's thermal energy equivalent."
               unit: 1
               isAbout: [{name: "energy conversion efficiency", "@id": "OEO_00140049"}]
+          VariableCostInEURperMWH:
+            AttributeType: time_series
+            Mandatory: true
+            List: false
+            Default: 0.
+            MetaData:
+              description: "The variable cost of an electrolyzer in EUR per MWh electricity"
+              unit: EUR/MWh
+              isAbout: [{name: "variable production cost", "@id": "OEO_00020146"}]
         MetaData:
           description: "Technical details of the electrolysis device to administrate."
       Strategy:

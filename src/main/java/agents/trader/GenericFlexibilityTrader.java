@@ -89,7 +89,7 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		ParameterData input = parameters.join(dataProvider);
 
 		device = new GenericDevice(input.getGroup(GROUP_DEVICE));
-		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT), device);
+		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT), device.getVariableCostSeries());
 		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup(GROUP_STATES));
 		var bidScheduler = BidSchedulerBuilder.build(input.getGroup(GROUP_BIDS));
 		strategist = new Optimiser(stateManager, bidScheduler, assessmentFunction.getTargetType());

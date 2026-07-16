@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.assessment;
 
-import agents.flexibility.GenericDevice;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
 import de.dlr.gitlab.fame.agent.input.Tree;
+import de.dlr.gitlab.fame.data.TimeSeries;
 
 /** Builds {@link AssessmentFunction}s from provided input parameters
  * 
@@ -30,18 +30,18 @@ public final class AssessmentFunctionBuilder {
 	/** Create an assessment function for a generic flexibility device
 	 * 
 	 * @param input of the assessment function
-	 * @param device to be assessed
+	 * @param variableCostInEURperMWH for assessment
 	 * @return new {@link AssessmentFunction}
 	 * @throws MissingDataException if any required parameter is missing */
-	public static AssessmentFunction build(ParameterData input, GenericDevice device) throws MissingDataException {
+	public static AssessmentFunction build(ParameterData input, TimeSeries variableCostInEURperMWH) throws MissingDataException {
 		Type type = input.getEnum("Type", Type.class);
 		switch (type) {
 			case MAX_PROFIT_PRICE_TAKER:
-				return new MaxProfitPriceTaker(device);
+				return new MaxProfitPriceTaker(variableCostInEURperMWH);
 			case MIN_SYSTEM_COST:
-				return new MinSystemCost(device);
+				return new MinSystemCost(variableCostInEURperMWH);
 			case MAX_PROFIT:
-				return new MaxProfit(device);
+				return new MaxProfit(variableCostInEURperMWH);
 			default:
 				throw new RuntimeException(ERR_NOT_IMPLEMENTED + type);
 		}

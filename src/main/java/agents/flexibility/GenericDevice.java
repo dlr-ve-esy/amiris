@@ -431,4 +431,11 @@ public class GenericDevice {
 	public StateViolation onUnderflow() {
 		return onUnderflow;
 	}
+
+	/** Returns variable costs of device
+	 * 
+	 * @return variable cost time series */
+	public TimeSeries getVariableCostSeries() {
+		return variableCostInEURperMWH;
+	}
 }

@@ -120,7 +120,7 @@ public interface StateManager {
 	 * @param startingPeriod first interval of the planning horizon
 	 * @param planningHorizonInHours total length of the planning horizon
 	 * @return starting time of each planning interval in the planning horizon */
-	static ArrayList<TimeStamp> createPlanningTimes(TimePeriod startingPeriod, double planningHorizonInHours) {
+	public static ArrayList<TimeStamp> createPlanningTimes(TimePeriod startingPeriod, double planningHorizonInHours) {
 		int numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
 		ArrayList<TimeStamp> planningTimes = new ArrayList<>(numberOfTimeSteps);
 		for (int step = 0; step < numberOfTimeSteps; step++) {

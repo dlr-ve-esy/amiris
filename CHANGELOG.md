@@ -10,9 +10,11 @@ SPDX-License-Identifier: Apache-2.0 -->
 - improved Getting-Started section in docs (@dlr-cjs)
 - docs: update model schema #251 (@dlr_fn @dlr-cjs @dlr-ach)
 
+### Added
+- `ElectrolysisTraderSensitivity`: Implement new agent #255 (@dlr-cjs, @dlr_jk)
+
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
-
 
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed

@@ -56,7 +56,7 @@ AgentTypes:
             AttributeType: enum
             Mandatory: false
             List: false
-            help: "Defines which price to use in case of shortage events (default: ScarcityPrice)"
+            help: "Defines which price to use in case of shortage events (default: ValueOfLostLoad)"
             MetaData:
               description: "Which price to use in case of scarcity (i.e. when valuable demand is shed due to missing capacity)"
             Values:
@@ -494,7 +494,7 @@ AgentTypes:
                 AttributeType: time_series
                 Mandatory: true
                 List: false
-                Metadata:
+                MetaData:
                   description: "The capacity premium for the TechnologySet which (by assumption) equals to the share of the total full costs (investment and (expected) operational expenditures) for the accounting period."
                   unit: EUR/MW
                   isAbout: [{name: "capacity premium", "@id": "OEO_00020111"}]
@@ -791,6 +791,7 @@ AgentTypes:
             MetaData:
               description: "Tolerance value added or subtracted from each calculated bid"
               unit: EUR/MWh
+              isAbout: [{name: "bid", "@id": "OEO_00140121"}]
           ForecastUpdateType: &Strategist_A_ForecastUpdateType
             AttributeType: enum
             Mandatory: false
@@ -846,7 +847,7 @@ AgentTypes:
                 List: false
                 help: "Change of internal storage energy relative to available charging power. Values should be -1 <= x <= 1."
                 MetaData:
-                  description: ""
+                  description: "Change of internal storage energy relative to available charging power. Values should be -1 <= x <= 1."
                   unit: 1
                   isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "net capacity factor", "@id": "OEO_00240016"}]
               DispatchToleranceInMWH:

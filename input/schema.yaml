@@ -401,7 +401,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "Sets for energy-carrier-specific remuneration"
-              isAbout: [{name: "energy carrier", "@id": "OEO_00020039"}]
+              isAbout: [{name: "energy carrier", "@id": "OEO_00020039"}, {name: "remuneration", "@id": "OEO_00020125"}]
           FIT:
             AttributeType: block
             Mandatory: false
@@ -1301,7 +1301,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "Awards with less energy than maximum energy divided by this factor are ignored."
-              unit: MWh
+              unit: 1
               isAbout: [{name: "electrical energy", "@id": "OEO_00000139"}, {name: "award", "@id": "OEO_00140122"}]
           InitialEstimateWeight:
             AttributeType: integer
@@ -1708,6 +1708,7 @@ AgentTypes:
             MetaData:
               description: "The minimum efficiency of the respective power plant technology."
               isAbout: [{name: "efficiency value", "@id": "OEO_00140050"}, {name: "minimum", "@id": "OEO_00140072"}]
+              unit: 1
           Maximal:
             AttributeType: time_series
             Mandatory: true
@@ -1715,6 +1716,7 @@ AgentTypes:
             MetaData:
               description: "The maximal efficiency of the respective power plant technology."
               isAbout: [{name: "efficiency value", "@id": "OEO_00140050"}, {name: "maximum", "@id": "OEO_00140073"}]
+              unit: 1
         MetaData:
           description: "Group of efficiency attributes (minimal, maximal)."
           isAbout: [{name: "efficiency value", "@id": "OEO_00140050"}]
@@ -2785,6 +2787,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "Number of steps that is used to discretize the building's indoor air temperature."
+              unit: 1
           HeatPumpStrategistType:
             AttributeType: enum
             Mandatory: true
@@ -3033,7 +3036,7 @@ AgentTypes:
             MetaData:
               description: "If positive, enable prolonged shifts of flexibility device beyond maximum shift time"
               unit: 1
-              isAbout: [{name: "boolean value", "@id": "OEO_00010422"}]
+              isAbout: [{name: "boolean variable", "@id": "OEO_00000078"}]
           PenaltyCostInEURperMWH:
             AttributeType: time_series
             Mandatory: true

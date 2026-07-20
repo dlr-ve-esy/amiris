@@ -1,12 +1,12 @@
 # SPDX-FileCopyrightText: 2022-2026 German Aerospace Center <amiris@dlr.de>
 #
 # SPDX-License-Identifier: Apache-2.0
-Metadata:
+MetaData:
   name: "AMIRIS"
-  version: "4.1.2"
+  version: "4.2.0"
   title: "open Agent-based Market model for the Investigation of Renewable and Integrated energy Systems"
   homepage: "https://helmholtz.software/software/amiris"
-  documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/blob/v4.1.0/docs/home.md"
+  documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/blob/v4.2.0/docs/home.md"
   sourceCode: "https://gitlab.com/dlr-ve/esy/amiris/amiris"
   publisher: "German Aerospace Center (DLR)"
   publisherLogo: https://www.dlr.de/static/media/Logo-en.bc10c5b6.svg
@@ -56,7 +56,7 @@ AgentTypes:
             AttributeType: enum
             Mandatory: false
             List: false
-            help: "Defines which price to use in case of shortage events (default: ScarcityPrice)"
+            help: "Defines which price to use in case of shortage events (default: ValueOfLostLoad)"
             MetaData:
               description: "Which price to use in case of scarcity (i.e. when valuable demand is shed due to missing capacity)"
             Values:
@@ -322,12 +322,12 @@ AgentTypes:
           description: "Costs for ordered CO2-certificates."
           isAbout: [{name: "cost", "@id": "OEO_00040009"}, {name: "CO2 emission", "@id": "OEO_00260007"}]
     Outputs:
-      Co2EmissionsInTons:
+      Co2EmissionsInT:
         MetaData:
           description: "Registered CO2 emissions in tons"
           unit: t
           isAbout: [{name: "CO2 emission", "@id": "OEO_00260007"}]
-      Co2PriceInEURperTon:
+      Co2PriceInEURperT:
         MetaData:
           description: "CO2 price in EUR per ton"
           unit: EUR/t
@@ -401,7 +401,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "Sets for energy-carrier-specific remuneration"
-              isAbout: [{name: "energy carrier", "@id": "OEO_00020039"}]
+              isAbout: [{name: "energy carrier", "@id": "OEO_00020039"}, {name: "remuneration", "@id": "OEO_00020125"}]
           FIT:
             AttributeType: block
             Mandatory: false
@@ -486,7 +486,7 @@ AgentTypes:
             AttributeType: block
             Mandatory: false
             List: false
-            Metadata:
+            MetaData:
               isAbout: [{name: "economic instrument", "@id": "OEO_00010456"}]
               description: "A group for a TechnologySet holding the specific information about a financial contract for difference."
             NestedAttributes:
@@ -494,7 +494,7 @@ AgentTypes:
                 AttributeType: time_series
                 Mandatory: true
                 List: false
-                Metadata:
+                MetaData:
                   description: "The capacity premium for the TechnologySet which (by assumption) equals to the share of the total full costs (investment and (expected) operational expenditures) for the accounting period."
                   unit: EUR/MW
                   isAbout: [{name: "capacity premium", "@id": "OEO_00020111"}]
@@ -504,7 +504,7 @@ AgentTypes:
                 List: false
                 help: "Yield profile of the reference plant to calculate payback obligation from its market revenues"
                 MetaData:
-                  description: "A referencfe yield profile to calculate payback obligation from its market revenues."
+                  description: "A reference yield profile to calculate payback obligation from its market revenues."
                   unit: 1
                   isAbout: [{name: "yield profile", "@id": "OEO_00140139"}]
     Products:
@@ -594,7 +594,7 @@ AgentTypes:
             Mandatory: true
             List: false
             MetaData:
-              description: "The price at which the demand is offered, i.e. maximum willingness to pay for the assiciated energy."
+              description: "The price at which the demand is offered, i.e. maximum willingness to pay for the associated energy."
               unit: EUR/MWh
               isAbout: [{name: "cost", "@id": "OEO_00040009"}]
         MetaData:
@@ -677,7 +677,7 @@ AgentTypes:
             Mandatory: false
             List: false
             MetaData:
-              description: "The annuity factor."
+              description: "The annuity factor"
               unit: 1
               isAbout: [{name: "amortisation time", "@id": "OEO_00320073"}]
           AnnualFixedCostsInEURperMW:
@@ -686,7 +686,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "The annual fixed costs"
-              unit: EUR/MW
+              unit: EUR/MW/a
               isAbout: [{name: "fixed cost", "@id": "OEO_00020168"}]
       Device: &Device_G_Device
         AttributeType: block
@@ -791,6 +791,7 @@ AgentTypes:
             MetaData:
               description: "Tolerance value added or subtracted from each calculated bid"
               unit: EUR/MWh
+              isAbout: [{name: "bid", "@id": "OEO_00140121"}]
           ForecastUpdateType: &Strategist_A_ForecastUpdateType
             AttributeType: enum
             Mandatory: false
@@ -846,7 +847,7 @@ AgentTypes:
                 List: false
                 help: "Change of internal storage energy relative to available charging power. Values should be -1 <= x <= 1."
                 MetaData:
-                  description: ""
+                  description: "Change of internal storage energy relative to available charging power. Values should be -1 <= x <= 1."
                   unit: 1
                   isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "net capacity factor", "@id": "OEO_00240016"}]
               DispatchToleranceInMWH:
@@ -882,9 +883,9 @@ AgentTypes:
           isAbout: [{name: "fixed cost", "@id": "OEO_00020168"}]
       InvestmentAnnuityInEUR: &FlexibilityTrader_O_InvestmentAnnuity
         MetaData:
-          description: "Investment annuity in EUR"
-          unit: EUR
-          isAbout: [{name: "", "@id": ""}]
+          description: "Annual share of investment cost"
+          unit: EUR/a
+          isAbout: [{name: "investment cost", "@id": "OEO_00020167"}]
       VariableCostsInEUR: &FlexibilityTrader_O_VariableCosts
         MetaData:
           description: "Variable operation and maintenance costs in EUR"
@@ -1273,9 +1274,9 @@ AgentTypes:
           isAbout: [{name: "forecast", "@id": "OEO_00010411"}]
     Outputs:
       ElectricityPriceForecastInEURperMWH: *MarketForecaster_O_ElectricityPriceForecast
-      ElectricityPriceForecastVarianceInEURperMWH:
+      PriceForecastStandardDeviationInEURperMWH:
         MetaData:
-          description: "Variance of forecasted electricity price in EUR per MWh"
+          description: "Standard deviation of forecasted electricity price in EUR per MWh"
           unit: EUR/MWh
           isAbout: [{name: "forecast error", "@id": "OEO_00010233"}, {name: "electricity price", "@id": "OEO_00020117"}]
     MetaData:
@@ -1300,7 +1301,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "Awards with less energy than maximum energy divided by this factor are ignored."
-              unit: MWh
+              unit: 1
               isAbout: [{name: "electrical energy", "@id": "OEO_00000139"}, {name: "award", "@id": "OEO_00140122"}]
           InitialEstimateWeight:
             AttributeType: integer
@@ -1347,37 +1348,7 @@ AgentTypes:
 
   ConventionalPlantOperator:
     Attributes:
-      Refinancing: &PPO_G_Refinancing
-        AttributeType: block
-        Mandatory: false
-        List: false
-        MetaData:
-          description: "Refinancing specifications"
-        NestedAttributes:
-          InvestmentExpensesInEURperMW:
-            AttributeType: double
-            Mandatory: false
-            List: false
-            MetaData:
-              description: "Investment expenses"
-              unit: EUR/MW
-              isAbout: [{name: "investment cost", "@id": "OEO_00020167"}]
-          AnnuityFactor:
-            AttributeType: double
-            Mandatory: false
-            List: false
-            MetaData:
-              description: "The annuity factor"
-              unit: 1
-              isAbout: [{name: "amortisation time", "@id": "OEO_00320073"}]
-          AnnualFixedCostsInEURperMW:
-            AttributeType: double
-            Mandatory: false
-            List: false
-            MetaData:
-              description: "The annual fixed costs"
-              unit: EUR/MW
-              isAbout: [{name: "fixed cost", "@id": "OEO_00020168"}]
+      Refinancing: *AnnualCostCalculator_G_Refinancing
     Products:
       MarginalCost: &PPO_P_MarginalCost
         MetaData:
@@ -1443,7 +1414,7 @@ AgentTypes:
       InvestmentAnnuityInEUR: &PPO_O_InvestmentAnnuity
         MetaData:
           description: "Annual share of investment cost"
-          unit: EUR
+          unit: EUR/a
           isAbout: [{name: "investment cost", "@id": "OEO_00020167"}]
       DispatchedEnergyInMWHperPlant:
         MetaData:
@@ -1583,7 +1554,7 @@ AgentTypes:
           description: "Price for selling power via a bilateral Power Purchase Agreement"
           unit: EUR/MWh
           isAbout: [{name: "electricity price", "@id": "OEO_00020117"}]
-      Refinancing: *PPO_G_Refinancing
+      Refinancing: *AnnualCostCalculator_G_Refinancing
     Products:
       MarginalCost: *PPO_P_MarginalCost
       MarginalCostForecast: *PPO_P_MarginalCostForecast
@@ -1649,7 +1620,7 @@ AgentTypes:
         MetaData:
           description: "Only used in mode FROM_FILE: determines the available power output by multiplication with InstalledPowerInMW."
           isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "dispatch assignment", "@id": "OEO_00140136"}]
-      Refinancing: *PPO_G_Refinancing
+      Refinancing: *AnnualCostCalculator_G_Refinancing
     Products:
       MarginalCost: *PPO_P_MarginalCost
       MarginalCostForecast: *PPO_P_MarginalCostForecast
@@ -1737,6 +1708,7 @@ AgentTypes:
             MetaData:
               description: "The minimum efficiency of the respective power plant technology."
               isAbout: [{name: "efficiency value", "@id": "OEO_00140050"}, {name: "minimum", "@id": "OEO_00140072"}]
+              unit: 1
           Maximal:
             AttributeType: time_series
             Mandatory: true
@@ -1744,6 +1716,7 @@ AgentTypes:
             MetaData:
               description: "The maximal efficiency of the respective power plant technology."
               isAbout: [{name: "efficiency value", "@id": "OEO_00140050"}, {name: "maximum", "@id": "OEO_00140073"}]
+              unit: 1
         MetaData:
           description: "Group of efficiency attributes (minimal, maximal)."
           isAbout: [{name: "efficiency value", "@id": "OEO_00140050"}]
@@ -1824,7 +1797,7 @@ AgentTypes:
               description: "Time at which the power plants becomes unavailable. No electricity is produced at that time or later."
               isAbout: [{name: "time stamp", "@id": "OEO_00140043"}]
           Id:
-            AttributeType: STRING
+            AttributeType: string
             Mandatory: false
             List: false
             MetaData:
@@ -2506,16 +2479,16 @@ AgentTypes:
             Mandatory: false
             List: false
             MetaData:
-              description: "Network charges based on peak consumption capacity for planning period (year) in EUR per MW"
-              unit: EUR/MW
+              description: "Network charges based on peak consumption capacity for planning period (year)"
+              unit: EUR/MW/a
               isAbout: [{name: "levy", "@id": "OEO_00020110"}]
           FixedNetworkChargesInEURPerYear:
             AttributeType: time_series
             Mandatory: false
             List: false
             MetaData:
-              description: "Fixed network charges based on peak consumption capacity for planning period in EUR per MW"
-              unit: EUR/MW
+              description: "Fixed network charges based on peak consumption capacity for planning period"
+              unit: EUR/MW/a
               isAbout: [{name: "levy", "@id": "OEO_00020110"}]
       BusinessModel: &EndUserTariff_G_BusinessModel
             AttributeType: block
@@ -2814,6 +2787,7 @@ AgentTypes:
             List: false
             MetaData:
               description: "Number of steps that is used to discretize the building's indoor air temperature."
+              unit: 1
           HeatPumpStrategistType:
             AttributeType: enum
             Mandatory: true
@@ -3024,7 +2998,7 @@ AgentTypes:
             List: false
             Default: 0.
             MetaData:
-              description: "Net inflow energy into the flexibility device (no charging efficiency applied; positive values are inflows, negative values represent outflows"
+              description: "Net inflow energy into the flexibility device (no charging efficiency applied); positive values are inflows, negative values represent outflows"
               unit: MW
               isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "electrical energy", "@id": "OEO_00000139"}]
           InitialEnergyContentInMWH:
@@ -3062,7 +3036,7 @@ AgentTypes:
             MetaData:
               description: "If positive, enable prolonged shifts of flexibility device beyond maximum shift time"
               unit: 1
-              isAbout: [{name: "boolean value", "@id": "OEO_00010422"}]
+              isAbout: [{name: "boolean variable", "@id": "OEO_00000078"}]
           PenaltyCostInEURperMWH:
             AttributeType: time_series
             Mandatory: true
@@ -3071,10 +3045,10 @@ AgentTypes:
             MetaData:
               description: "Penalty cost for operating a flexibility device outside of maximum shift time"
               unit: EUR/MWh
-              isAbout: [ { name: "variable cost", "@id": "OEO_00020145" }, { name: "time series", "@id": "OEO_00030034" } ]
+              isAbout: [{name: "variable cost", "@id": "OEO_00020145"}, {name: "time series", "@id": "OEO_00030034"}]
           OnOverflow: 
             MetaData:
-              Description: "How to deal with violation of maximum energy content limit due to excessive energy inflow"
+              description: "How to deal with violation of maximum energy content limit due to excessive energy inflow"
             AttributeType: enum
             Mandatory: true
             List: false
@@ -3082,13 +3056,13 @@ AgentTypes:
             Values:
               CUT:
                 MetaData:
-                  Description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a reservoir hydro power plant with an overflow valve"
+                  description: "Shed excess inflow to not exceed the maximum allowed energy content; example: a reservoir hydro power plant with an overflow valve"
               ERROR:
                 MetaData:
-                  Description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
+                  description: "Consider exceeding the maximum energy content to be an error; example: a battery storage that cannot exceed its limits and has no shedding capability"
           OnUnderflow:
             MetaData:
-              Description: "How to deal with violation of minimum energy content limit due to excessive energy outflow"
+              description: "How to deal with violation of minimum energy content limit due to excessive energy outflow"
             AttributeType: enum
             Mandatory: true
             List: false
@@ -3096,10 +3070,10 @@ AgentTypes:
             Values:
               CUT:
                 MetaData:
-                  Description: "Reduce effective outflow to not fall below the minimum allowed energy content"
+                  description: "Reduce effective outflow to not fall below the minimum allowed energy content"
               ERROR:
                 MetaData:
-                  Description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
+                  description: "Consider falling below the minimum energy content to be an error; example: a battery storage that cannot have less energy when empty"
       Assessment:
         AttributeType: block
         Mandatory: true
@@ -3116,13 +3090,13 @@ AgentTypes:
             Values:
               MAX_PROFIT_PRICE_TAKER:
                 MetaData:
-                  Description: "Maximises profit using an electricity price forecast neglecting any price impact of bids"
+                  description: "Maximises profit using an electricity price forecast neglecting any price impact of bids"
               MIN_SYSTEM_COST:
                 MetaData:
-                  Description: "Minimises total system costs using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
+                  description: "Minimises total system costs using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
               MAX_PROFIT:
                 MetaData:
-                  Description: "Maximises own profits using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
+                  description: "Maximises own profits using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
       StateDiscretisation:
         AttributeType: block
         Mandatory: true

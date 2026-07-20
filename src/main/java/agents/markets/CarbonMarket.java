@@ -49,12 +49,12 @@ public class CarbonMarket extends Agent {
 		FIXED,
 		/** Dynamic mode:: CO2 prices are determined based on the sum of CO2 emissions and a CO2 cap read from file */
 		DYNAMIC
-	};
+	}
 
 	@Output
 	private static enum OutputFields {
-		Co2EmissionsInTons, Co2PriceInEURperTon
-	};
+		Co2EmissionsInT, Co2PriceInEURperT
+	}
 
 	/** Input parameters of {@link CarbonMarket} */
 	@Input protected static Tree parameters = Make.newTree().add(Make.newSeries("Co2Prices").optional(),
@@ -141,7 +141,7 @@ public class CarbonMarket extends Agent {
 			subTotal += certificateOrder.amount * getCo2Price(certificateOrder.validAt);
 			billSubtotals.put(message.senderId, subTotal);
 		}
-		store(OutputFields.Co2EmissionsInTons, emissionTotal);
+		store(OutputFields.Co2EmissionsInT, emissionTotal);
 	}
 
 	/** Bills contracted partners for the sum of their previously ordered Co2 certificates; resets billed partner's stored cost

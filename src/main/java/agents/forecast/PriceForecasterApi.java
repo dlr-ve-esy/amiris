@@ -81,7 +81,7 @@ public class PriceForecasterApi extends MarketForecaster implements SensitivityF
 
 	@Output
 	private static enum OutputFields {
-		ElectricityPriceForecastVarianceInEURperMWH
+		PriceForecastStandardDeviationInEURperMWH
 	}
 
 	/** Creates new {@link PriceForecasterApi}
@@ -240,7 +240,8 @@ public class PriceForecasterApi extends MarketForecaster implements SensitivityF
 		removeDataBefore(priceForecastVariances, now());
 		store(MarketForecaster.OutputFields.ElectricityPriceForecastInEURperMWH,
 				priceForecastMeans.firstEntry().getValue());
-		store(OutputFields.ElectricityPriceForecastVarianceInEURperMWH, priceForecastVariances.firstEntry().getValue());
+		store(OutputFields.PriceForecastStandardDeviationInEURperMWH,
+				Math.sqrt(priceForecastVariances.firstEntry().getValue()));
 	}
 
 	/** Ensure that clients registered for the correct type of sensitivity forecast */

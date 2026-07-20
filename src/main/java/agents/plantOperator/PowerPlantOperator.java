@@ -34,7 +34,7 @@ public abstract class PowerPlantOperator extends Agent {
 		MarginalCostForecast,
 		/** Report annual costs (not sent to other agents, but calculated within operator class) */
 		AnnualCostReport,
-	};
+	}
 
 	@Input private static final Tree parameters = Make.newTree().addAs("Refinancing", AnnualCostCalculator.parameters)
 			.buildTree();

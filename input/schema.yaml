@@ -486,7 +486,7 @@ AgentTypes:
             AttributeType: block
             Mandatory: false
             List: false
-            Metadata:
+            MetaData:
               isAbout: [{name: "economic instrument", "@id": "OEO_00010456"}]
               description: "A group for a TechnologySet holding the specific information about a financial contract for difference."
             NestedAttributes:

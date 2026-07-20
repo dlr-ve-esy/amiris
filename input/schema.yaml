@@ -1274,9 +1274,9 @@ AgentTypes:
           isAbout: [{name: "forecast", "@id": "OEO_00010411"}]
     Outputs:
       ElectricityPriceForecastInEURperMWH: *MarketForecaster_O_ElectricityPriceForecast
-      ElectricityPriceForecastVarianceInEURperMWH:
+      PriceForecastStandardDeviationInEURperMWH:
         MetaData:
-          description: "Variance of forecasted electricity price in EUR per MWh"
+          description: "Standard deviation of forecasted electricity price in EUR per MWh"
           unit: EUR/MWh
           isAbout: [{name: "forecast error", "@id": "OEO_00010233"}, {name: "electricity price", "@id": "OEO_00020117"}]
     MetaData:

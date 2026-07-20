@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 ## [4.2.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.2.0) - TBA
 ### Changed
 - `CarbonMarket`: Renamed output columns names to `Co2EmissionsInT` and `Co2PriceInEURperT` #253 (@dlr-cjs @sstroemer)
+- `PriceForecasterApi`: Renamed output column name `ElectricityPriceForecastVarianceInEURperMWH` to `PriceForecastStandardDeviationInEURperMWH` #253 (@dlr-cjs @dlr_fn)
 - Build package with parallel execution capabilities in CI #250
 - README: update funding agency name #243 (@dlr-cjs)
 - docs: update Roadmap #244 (@dlr-cjs @dlr_jk)

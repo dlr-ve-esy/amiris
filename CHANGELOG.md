@@ -9,6 +9,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - **Breaking**: Update to FAME-Core v3.0, requires FAME-Io v4.0 #254 (@dlr-cjs)
 - **Breaking**: `CarbonMarket`: Renamed output columns names to `Co2EmissionsInT` and `Co2PriceInEURperT` #253 (@dlr-cjs @sstroemer)
 - **Breaking**: `PriceForecasterApi`: Renamed output column name `ElectricityPriceForecastVarianceInEURperMWH` to `PriceForecastStandardDeviationInEURperMWH` #253 (@dlr-cjs @dlr_fn)
+- Switch logger to logback #153 (@dlr-cjs)
 - Build package with parallel execution capabilities in CI #250
 - README: update funding agency name #243 (@dlr-cjs)
 - docs: update Roadmap #244 (@dlr-cjs @dlr_jk)

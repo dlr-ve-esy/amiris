@@ -2,10 +2,13 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
-## [4.2.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.2.0) - TBA
+## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - TBA
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+
 ### Changed
-- `CarbonMarket`: Renamed output columns names to `Co2EmissionsInT` and `Co2PriceInEURperT` #253 (@dlr-cjs @sstroemer)
-- `PriceForecasterApi`: Renamed output column name `ElectricityPriceForecastVarianceInEURperMWH` to `PriceForecastStandardDeviationInEURperMWH` #253 (@dlr-cjs @dlr_fn)
+- **Breaking**: Update to FAME-Core v3.0, requires FAME-Io v4.0 #254 (@dlr-cjs)
+- **Breaking**: `CarbonMarket`: Renamed output columns names to `Co2EmissionsInT` and `Co2PriceInEURperT` #253 (@dlr-cjs @sstroemer)
+- **Breaking**: `PriceForecasterApi`: Renamed output column name `ElectricityPriceForecastVarianceInEURperMWH` to `PriceForecastStandardDeviationInEURperMWH` #253 (@dlr-cjs @dlr_fn)
 - Build package with parallel execution capabilities in CI #250
 - README: update funding agency name #243 (@dlr-cjs)
 - docs: update Roadmap #244 (@dlr-cjs @dlr_jk)

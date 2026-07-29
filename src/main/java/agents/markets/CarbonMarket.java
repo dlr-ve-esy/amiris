@@ -53,7 +53,7 @@ public class CarbonMarket extends Agent {
 
 	@Output
 	private static enum OutputFields {
-		Co2EmissionsInT, Co2PriceInEURperT
+		Co2EmissionsInT
 	}
 
 	/** Input parameters of {@link CarbonMarket} */

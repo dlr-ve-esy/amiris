@@ -6,30 +6,14 @@ SPDX-License-Identifier: CC0-1.0-->
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback https://raw.githubusercontent.com/enricopulatzo/logback-XSD/master/src/main/xsd/logback.xsd">
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger - %msg%n</pattern>
-        </encoder>
-    </appender>
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-4relative [%thread] %-5level %logger - %msg%n</pattern>
+		</encoder>
+	</appender>
 
-    <appender name="FILE" class="ch.qos.logback.core.rolling.FileAppender">
-        <file>logs/app.log</file>
-        <append>false</append>
-        <encoder>
-            <pattern>%-4relative [%thread] %-5level %logger - %msg%n</pattern>
-        </encoder>
-    </appender>
-
-    <root level="WARN">
-        <appender-ref ref="CONSOLE"/>
-    </root>
-
-    <logger name="agents.markets.MarketCoupling" level="OFF" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
-
-    <logger name="agents.markets.DemandBalancer" level="OFF" additivity="false">
-        <appender-ref ref="FILE"/>
-    </logger>
+	<root level="WARN">
+		<appender-ref ref="CONSOLE" />
+	</root>
 
 </configuration>

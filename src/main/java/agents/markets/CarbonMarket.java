@@ -12,11 +12,11 @@ import communications.message.ClearingTimes;
 import communications.message.Co2Cost;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -57,8 +57,8 @@ public class CarbonMarket extends Agent {
 	}
 
 	/** Input parameters of {@link CarbonMarket} */
-	@Input protected static Tree parameters = Make.newTree().add(Make.newSeries("Co2Prices").optional(),
-			Make.newEnum("OperationMode", OperationMode.class)).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newSeries("Co2Prices").optional(),
+			Make.newEnum("OperationMode", OperationMode.class));
 
 	private OperationMode operationMode;
 	private TimeSeries tsCo2Prices;
@@ -70,9 +70,8 @@ public class CarbonMarket extends Agent {
 	 * @throws MissingDataException if any parameter is missing */
 	public CarbonMarket(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData data = parameters.join(dataProvider);
-		operationMode = data.getEnum("OperationMode", OperationMode.class);
-		loadOperationModeParameters(data);
+		operationMode = fromInput().getEnum("OperationMode", OperationMode.class);
+		loadOperationModeParameters(fromInput());
 		call(this::sendPrice).on(Products.Co2PriceForecast).use(ConventionalPlantOperator.Products.Co2PriceForecastRequest);
 		call(this::sendPrice).on(Products.Co2Price).use(ConventionalPlantOperator.Products.Co2PriceRequest);
 		call(this::registerCertificateOrders).onAndUse(ConventionalPlantOperator.Products.Co2Emissions);

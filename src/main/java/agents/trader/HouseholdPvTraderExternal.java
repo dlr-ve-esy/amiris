@@ -22,11 +22,10 @@ import communications.message.ClearingTimes;
 import communications.message.PointInTime;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -42,7 +41,7 @@ import endUser.EndUserTariff;
  * 
  * @author A. Achraf El Ghazi, Christoph Schimeczek, Ulrich Frey */
 public class HouseholdPvTraderExternal extends FlexibilityTrader {
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newDouble("InstalledGenerationPowerInMW"),
 					Make.newSeries("LoadInMW"),
 					Make.newSeries("GenerationProfile"),
@@ -52,8 +51,7 @@ public class HouseholdPvTraderExternal extends FlexibilityTrader {
 			.addAs("PredictionWindows", PvBiddingStrategist.parameters)
 			.addAs("Device", Device.parameters.buildTree())
 			.addAs("Policy", EndUserTariff.policyParameters.buildTree())
-			.addAs("BusinessModel", EndUserTariff.businessModelParameters)
-			.buildTree();
+			.addAs("BusinessModel", EndUserTariff.businessModelParameters);
 
 	@Output
 	private static enum OutputFields {
@@ -72,17 +70,16 @@ public class HouseholdPvTraderExternal extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public HouseholdPvTraderExternal(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		double installedGenerationPowerInMW = input.getDouble("InstalledGenerationPowerInMW");
-		TimeSeries tsLoadInMW = input.getTimeSeries("LoadInMW");
-		TimeSeries tsGenerationProfile = input.getTimeSeries("GenerationProfile");
-		String serviceURL = input.getString("ServiceUrl");
-		String modelId = input.getString("ModelId");
-		int forecastPeriodInHours = input.getInteger("ForecastPeriodInHours");
-		Device storage = new Device(input.getGroup("Device"));
+		double installedGenerationPowerInMW = fromInput().getDouble("InstalledGenerationPowerInMW");
+		TimeSeries tsLoadInMW = fromInput().getTimeSeries("LoadInMW");
+		TimeSeries tsGenerationProfile = fromInput().getTimeSeries("GenerationProfile");
+		String serviceURL = fromInput().getString("ServiceUrl");
+		String modelId = fromInput().getString("ModelId");
+		int forecastPeriodInHours = fromInput().getInteger("ForecastPeriodInHours");
+		Device storage = new Device(fromInput().getGroup("Device"));
 		biddingStrategist = new PvBiddingStrategist(serviceURL, modelId, installedGenerationPowerInMW, tsLoadInMW,
-				tsGenerationProfile, storage, forecastPeriodInHours, input.getGroup("PredictionWindows"));
-		tariffStrategist = new EndUserTariff(input.getGroup("Policy"), input.getGroup("BusinessModel"));
+				tsGenerationProfile, storage, forecastPeriodInHours, fromInput().getGroup("PredictionWindows"));
+		tariffStrategist = new EndUserTariff(fromInput().getGroup("Policy"), fromInput().getGroup("BusinessModel"));
 
 		call(this::requestPriceForecast).on(DamForecastClient.Products.PriceForecastRequest)
 				.use(DayAheadMarket.Products.GateClosureInfo);

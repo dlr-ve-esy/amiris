@@ -19,11 +19,10 @@ import communications.message.AwardData;
 import communications.message.ClearingTimes;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -36,11 +35,11 @@ import endUser.EndUserTariff;
  * 
  * @author Johannes Kochems, Christoph Schimeczek */
 public class LoadShiftingTrader extends FlexibilityTrader {
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.addAs("LoadShiftingPortfolio", LoadShiftingPortfolio.parameters)
 			.addAs("Strategy", LoadShiftingStrategist.parameters)
 			.addAs("Policy", EndUserTariff.policyParameters.buildTree())
-			.addAs("BusinessModel", EndUserTariff.businessModelParameters).buildTree();
+			.addAs("BusinessModel", EndUserTariff.businessModelParameters);
 
 	@Output
 	private static enum OutputFields {
@@ -61,10 +60,10 @@ public class LoadShiftingTrader extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is missing */
 	public LoadShiftingTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		this.portfolio = new LoadShiftingPortfolio(input.getGroup("LoadShiftingPortfolio"));
-		this.endUserTariff = new EndUserTariff(input.getGroup("Policy"), input.getGroup("BusinessModel"));
-		this.strategist = LoadShiftingStrategist.createStrategist(input.getGroup("Strategy"), endUserTariff, portfolio);
+		this.portfolio = new LoadShiftingPortfolio(fromInput().getGroup("LoadShiftingPortfolio"));
+		this.endUserTariff = new EndUserTariff(fromInput().getGroup("Policy"), fromInput().getGroup("BusinessModel"));
+		this.strategist = LoadShiftingStrategist.createStrategist(fromInput().getGroup("Strategy"), endUserTariff,
+				portfolio);
 
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.MeritOrderForecastRequest)
 				.use(DayAheadMarket.Products.GateClosureInfo);

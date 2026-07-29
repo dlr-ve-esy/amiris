@@ -21,7 +21,7 @@ import agents.flexibility.GenericDevice.StateViolation;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
 import de.dlr.gitlab.fame.data.TimeSeries;
-import de.dlr.gitlab.fame.protobuf.Input.InputData.TimeSeriesDao;
+import de.dlr.gitlab.fame.protobuf.Input.InputData.TimeSeriesData;
 import de.dlr.gitlab.fame.time.Constants.Interval;
 import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
@@ -97,7 +97,7 @@ public class GenericDeviceTest {
 	}
 
 	private TimeSeries createSeries(double... values) {
-		TimeSeriesDao.Builder builder = TimeSeriesDao.newBuilder();
+		TimeSeriesData.Builder builder = TimeSeriesData.newBuilder();
 		for (int i = 0; i < values.length; i++) {
 			builder.addTimeSteps(i);
 			builder.addValues(values[i]);

@@ -1,4 +1,4 @@
-<!-- SPDX-FileCopyrightText: 2023-2025 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2023-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Upgrading
@@ -20,6 +20,15 @@ It is recommended to add a hint file or name tag to your protobuf files to speci
 
 The structure of the section `GeneralProperties` in a scenario was simplified, see [fameio](https://gitlab.com/fame-framework/fame-io/-/blob/dev/UPGRADING.md?ref_type=heads#scenario---simplified-generalproperties).
 Adapt your scenarios accordingly.
+
+### Renamed output columns
+
+The following output columns were renamed:
+
+| Agent              | Former column name                          | New column name                           |
+|--------------------|---------------------------------------------|-------------------------------------------|
+| CarbonMarket       | Co2EmissionsInTons                          | Co2EmissionsInT                           |
+| PriceForecasterApi | ElectricityPriceForecastVarianceInEURperMWH | PriceForecastStandardDeviationInEURperMWH |
 
 ## 4.0.0
 

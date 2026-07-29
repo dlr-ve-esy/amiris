@@ -4,8 +4,8 @@
 package communications.message;
 
 import de.dlr.gitlab.fame.communication.message.DataItem;
-import de.dlr.gitlab.fame.protobuf.Agent.ProtoDataItem;
-import de.dlr.gitlab.fame.protobuf.Agent.ProtoDataItem.Builder;
+import de.dlr.gitlab.fame.protobuf.AgentMessage.MessageContent.ProtoDataItem;
+import de.dlr.gitlab.fame.protobuf.AgentMessage.MessageContent.ProtoDataItem.Builder;
 
 /** Transmitting Data concerning a fuel type */
 public class FuelData extends DataItem {

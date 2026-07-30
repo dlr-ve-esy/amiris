@@ -56,9 +56,9 @@ public class HouseholdPvTraderExternal extends FlexibilityTrader {
 	@Output
 	private static enum OutputFields {
 		/** Amount of energy awarded in MWh to be delivered to households from the grid */
-		AwardedDemandInMWh,
+		AwardedDemandInMWH,
 		/** Amount of energy awarded in MWh to be provided by households to the grid */
-		AwardedSupplyInMWh,
+		AwardedSupplyInMWH,
 	}
 
 	private PvBiddingStrategist biddingStrategist;
@@ -159,8 +159,8 @@ public class HouseholdPvTraderExternal extends FlexibilityTrader {
 		biddingStrategist.updateStorage(awardData);
 		biddingStrategist.updateLoadHistory(awardData);
 
-		store(OutputFields.AwardedDemandInMWh, awardData.demandEnergyInMWH);
-		store(OutputFields.AwardedSupplyInMWh, awardData.supplyEnergyInMWH);
+		store(OutputFields.AwardedDemandInMWH, awardData.demandEnergyInMWH);
+		store(OutputFields.AwardedSupplyInMWH, awardData.supplyEnergyInMWH);
 	}
 
 	@Override

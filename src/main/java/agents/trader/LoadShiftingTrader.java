@@ -115,7 +115,7 @@ public class LoadShiftingTrader extends FlexibilityTrader {
 	private Bid prepareHourlySupplyBid(TimeStamp requestedTime) {
 		double supplyPower = schedule.getScheduledEnergySalesInMWH(requestedTime);
 		double price = schedule.getScheduledBidInHourInEURperMWH(requestedTime);
-		double marginalShiftingCost = portfolio.getVariableShiftCostsInEURPerMWH(requestedTime);
+		double marginalShiftingCost = portfolio.getVariableShiftCostsInEURperMWH(requestedTime);
 		Bid supplyBid = new Bid(supplyPower, price, marginalShiftingCost);
 		store(OutputFields.OfferedDownshiftPowerInMW, -supplyPower);
 		return supplyBid;
@@ -130,7 +130,7 @@ public class LoadShiftingTrader extends FlexibilityTrader {
 		double revenues = powerPrice * awardedDischargePower;
 		double costs = powerPrice * awardedChargePower;
 		TimeStamp deliveryTime = award.beginOfDeliveryInterval;
-		double variableShiftingCosts = portfolio.getVariableShiftCostsInEURPerMWH(deliveryTime)
+		double variableShiftingCosts = portfolio.getVariableShiftCostsInEURperMWH(deliveryTime)
 				* (awardedChargePower + awardedDischargePower) + portfolio.getProlongingCosts(powerDelta, deliveryTime);
 		costs += variableShiftingCosts;
 		portfolio.updateEnergyShiftStorageLevelAndShiftTime(powerDelta);

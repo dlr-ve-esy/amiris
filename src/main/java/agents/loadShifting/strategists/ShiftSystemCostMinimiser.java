@@ -70,7 +70,7 @@ public class ShiftSystemCostMinimiser extends LoadShiftingStrategist {
 			TimePeriod timePeriod = startTime.shiftByDuration(period);
 			double[] costSteps = calcCostSteps(timePeriod);
 			stateManager.insertInitialStates(initialStates);
-			double specificShiftCostsInEURperMWH = portfolio.getVariableShiftCostsInEURPerMWH(timePeriod.getStartTime());
+			double specificShiftCostsInEURperMWH = portfolio.getVariableShiftCostsInEURperMWH(timePeriod.getStartTime());
 
 			for (LoadShiftState initialState : initialStates) {
 				TimePeriod nextTimePeriod = timePeriod.shiftByDuration(1);

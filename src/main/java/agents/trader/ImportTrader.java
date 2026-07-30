@@ -13,11 +13,11 @@ import communications.message.AwardData;
 import communications.message.ClearingTimes;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -28,10 +28,9 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  *
  * @author Christoph Schimeczek, A. Achraf El Ghazi, Felix Nitsch */
 public class ImportTrader extends Trader {
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newGroup("Imports").list().add(Make.newSeries("AvailableEnergyForImport"),
-					Make.newSeries("ImportCostInEURperMWH")))
-			.buildTree();
+					Make.newSeries("ImportCostInEURperMWH")));
 
 	/** Represents one energy import TimeSeries with a fixed associated value of import cost */
 	private class EnergyImport {
@@ -52,8 +51,7 @@ public class ImportTrader extends Trader {
 	 * @throws MissingDataException if any required data is not provided */
 	public ImportTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		for (ParameterData group : input.getGroupList("Imports")) {
+		for (ParameterData group : fromInput().getGroupList("Imports")) {
 			imports.add(
 					new EnergyImport(group.getTimeSeries("AvailableEnergyForImport"),
 							group.getTimeSeries("ImportCostInEURperMWH")));

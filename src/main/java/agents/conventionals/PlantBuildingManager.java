@@ -9,11 +9,10 @@ import agents.conventionals.PowerPlantPrototype.PrototypeData;
 import agents.plantOperator.ConventionalPlantOperator;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -26,10 +25,9 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public abstract class PlantBuildingManager extends Agent {
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newLong("PortfolioBuildingOffsetInSeconds"))
-			.addAs("Prototype", PowerPlantPrototype.parameters)
-			.buildTree();
+			.addAs("Prototype", PowerPlantPrototype.parameters);
 
 	/** Products of {@link PlantBuildingManager}s */
 	@Product
@@ -51,10 +49,8 @@ public abstract class PlantBuildingManager extends Agent {
 	 * @throws MissingDataException thrown if requested input is not provided */
 	public PlantBuildingManager(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-
-		portfolioBuildingOffset = new TimeSpan(input.getLong("PortfolioBuildingOffsetInSeconds"));
-		prototypeData = new PrototypeData(input.getGroup("Prototype"));
+		portfolioBuildingOffset = new TimeSpan(fromInput().getLong("PortfolioBuildingOffsetInSeconds"));
+		prototypeData = new PrototypeData(fromInput().getGroup("Prototype"));
 		portfolio = new Portfolio(prototypeData.fuelType);
 
 		call(this::updateAndSendPortfolio).on(Products.PowerPlantPortfolio);

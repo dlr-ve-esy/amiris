@@ -31,11 +31,11 @@ import communications.message.AwardData;
 import communications.message.ClearingTimes;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -50,12 +50,12 @@ import endUser.EndUserTariff;
  * 
  * @author Evelyn Sperber, Christoph Schimeczek */
 public class HeatPumpTrader extends FlexibilityTrader {
-	@Input private static final Tree parameters = Make.newTree().addAs("Device", Device.parameters.optional().buildTree())
+	@Input public static final GroupBuilder parameters = Make.newTree().addAs("Device", Device.parameters.optional())
 			.addAs("StrategyBasic", HeatPumpStrategist.parameters)
 			.addAs("HeatingInputData", HeatingInputData.parameters).addAs("HeatPump", HeatPump.parameters)
 			.addAs("Strategy", StrategyParameters.parameters).addAs("Building", BuildingParameters.parameters)
-			.addAs("Policy", EndUserTariff.policyParameters.optional().buildTree())
-			.addAs("BusinessModel", EndUserTariff.businessModelParameters).buildTree();
+			.addAs("Policy", EndUserTariff.policyParameters.optional())
+			.addAs("BusinessModel", EndUserTariff.businessModelParameters);
 
 	@Output
 	private static enum OutputFields {
@@ -78,20 +78,18 @@ public class HeatPumpTrader extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public HeatPumpTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-
-		BuildingParameters buildingParams = new BuildingParameters(input.getGroup("Building"));
-		StrategyParameters strategyParams = new StrategyParameters(input.getGroup("Strategy"));
-		HeatingInputData heatingData = new HeatingInputData(input.getGroup("HeatingInputData"));
-		tariffStrategist = new EndUserTariff(input.getGroup("Policy"), input.getGroup("BusinessModel"));
-		device = new Device(input.getGroup("Device"));
+		BuildingParameters buildingParams = new BuildingParameters(fromInput().getGroup("Building"));
+		StrategyParameters strategyParams = new StrategyParameters(fromInput().getGroup("Strategy"));
+		HeatingInputData heatingData = new HeatingInputData(fromInput().getGroup("HeatingInputData"));
+		tariffStrategist = new EndUserTariff(fromInput().getGroup("Policy"), fromInput().getGroup("BusinessModel"));
+		device = new Device(fromInput().getGroup("Device"));
 		strategistType = strategyParams.getHeatPumpStrategistType();
 
 		double initialRoomTemperatureInC = (strategyParams.getMinimalRoomTemperatureInC()
 				+ strategyParams.getMaximalRoomTemperatureInC()) / 2;
-		heatPump = new HeatPump(input.getGroup("HeatPump"));
+		heatPump = new HeatPump(fromInput().getGroup("HeatPump"));
 		building = new ThermalResponse(buildingParams, heatPump, initialRoomTemperatureInC);
-		ParameterData strategyBasic = input.getGroup("StrategyBasic");
+		ParameterData strategyBasic = fromInput().getGroup("StrategyBasic");
 		strategist = createStrategist(strategyBasic, building, heatPump, heatingData, strategyParams, device);
 
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.MeritOrderForecastRequest)

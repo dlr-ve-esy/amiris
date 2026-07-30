@@ -6,11 +6,10 @@ package agents.plantOperator.renewable;
 import agents.plantOperator.Marginal;
 import agents.plantOperator.RenewablePlantOperator;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.time.Constants;
 import de.dlr.gitlab.fame.time.TimeOfDay;
@@ -31,10 +30,9 @@ public class Biogas extends RenewablePlantOperator {
 		FROM_FILE
 	}
 
-	@Input private static final Tree parameters = Make
+	@Input public static final GroupBuilder parameters = Make
 			.newTree().add(Make.newEnum("OperationMode", OperationMode.class),
-					Make.newDouble("FullLoadHoursPerYear").optional(), Make.newSeries("DispatchTimeSeries").optional())
-			.buildTree();
+					Make.newDouble("FullLoadHoursPerYear").optional(), Make.newSeries("DispatchTimeSeries").optional());
 
 	private final double loadFactor;
 	private final OperationMode operationMode;
@@ -46,17 +44,16 @@ public class Biogas extends RenewablePlantOperator {
 	 * @throws MissingDataException if any required data is not provided */
 	public Biogas(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		operationMode = input.getEnum("OperationMode", OperationMode.class);
+		operationMode = fromInput().getEnum("OperationMode", OperationMode.class);
 
 		switch (operationMode) {
 			case CONTINUOUS:
 			case DAY_NIGHT:
-				loadFactor = input.getDouble("FullLoadHoursPerYear") / Constants.HOURS_PER_NORM_YEAR;
+				loadFactor = fromInput().getDouble("FullLoadHoursPerYear") / Constants.HOURS_PER_NORM_YEAR;
 				tsDispatchFromFile = null;
 				break;
 			case FROM_FILE:
-				tsDispatchFromFile = input.getTimeSeries("DispatchTimeSeries");
+				tsDispatchFromFile = fromInput().getTimeSeries("DispatchTimeSeries");
 				loadFactor = Double.NaN;
 				break;
 			default:

@@ -1,7 +1,34 @@
-<!-- SPDX-FileCopyrightText: 2023-2025 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2023-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Upgrading
+
+## 5.0.0
+
+### FAME-Io version requirement
+
+The new version of AMIRIS requires the python package `fameio` with a version of at least 4.0.
+The minimum version of Python is now 3.10.
+Adapt your environment accordingly.
+
+### Binary file incompatibility
+
+Binary files (input & output protobuf files) created for or with earlier versions of AMIRIS are not compatible with this version of AMIRIS.
+It is recommended to add a hint file or name tag to your protobuf files to specify which version of AMIRIS they are compatible with.
+
+### Scenario: GeneralProperties
+
+The structure of the section `GeneralProperties` in a scenario was simplified, see [fameio](https://gitlab.com/fame-framework/fame-io/-/blob/dev/UPGRADING.md?ref_type=heads#scenario---simplified-generalproperties).
+Adapt your scenarios accordingly.
+
+### Renamed output columns
+
+The following output columns were renamed:
+
+| Agent              | Former column name                          | New column name                           |
+|--------------------|---------------------------------------------|-------------------------------------------|
+| CarbonMarket       | Co2EmissionsInTons                          | Co2EmissionsInT                           |
+| PriceForecasterApi | ElectricityPriceForecastVarianceInEURperMWH | PriceForecastStandardDeviationInEURperMWH |
 
 ## 4.0.0
 

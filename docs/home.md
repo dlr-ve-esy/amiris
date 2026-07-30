@@ -7,7 +7,7 @@ The model computes electricity prices endogenously based on the simulation of st
 This bidding behavior does not only reflect marginal prices, but it also considers effects of support instruments like market premia.
 Figure 1 provides an overview of the agents modeled in AMIRIS and illustrates the associated information, energy, and financial flows.
 
-![AMIRIS_ModelSchema_CCBY4](uploads/AMIRIS_ModellSchema_CCBY4.png)
+![AMIRIS ModelSchema CC BY 4.0](uploads/AMIRIS_ModellSchema_CCBY4.png)
 
 The actors represented as agents in AMIRIS can be roughly divided into six classes: Power plant operators, traders, marketplaces, policies, demand, and storage facilities.
 Power plant operators provide generation capacities to traders, but do not trade on the markets themselves in the model.
@@ -30,6 +30,6 @@ Also check out our [Roadmap](./Roadmap.md) to see what plans we have for AMIRIS 
 
 AMIRIS software is licensed under [Apache 2.0](../LICENSES/Apache-2.0.txt).
 
-If not stated otherwise, the content of this wiki is licensed under [CC-BY 4.0](https://creativecommons.org/licenses/by/4.0).
+If not stated otherwise, the content of this wiki is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0).
 
 <img src="./uploads/cc-by.png" alt="CC-BY 4.0" width="45"/> German Aerospace Center.

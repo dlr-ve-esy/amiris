@@ -8,7 +8,7 @@ If you experience troubles, try the more explicit [Step-by-Step Guide](./StepByS
 
 ## Installation and Execution
 
-1. **Environment**: Create and activate a Python environment with Python 3.9 or higher.
+1. **Environment**: Create and activate a Python environment with Python 3.10 or higher.
 2. **AMIRIS-Py**: run `pip install amirispy` to install the *amirispy* package.
 3. **Create Folder**: create a new folder where you want to have the AMIRIS files and change there, e.g., "mkdir amiris; cd amiris"
 4. **AMIRIS Files**: use `amiris download` to download the AMIRIS ".jar" executable and examples into the *current folder* 

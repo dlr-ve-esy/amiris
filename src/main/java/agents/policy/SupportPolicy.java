@@ -16,11 +16,11 @@ import communications.message.TechnologySet;
 import communications.message.YieldPotential;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -62,15 +62,14 @@ public class SupportPolicy extends Agent {
 		MarketValueCalculation
 	}
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newGroup("SetSupportData").list().add(RenewablePlantOperator.setParameter)
 					.addAs(SupportInstrument.FIT.name(), Fit.parameters)
 					.addAs(SupportInstrument.MPFIX.name(), Mpfix.parameters)
 					.addAs(SupportInstrument.MPVAR.name(), Mpvar.parameters)
 					.addAs(SupportInstrument.CFD.name(), Cfd.parameters)
 					.addAs(SupportInstrument.CP.name(), Cp.parameters)
-					.addAs(SupportInstrument.FINANCIAL_CFD.name(), FinancialCfd.parameters))
-			.buildTree();
+					.addAs(SupportInstrument.FINANCIAL_CFD.name(), FinancialCfd.parameters));
 
 	@Output
 	private enum Outputs {
@@ -93,8 +92,7 @@ public class SupportPolicy extends Agent {
 	 * @throws MissingDataException if any required data is not provided */
 	public SupportPolicy(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData inputData = parameters.join(dataProvider);
-		loadSetSupportData(inputData.getGroupList("SetSupportData"));
+		loadSetSupportData(fromInput().getGroupList("SetSupportData"));
 
 		call(this::sendSupportInfo).on(Products.SupportInfo).use(AggregatorTrader.Products.SupportInfoRequest);
 		call(this::logYieldPotentials).onAndUse(AggregatorTrader.Products.YieldPotential);

@@ -28,11 +28,10 @@ import communications.portable.MeritOrderMessage;
 import communications.portable.TransmissionCapacitySeries;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -48,8 +47,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class MarketForecaster extends Agent implements DamForecastProvider, MarketCouplingClient {
-	@Input private static final Tree parameters = Make.newTree().add(Make.newInt("ForecastPeriodInHours"))
-			.addAs("Clearing", MarketClearing.parameters).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newInt("ForecastPeriodInHours"))
+			.addAs("Clearing", MarketClearing.parameters);
 
 	/** Products of {@link MarketForecaster}s */
 	@Product
@@ -90,9 +89,8 @@ public class MarketForecaster extends Agent implements DamForecastProvider, Mark
 	 * @throws MissingDataException if any required data is not provided */
 	public MarketForecaster(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		marketClearing = new MarketClearing(input.getGroup("Clearing"));
-		forecastPeriodInHours = input.getInteger("ForecastPeriodInHours");
+		marketClearing = new MarketClearing(fromInput().getGroup("Clearing"));
+		forecastPeriodInHours = fromInput().getInteger("ForecastPeriodInHours");
 
 		/** Receive transmission capacities to other markets */
 		call(this::receiveTransmissionCapacities).onAndUse(DayAheadMarketMultiZone.Products.TransmissionCapacities);

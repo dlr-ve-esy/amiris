@@ -6,7 +6,7 @@ It is a summary of multiple [Bids](../Modules/Bid.md) from one `Trader` for one 
 ## Content
 
 * `deliveryTime` begin of the delivery interval
-* `traderUuid` id of the trader that is sends these bids
+* `traderUuid` id of the trader that sends these bids
 * `supplyBids` bids to be associated with the supply side, i.e. offering electricity
 * `demandBids` bids to be associated with the demand side, i.e. requesting electricity
 

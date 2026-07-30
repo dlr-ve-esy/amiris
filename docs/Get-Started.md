@@ -6,7 +6,7 @@ Instructions on how to set up, execute and modify AMIRIS
 
 AMIRIS is a *JAVA* application configured via *Python* scripts.
 
-To run AMIRIS **Python 3.9 or higher** and Java Development Kit **JDK 11 or higher** are required.
+To run AMIRIS **Python 3.10 or higher** and Java Development Kit **JDK 11 or higher** are required.
 The latter can be obtained from e.g. [here](https://adoptium.net/).
 
 ## Skills

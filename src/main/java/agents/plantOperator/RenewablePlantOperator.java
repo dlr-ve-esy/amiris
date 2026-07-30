@@ -14,12 +14,12 @@ import communications.message.ClearingTimes;
 import communications.message.TechnologySet;
 import communications.portable.MarginalsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterBuilder;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -52,11 +52,10 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 		return input.getString("PolicySet");
 	}
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(setParameter.optional(), Make.newEnum("EnergyCarrier", EnergyCarrier.class),
 					Make.newEnum("SupportInstrument", SupportInstrument.class).optional(), Make.newSeries("InstalledPowerInMW"),
-					Make.newSeries("OpexVarInEURperMWH"))
-			.buildTree();
+					Make.newSeries("OpexVarInEURperMWH"));
 
 	/** Products of {@link RenewablePlantOperator}s */
 	@Product
@@ -78,13 +77,13 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 	 * @throws MissingDataException if any required data is not provided */
 	public RenewablePlantOperator(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		tsInstalledPowerInMW = input.getTimeSeries("InstalledPowerInMW");
-		tsOpexVarInEURperMWH = input.getTimeSeries("OpexVarInEURperMWH");
+		tsInstalledPowerInMW = fromInput().getTimeSeries("InstalledPowerInMW");
+		tsOpexVarInEURperMWH = fromInput().getTimeSeries("OpexVarInEURperMWH");
 
-		String technologySetType = readSet(input, null);
-		EnergyCarrier energyCarrier = input.getEnum("EnergyCarrier", EnergyCarrier.class);
-		SupportInstrument supportInstrument = input.getEnumOrDefault("SupportInstrument", SupportInstrument.class, null);
+		String technologySetType = readSet(fromInput(), null);
+		EnergyCarrier energyCarrier = fromInput().getEnum("EnergyCarrier", EnergyCarrier.class);
+		SupportInstrument supportInstrument = fromInput().getEnumOrDefault("SupportInstrument", SupportInstrument.class,
+				null);
 		technologySet = new TechnologySet(technologySetType, energyCarrier, supportInstrument);
 
 		call(this::registerSet).on(Products.SetRegistration);

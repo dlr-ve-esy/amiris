@@ -12,11 +12,11 @@ import agents.markets.meritOrder.Bid;
 import communications.message.AwardData;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -27,9 +27,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  *
  * @author Christoph Schimeczek, Ulrich Frey, Marc Deissenroth, Johannes Kochems */
 public class DemandTrader extends Trader {
-	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newGroup("Loads").list().add(Make.newSeries("DemandSeries"), Make.newSeries("ValueOfLostLoad")))
-			.buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.add(Make.newGroup("Loads").list().add(Make.newSeries("DemandSeries"), Make.newSeries("ValueOfLostLoad")));
 
 	/** Helper class that represents one load TimeSeries with a fixed associated value of lost load */
 	private class Load {
@@ -50,8 +49,7 @@ public class DemandTrader extends Trader {
 	 * @throws MissingDataException if any required data is not provided */
 	public DemandTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		for (ParameterData group : input.getGroupList("Loads")) {
+		for (ParameterData group : fromInput().getGroupList("Loads")) {
 			loads.add(new Load(group.getTimeSeries("DemandSeries"), group.getTimeSeries("ValueOfLostLoad")));
 		}
 

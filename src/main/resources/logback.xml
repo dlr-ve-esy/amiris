@@ -1,0 +1,19 @@
+<!-- SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
+
+SPDX-License-Identifier: CC0-1.0-->
+<configuration
+	xmlns="http://ch.qos.logback/xml/ns/logback"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://ch.qos.logback/xml/ns/logback https://raw.githubusercontent.com/enricopulatzo/logback-XSD/master/src/main/xsd/logback.xsd">
+
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-6relative [%thread] %-5level %logger - %msg%n</pattern>
+		</encoder>
+	</appender>
+
+	<root level="WARN">
+		<appender-ref ref="CONSOLE" />
+	</root>
+
+</configuration>

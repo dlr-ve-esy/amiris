@@ -16,11 +16,10 @@ import communications.message.ClearingTimes;
 import communications.message.PointInTime;
 import communications.portable.MeritOrderMessage;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -33,8 +32,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  *
  * @author Christoph Schimeczek */
 public abstract class FlexibilityTrader extends Trader implements DamForecastClient {
-	@Input private static final Tree parameters = Make.newTree().addAs("Refinancing", AnnualCostCalculator.parameters)
-			.buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().addAs("Refinancing",
+			AnnualCostCalculator.parameters);
 
 	/** Products of {@link FlexibilityTrader}s */
 	@Product
@@ -64,8 +63,7 @@ public abstract class FlexibilityTrader extends Trader implements DamForecastCli
 	 * @throws MissingDataException if any required data is not provided */
 	public FlexibilityTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		annualCost = AnnualCostCalculator.build(input, "Refinancing");
+		annualCost = AnnualCostCalculator.build(fromInput(), "Refinancing");
 
 		call(this::reportCosts).on(Products.AnnualCostReport);
 	}

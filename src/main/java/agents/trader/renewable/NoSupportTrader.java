@@ -7,10 +7,10 @@ import agents.markets.DayAheadMarket;
 import agents.markets.meritOrder.Bid;
 import agents.plantOperator.Marginal;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
+import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
@@ -22,7 +22,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class NoSupportTrader extends AggregatorTrader {
 	static final String PARAM_REVENUE_SHARE = "ShareOfRevenues";
 
-	static final Tree parameters = Make.newTree().add(Make.newDouble(PARAM_REVENUE_SHARE)).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newDouble(PARAM_REVENUE_SHARE));
 
 	/** Share of market revenues the NoSupportTrader keeps to himself */
 	private final double shareOfRevenues;
@@ -33,8 +33,7 @@ public class NoSupportTrader extends AggregatorTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public NoSupportTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		shareOfRevenues = input.getDouble(PARAM_REVENUE_SHARE);
+		shareOfRevenues = fromInput().getDouble(PARAM_REVENUE_SHARE);
 	}
 
 	@Override

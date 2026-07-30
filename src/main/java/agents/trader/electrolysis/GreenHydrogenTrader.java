@@ -35,11 +35,10 @@ import communications.message.PpaInformation;
 import communications.portable.BidsAtTime;
 import communications.portable.HydrogenSupportData;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -66,9 +65,9 @@ public class GreenHydrogenTrader extends Trader
 		AnnualCostReport,
 	};
 
-	@Input private static final Tree parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
+	@Input public static final GroupBuilder parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
 			.addAs("Device", Electrolyzer.parameters).addAs("Refinancing", AnnualCostCalculator.parameters)
-			.addAs("Support", HydrogenSupportClient.parameters).buildTree();
+			.addAs("Support", HydrogenSupportClient.parameters);
 
 	@Output
 	enum AgentOutputs {
@@ -107,13 +106,11 @@ public class GreenHydrogenTrader extends Trader
 	 * @throws MissingDataException if any required data is not provided */
 	public GreenHydrogenTrader(DataProvider data) throws MissingDataException {
 		super(data);
-		ParameterData input = parameters.join(data);
-		fuelType = FuelsTrader.readFuelType(input);
+		fuelType = FuelsTrader.readFuelType(fromInput());
 		fuelData = new FuelData(fuelType);
-		electrolyzer = new Electrolyzer(input.getGroup("Device"));
-		annualCost = AnnualCostCalculator.build(input, "Refinancing");
-
-		registrationData = HydrogenSupportClient.getRegistration(input.getOptionalGroup("Support"));
+		electrolyzer = new Electrolyzer(fromInput().getGroup("Device"));
+		annualCost = AnnualCostCalculator.build(fromInput(), "Refinancing");
+		registrationData = HydrogenSupportClient.getRegistration(fromInput().getOptionalGroup("Support"));
 
 		call(this::requestPpaInformation).on(GreenHydrogenProducer.Products.PpaInformationForecastRequest)
 				.use(MarketForecaster.Products.ForecastRequest);

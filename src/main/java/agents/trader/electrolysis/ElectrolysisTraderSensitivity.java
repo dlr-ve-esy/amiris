@@ -13,14 +13,13 @@ import agents.trader.Trader;
 import communications.message.HydrogenPolicyRegistration;
 import communications.portable.HydrogenSupportData;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.service.output.Output;
-import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.Constants.Interval;
+import de.dlr.gitlab.fame.time.TimeSpan;
 
 /** A flexible Trader demanding electricity and producing hydrogen from it via electrolysis using sensitivity forecasts to
  * consider competition of flexibility options.
@@ -28,13 +27,13 @@ import de.dlr.gitlab.fame.time.Constants.Interval;
  * @author Christoph Schimeczek, Johannes Kochems */
 public class ElectrolysisTraderSensitivity extends Trader
 		implements SensitivityForecastClient, FuelsTrader, PowerPlantScheduler, HydrogenSupportClient {
-	@Input private static final Tree parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
+	@Input public static final GroupBuilder parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
 			.addAs("Device", Electrolyzer.parameters)
 			.addAs("Strategy", ElectrolyzerStrategist.parameters)
-			.addAs("Support", HydrogenSupportClient.parameters).buildTree();
+			.addAs("Support", HydrogenSupportClient.parameters);
 
 	private static final TimeSpan OPERATION_PERIOD = new TimeSpan(1, Interval.HOURS);
-	
+
 	/** Available output columns */
 	@Output
 	protected static enum Outputs {
@@ -51,9 +50,7 @@ public class ElectrolysisTraderSensitivity extends Trader
 	 * @param data configured input
 	 * @throws MissingDataException if any required input is missing */
 	public ElectrolysisTraderSensitivity(DataProvider data) throws MissingDataException {
-		super(data);
-		ParameterData input = parameters.join(data);
-
+		super(data);	
 	}
 
 	@Override
@@ -65,7 +62,7 @@ public class ElectrolysisTraderSensitivity extends Trader
 	@Override
 	public void saveSupportData(HydrogenSupportData hydrogenSupportData) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

@@ -8,7 +8,7 @@ SPDX-License-Identifier: CC0-1.0-->
 
 	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
-			<pattern>%-4relative [%thread] %-5level %logger - %msg%n</pattern>
+			<pattern>%-6relative [%thread] %-5level %logger - %msg%n</pattern>
 		</encoder>
 	</appender>
 

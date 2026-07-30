@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ## 5.0.0
 
-### FAME-Io version requiremente
+### FAME-Io version requirement
 
 The new version of AMIRIS requires the python package `fameio` with a version of at least 4.0.
 The minimum version of Python is now 3.10.

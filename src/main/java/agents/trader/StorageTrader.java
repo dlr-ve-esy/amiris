@@ -56,8 +56,8 @@ public class StorageTrader extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public StorageTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		this.storage = new Device(fromInput().getGroup("Device"));
-		this.strategist = ArbitrageStrategist.createStrategist(fromInput().getGroup("Strategy"), storage);
+		storage = new Device(fromInput().getGroup("Device"));
+		strategist = ArbitrageStrategist.createStrategist(fromInput().getGroup("Strategy"), storage);
 
 		call(this::prepareForecasts).on(Trader.Products.BidsForecast).use(MarketForecaster.Products.ForecastRequest);
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.MeritOrderForecastRequest)

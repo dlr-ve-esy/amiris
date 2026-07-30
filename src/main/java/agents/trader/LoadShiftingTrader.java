@@ -60,10 +60,9 @@ public class LoadShiftingTrader extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is missing */
 	public LoadShiftingTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		this.portfolio = new LoadShiftingPortfolio(fromInput().getGroup("LoadShiftingPortfolio"));
-		this.endUserTariff = new EndUserTariff(fromInput().getGroup("Policy"), fromInput().getGroup("BusinessModel"));
-		this.strategist = LoadShiftingStrategist.createStrategist(fromInput().getGroup("Strategy"), endUserTariff,
-				portfolio);
+		portfolio = new LoadShiftingPortfolio(fromInput().getGroup("LoadShiftingPortfolio"));
+		endUserTariff = new EndUserTariff(fromInput().getGroup("Policy"), fromInput().getGroup("BusinessModel"));
+		strategist = LoadShiftingStrategist.createStrategist(fromInput().getGroup("Strategy"), endUserTariff, portfolio);
 
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.MeritOrderForecastRequest)
 				.use(DayAheadMarket.Products.GateClosureInfo);

@@ -14,11 +14,11 @@ import communications.message.FuelCost;
 import communications.message.FuelData;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -45,9 +45,8 @@ public class FuelsMarket extends Agent {
 		FuelBill,
 	};
 
-	@Input private static final Tree parameters = Make.newTree().add(Make.newGroup("FuelPrices").list()
-			.add(FuelsTrader.fuelTypeParameter, Make.newSeries("Price"), Make.newDouble("ConversionFactor")))
-			.buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newGroup("FuelPrices").list()
+			.add(FuelsTrader.fuelTypeParameter, Make.newSeries("Price"), Make.newDouble("ConversionFactor")));
 
 	private final HashMap<String, TimeSeries> fuelPrices = new HashMap<>();
 	private final HashMap<String, Double> conversionFactors = new HashMap<>();
@@ -58,8 +57,7 @@ public class FuelsMarket extends Agent {
 	 * @throws MissingDataException if any required data is not provided */
 	public FuelsMarket(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		loadFuelPrices(input.getGroupList("FuelPrices"));
+		loadFuelPrices(fromInput().getGroupList("FuelPrices"));
 
 		call(this::sendPrices).on(Products.FuelPriceForecast).use(FuelsTrader.Products.FuelPriceForecastRequest);
 		call(this::sendPrices).on(Products.FuelPrice).use(FuelsTrader.Products.FuelPriceRequest);

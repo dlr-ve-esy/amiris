@@ -21,11 +21,10 @@ import communications.message.ClearingTimes;
 import communications.message.PointInTime;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -39,15 +38,14 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author A. Achraf El Ghazi, Ulrich Frey */
 public class EvTraderExternal extends FlexibilityTrader {
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(
 					Make.newString("ServiceUrl"),
 					Make.newString("ModelId").optional(),
 					Make.newInt("ForecastPeriodInHours"),
 					Make.newSeries("AggregatedAvailableChargingPowerInMW"),
 					Make.newSeries("AggregatedElectricConsumptionInMWH"))
-			.addAs("PredictionWindows", EvBiddingStrategist.parameters)
-			.buildTree();
+			.addAs("PredictionWindows", EvBiddingStrategist.parameters);
 
 	@Output
 	private static enum OutputFields {
@@ -71,14 +69,13 @@ public class EvTraderExternal extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public EvTraderExternal(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		String urlService = input.getString("ServiceUrl");
-		String modelId = input.getString("ModelId");
-		int forecastPeriodInHours = input.getInteger("ForecastPeriodInHours");
-		TimeSeries availableChargingPowerInMW = input.getTimeSeries("AggregatedAvailableChargingPowerInMW");
-		TimeSeries elecConsumptionInMWH = input.getTimeSeries("AggregatedElectricConsumptionInMWH");
+		String urlService = fromInput().getString("ServiceUrl");
+		String modelId = fromInput().getString("ModelId");
+		int forecastPeriodInHours = fromInput().getInteger("ForecastPeriodInHours");
+		TimeSeries availableChargingPowerInMW = fromInput().getTimeSeries("AggregatedAvailableChargingPowerInMW");
+		TimeSeries elecConsumptionInMWH = fromInput().getTimeSeries("AggregatedElectricConsumptionInMWH");
 		biddingStrategist = new EvBiddingStrategist(urlService, modelId, forecastPeriodInHours,
-				availableChargingPowerInMW, elecConsumptionInMWH, input.getGroup("PredictionWindows"));
+				availableChargingPowerInMW, elecConsumptionInMWH, fromInput().getGroup("PredictionWindows"));
 
 		call(this::requestPriceForecast).on(DamForecastClient.Products.PriceForecastRequest)
 				.use(DayAheadMarket.Products.GateClosureInfo);

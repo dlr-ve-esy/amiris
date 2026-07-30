@@ -10,10 +10,9 @@ import agents.trader.Trader;
 import communications.message.AmountAtTime;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -36,8 +35,8 @@ public abstract class PowerPlantOperator extends Agent {
 		AnnualCostReport,
 	}
 
-	@Input private static final Tree parameters = Make.newTree().addAs("Refinancing", AnnualCostCalculator.parameters)
-			.buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().addAs("Refinancing",
+			AnnualCostCalculator.parameters);
 
 	/** Available output columns */
 	@Output
@@ -63,8 +62,7 @@ public abstract class PowerPlantOperator extends Agent {
 	 * @param dataProvider provides input from config file */
 	public PowerPlantOperator(DataProvider dataProvider) {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		annualCost = AnnualCostCalculator.build(input, "Refinancing");
+		annualCost = AnnualCostCalculator.build(fromInput(), "Refinancing");
 
 		call(this::executeDispatch).onAndUse(PowerPlantScheduler.Products.DispatchAssignment);
 		call(this::digestPayment).onAndUse(PowerPlantScheduler.Products.Payout);

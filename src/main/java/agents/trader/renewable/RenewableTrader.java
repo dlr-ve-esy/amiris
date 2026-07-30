@@ -16,10 +16,11 @@ import agents.trader.renewable.bidding.FixedPremium;
 import agents.trader.renewable.bidding.PremiumBased;
 import agents.trader.renewable.bidding.VariablePremium;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
+import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -32,8 +33,8 @@ public class RenewableTrader extends AggregatorTrader {
 	static final String PARAM_REVENUE_SHARE = "ShareOfRevenues";
 
 	/** Inputs specific to {@link RenewableTrader}s */
-	public static final Tree parameters = Make.newTree().add(Make.newDouble(PARAM_REVENUE_SHARE),
-			PremiumBased.marketValueForecastParam, PremiumBased.fileForecastParams).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newDouble(PARAM_REVENUE_SHARE),
+			PremiumBased.marketValueForecastParam, PremiumBased.fileForecastParams);
 
 	/** The share of market revenues the {@link RenewableTrader} keeps to himself */
 	private final double shareOfRevenues;
@@ -45,9 +46,8 @@ public class RenewableTrader extends AggregatorTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public RenewableTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		shareOfRevenues = input.getDouble(PARAM_REVENUE_SHARE);
-		configureStrategies(input);
+		shareOfRevenues = fromInput().getDouble(PARAM_REVENUE_SHARE);
+		configureStrategies(fromInput());
 	}
 
 	/** configures {@link BiddingStrategy}s for different support instruments */

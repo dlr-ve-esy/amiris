@@ -15,11 +15,11 @@ import communications.message.TechnologySet;
 import communications.portable.HydrogenSupportData;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -32,10 +32,9 @@ public class HydrogenSupportPolicy extends Agent implements HydrogenSupportProvi
 	static final String ERR_SET_UNKNOWN = "Hydrogen policy set not configured: ";
 	static final String ERR_INSTRUMENT_UNKNOWN = " is an unknown support instrument in hydrogen policy set: ";
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newGroup("SetSupportData").list().add(setParameter).addAs(SupportInstrument.MPFIX.name(),
-					Mpfix.parameters))
-			.buildTree();
+					Mpfix.parameters));
 
 	/** Actual support policies valid for a specific policy set */
 	public class InstrumentPolicies {
@@ -85,8 +84,7 @@ public class HydrogenSupportPolicy extends Agent implements HydrogenSupportProvi
 	 * @throws MissingDataException if any required input is missing */
 	public HydrogenSupportPolicy(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData inputData = parameters.join(dataProvider);
-		loadSetSupportData(inputData.getGroupList("SetSupportData"));
+		loadSetSupportData(fromInput().getGroupList("SetSupportData"));
 
 		call(this::sendSupportInfo).on(Products.SupportInfo).use(HydrogenSupportClient.Products.SupportInfoRequest);
 		call(this::calcSupportPayout).on(Products.SupportPayout).use(HydrogenSupportClient.Products.SupportPayoutRequest);

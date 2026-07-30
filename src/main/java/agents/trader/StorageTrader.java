@@ -22,11 +22,10 @@ import communications.message.AwardData;
 import communications.message.ClearingTimes;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -38,8 +37,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek, Johannes Kochems, Farzad Sarfarazi, Felix Nitsch */
 public class StorageTrader extends FlexibilityTrader {
-	@Input private static final Tree parameters = Make.newTree().addAs("Device", Device.parameters.buildTree())
-			.addAs("Strategy", ArbitrageStrategist.parameters).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().addAs("Device", Device.parameters.buildTree())
+			.addAs("Strategy", ArbitrageStrategist.parameters);
 
 	@Output
 	private static enum OutputFields {
@@ -57,9 +56,8 @@ public class StorageTrader extends FlexibilityTrader {
 	 * @throws MissingDataException if any required data is not provided */
 	public StorageTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		this.storage = new Device(input.getGroup("Device"));
-		this.strategist = ArbitrageStrategist.createStrategist(input.getGroup("Strategy"), storage);
+		storage = new Device(fromInput().getGroup("Device"));
+		strategist = ArbitrageStrategist.createStrategist(fromInput().getGroup("Strategy"), storage);
 
 		call(this::prepareForecasts).on(Trader.Products.BidsForecast).use(MarketForecaster.Products.ForecastRequest);
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.MeritOrderForecastRequest)

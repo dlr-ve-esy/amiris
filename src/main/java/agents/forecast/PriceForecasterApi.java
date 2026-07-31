@@ -70,7 +70,7 @@ public class PriceForecasterApi extends MarketForecaster implements SensitivityF
 	static final String PARAM_EXTENSION = "ForecastWindowExtensionInHours";
 	static final String PARAM_TOLERANCE = "ForecastErrorToleranceInEURperMWH";
 	static final String PARAM_RESIDUAL = "ResidualLoadInMWH";
-	
+
 	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newString(PARAM_URL), Make.newInt(PARAM_LOOKBACK).optional(),
 					Make.newInt(PARAM_EXTENSION).optional(),

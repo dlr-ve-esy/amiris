@@ -6,6 +6,8 @@ import java.util.HashMap;
  * 
  * @author Christoph Schimeczek */
 public class AllTransmissionCapacities {
+	static final String ERR_ORIGIN_IS_TARGET = "Transmission capacities with same origin and target are disallowed.";
+
 	private class CapacityData {
 		private double maximumForwardsInMW = 0;
 		private double maximumBackwardsInM = 0;
@@ -101,7 +103,7 @@ public class AllTransmissionCapacities {
 			backwardsCapacity.set(data);
 			return backwardsCapacity;
 		} else {
-			return null;
+			throw new RuntimeException(ERR_ORIGIN_IS_TARGET);
 		}
 	}
 

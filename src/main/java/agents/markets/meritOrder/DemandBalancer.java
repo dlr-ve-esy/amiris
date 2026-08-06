@@ -112,7 +112,7 @@ public class DemandBalancer {
 				if (partnerId != candidateId) {
 					CouplingData partnerData = couplingRequests.get(partnerId);
 					double transmissionCapacity = partnerData.getTransmissionTo(candidateData.getOrigin());
-					transmissionCapacities.register(candidateId, partnerId, transmissionCapacity);
+					transmissionCapacities.register(partnerId, candidateId, transmissionCapacity);
 					if (transmissionCapacity > 0) {
 						partners.add(partnerId);
 					}

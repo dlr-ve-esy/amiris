@@ -228,7 +228,8 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 			double energyFromImports = importBook.getEnergySumForTrader(receiverId);
 			double energyToExports = exportBook.getEnergySumForTrader(receiverId);
 			double supplyPower = result.getSupplyBook().getTradersSumOfPower(receiverId);
-			double demandPower = result.getDemandBook().getTradersSumOfPower(receiverId) + energyFromImports - energyToExports;
+			double demandPower = result.getDemandBook().getTradersSumOfPower(receiverId) + energyFromImports
+					- energyToExports;
 
 			List<TimeStamp> clearingTimeList = clearingTimes.getTimes();
 			if (clearingTimeList.size() > 1) {

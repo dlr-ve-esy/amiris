@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
+//
+// SPDX-License-Identifier: Apache-2.0
 package agents.markets;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -67,17 +70,16 @@ public class AllTransmissionCapacitiesTest {
 		Exceptions.assertThrowsFatalMessage(AllTransmissionCapacities.ERR_ORIGIN_IS_TARGET,
 				() -> capacities.register(0L, 0L, 42));
 	}
-	
+
 	@Test
 	public void clear_removesPreviousData() {
 		capacities.register(1L, 0L, 200);
 		capacities.register(0L, 1L, 100);
 		capacities.addTransmission(0L, 1L, 20);
-		
+
 		capacities.clear();
 		assertEquals(0, capacities.getRemainingCapacity(0L, 1L), 1E-10);
-		assertEquals(0, capacities.getRemainingCapacity(1L, 0L), 1E-10);		
+		assertEquals(0, capacities.getRemainingCapacity(1L, 0L), 1E-10);
 	}
-	
-	
+
 }

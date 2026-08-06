@@ -16,7 +16,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 /** Specifies the data that EnergyExchange agents have to send to the MarketCoupling agent in order to minimise price variance
  * across markets. The same data type is return from the MarketCoupling agent to the registered EnergyExchange(s).
  * 
- * @author A. Achraf El Ghazi, Felix Nitsch */
+ * @author A. Achraf El Ghazi, Felix Nitsch, Christoph Schimeczek */
 public class CouplingData implements Portable, Cloneable {
 	private TimeStamp clearingTime;
 	private SupplyOrderBook supplyOrderBook;
@@ -86,13 +86,6 @@ public class CouplingData implements Portable, Cloneable {
 		return supplyOrderBook;
 	}
 
-	/** Sets {@link CouplingData#supplyOrderBook} of this object with
-	 * 
-	 * @param supplyOrderBook to set */
-	public void setSupplyOrderBook(SupplyOrderBook supplyOrderBook) {
-		this.supplyOrderBook = supplyOrderBook;
-	}
-
 	/** @return the transmissionBook of this object */
 	public TransmissionBook getTransmissionBook() {
 		return transmissionBook;
@@ -103,41 +96,15 @@ public class CouplingData implements Portable, Cloneable {
 	public double getTransmissionTo(String target) {
 		for (TransmissionCapacity tc : transmissionBook.getTransmissionCapacities()) {
 			if (tc.getTarget().equals(target)) {
-				return tc.getRemainingTransferCapacityInMW();
+				return tc.getTransferCapacityInMW();
 			}
 		}
 		return 0;
 	}
 
-	/** Sets {@link CouplingData#transmissionBook} of this object with
-	 * 
-	 * @param transmissionBook to set */
-	public void setTransmissionBook(TransmissionBook transmissionBook) {
-		this.transmissionBook = transmissionBook;
-	}
-
-	/** updates {@link CouplingData#transmissionBook} of this object with the given amount for the given Region
-	 * 
-	 * @param region to update
-	 * @param amount to update with */
-	public void updateTransmissionBook(String region, double amount) {
-		for (TransmissionCapacity tc : transmissionBook.getTransmissionCapacities()) {
-			if (tc.getTarget().equals(region)) {
-				tc.setRemainingTransferCapacityInMW(amount);
-			}
-		}
-	}
-
 	/** @return the importOrderBook of this object */
 	public TransferOrderBook getImportOrderBook() {
 		return importOrderBook;
-	}
-
-	/** Sets {@link CouplingData#importOrderBook} of this object
-	 * 
-	 * @param importOrderBook to set */
-	public void setImportOrderBook(TransferOrderBook importOrderBook) {
-		this.importOrderBook = importOrderBook;
 	}
 
 	/** Updates the {@link CouplingData#importOrderBook} of this object with
@@ -154,13 +121,6 @@ public class CouplingData implements Portable, Cloneable {
 		return exportOrderBook;
 	}
 
-	/** Sets {@link CouplingData#exportOrderBook} of this object with
-	 * 
-	 * @param exportOrderBook to set */
-	public void setExportOrderBook(TransferOrderBook exportOrderBook) {
-		this.exportOrderBook = exportOrderBook;
-	}
-
 	/** Updates the {@link CouplingData#exportOrderBook} of this object with
 	 * 
 	 * @param transferOrderBook to update with */
@@ -174,11 +134,11 @@ public class CouplingData implements Portable, Cloneable {
 	public CouplingData clone() {
 		CouplingData clone = new CouplingData();
 		clone.clearingTime = clearingTime;
-		clone.setDemandOrderBook(demandOrderBook.clone());
-		clone.setSupplyOrderBook(supplyOrderBook.clone());
-		clone.setTransmissionBook(transmissionBook.clone());
-		clone.setImportOrderBook(importOrderBook.clone());
-		clone.setExportOrderBook(exportOrderBook.clone());
+		clone.demandOrderBook = demandOrderBook.clone();
+		clone.supplyOrderBook = supplyOrderBook.clone();
+		clone.transmissionBook = transmissionBook.clone();
+		clone.importOrderBook = importOrderBook.clone();
+		clone.exportOrderBook = exportOrderBook.clone();
 		return clone;
 	}
 

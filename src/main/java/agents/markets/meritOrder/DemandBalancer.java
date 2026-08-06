@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import agents.markets.AllTransmissionCapacities;
 import agents.markets.DayAheadMarket;
 import agents.markets.MarketCoupling;
 import agents.markets.meritOrder.MeritOrderKernel.MeritOrderClearingException;
@@ -59,6 +60,7 @@ public class DemandBalancer {
 	/** Upper limit for the energy transfered in one iteration of the demand balancing algorithm */
 	private final double maxEnergyShiftPerIterationInMWH;
 	private Map<Long, CouplingData> couplingRequests;
+	private final AllTransmissionCapacities transmissionCapacities = new AllTransmissionCapacities();
 	private Map<Long, ClearingDetails> clearingResults = new HashMap<>();
 
 	/** Creates new {@link DemandBalancer}
@@ -85,14 +87,14 @@ public class DemandBalancer {
 	 *          method */
 	public void balance(Map<Long, CouplingData> couplingRequests) {
 		clearingResults.clear();
+		transmissionCapacities.clear();
 		this.couplingRequests = couplingRequests;
 		Map<Long, List<Long>> couplingPartners = calculateCouplingPartners();
 		initialiseClearingResults(couplingPartners);
 		logger.trace("Start optimization (energy cost: " + calcEnergyCost() + ")");
 
-		DemandShiftResult demandShiftResult = null;
 		while (true) {
-			demandShiftResult = getNextCouplingPair(couplingPartners);
+			DemandShiftResult demandShiftResult = getNextCouplingPair(couplingPartners);
 			if (demandShiftResult == null) {
 				break;
 			}
@@ -110,6 +112,7 @@ public class DemandBalancer {
 				if (partnerId != candidateId) {
 					CouplingData partnerData = couplingRequests.get(partnerId);
 					double transmissionCapacity = partnerData.getTransmissionTo(candidateData.getOrigin());
+					transmissionCapacities.register(candidateId, partnerId, transmissionCapacity);
 					if (transmissionCapacity > 0) {
 						partners.add(partnerId);
 					}
@@ -213,7 +216,7 @@ public class DemandBalancer {
 	private DemandShiftResult calcMinDemandShiftCausingPriceChange(Long expensiveMarketId, Long cheapMarketId) {
 		CouplingData expensiveMarketData = couplingRequests.get(expensiveMarketId);
 		CouplingData cheapMarketData = couplingRequests.get(cheapMarketId);
-		double transmissionCapacity = cheapMarketData.getTransmissionTo(expensiveMarketData.getOrigin());
+		double transmissionCapacity = transmissionCapacities.getRemainingCapacity(cheapMarketId, expensiveMarketId);
 		if (transmissionCapacity <= 0) {
 			return null;
 		}
@@ -380,7 +383,8 @@ public class DemandBalancer {
 		CouplingData dataCheap = couplingRequests.get(demandShiftResult.cheapMarketId);
 		SupplyOrderBook supplyBookExpensive = dataExpensive.getSupplyOrderBook();
 		SupplyOrderBook supplyBookCheap = dataCheap.getSupplyOrderBook();
-		double transmissionCapacity = dataCheap.getTransmissionTo(dataExpensive.getOrigin());
+		double transmissionCapacity = transmissionCapacities.getRemainingCapacity(demandShiftResult.cheapMarketId,
+				demandShiftResult.expensiveMarketId);
 
 		DemandOrderBook newDemandBookExpensive = demandShiftResult.newDemandOfOrigin;
 		DemandOrderBook newDemandBookCheap = demandShiftResult.newDemandOfTarget;
@@ -400,7 +404,9 @@ public class DemandBalancer {
 
 			dataCheap.setDemandOrderBook(newDemandBookCheap);
 			double newTransmissionCapacity = transmissionCapacity - shiftedDemand;
-			dataCheap.updateTransmissionBook(dataExpensive.getOrigin(), newTransmissionCapacity);
+			transmissionCapacities.addTransmission(demandShiftResult.cheapMarketId, demandShiftResult.expensiveMarketId,
+					shiftedDemand);
+
 			dataCheap.updateExportBook(transferBook);
 			clearingResults.put(demandShiftResult.cheapMarketId, newClearingCheap);
 
@@ -439,5 +445,9 @@ public class DemandBalancer {
 				+ ": (" + expensiveMarketPriceInEURperMWH + ", " + newExpensiveMarketPriceInEURperMWH + ")"
 				+ ": (" + cheapMarketPriceInEURperMWH + ", " + newCheapMarketPriceInEURperMWH + ")"
 				+ ": (" + transmissionCapacity + ", " + newTransmissionCapacity + ")";
+	}
+
+	public AllTransmissionCapacities getTransmissionCapacities() {
+		return transmissionCapacities;
 	}
 }

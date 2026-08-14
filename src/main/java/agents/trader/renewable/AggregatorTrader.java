@@ -35,11 +35,10 @@ import communications.portable.BidsAtTime;
 import communications.portable.MarginalsAtTime;
 import communications.portable.SupportData;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -54,9 +53,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public abstract class AggregatorTrader extends TraderWithClients implements PowerPlantScheduler {
 	static final String GROUP_FORECAST_ERROR = "ForecastError";
 
-	@Input private static final Tree parameters = Make.newTree()
-			.addAs(GROUP_FORECAST_ERROR, PowerForecastError.parameters)
-			.buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.addAs(GROUP_FORECAST_ERROR, PowerForecastError.parameters);
 
 	private static final double BIN_WIDTH = 1E-5;
 
@@ -120,18 +118,17 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 	/** Stores the power prices from {@link DayAheadMarket} */
 	private final TreeMap<TimeStamp, Double> powerPrices = new TreeMap<>();
 	/** Adds random errors (normally distributed) to the amount of offered power */
-	private PowerForecastError errorGenerator;
+	private PowerForecastError errorGenerator = null;
 
 	/** Creates an {@link AggregatorTrader}
 	 * 
-	 * @param dataProvider provides input from config */
-	public AggregatorTrader(DataProvider dataProvider) {
+	 * @param dataProvider provides input from config
+	 * @throws MissingDataException if any required data is missing */
+	public AggregatorTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData inputData = parameters.join(dataProvider);
-		try {
-			errorGenerator = new PowerForecastError(inputData.getGroup(GROUP_FORECAST_ERROR), getNextRandomNumberGenerator());
-		} catch (MissingDataException e) {
-			errorGenerator = null;
+		var forecastErrorInput = fromInput().getOptionalGroup(GROUP_FORECAST_ERROR);
+		if (forecastErrorInput != null) {
+			errorGenerator = new PowerForecastError(forecastErrorInput, getNextRandomNumberGenerator());
 		}
 
 		call(this::registerClient).onAndUse(RenewablePlantOperator.Products.SetRegistration);

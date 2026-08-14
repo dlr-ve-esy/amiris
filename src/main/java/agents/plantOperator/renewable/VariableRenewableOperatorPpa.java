@@ -9,11 +9,10 @@ import agents.trader.electrolysis.GreenHydrogenProducer;
 import communications.message.PointInTime;
 import communications.message.PpaInformation;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -37,7 +36,7 @@ public class VariableRenewableOperatorPpa extends VariableRenewableOperator {
 		PotentialLogging,
 	};
 
-	@Input private static final Tree parameters = Make.newTree().add(Make.newSeries("PpaPriceInEURperMWH")).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newSeries("PpaPriceInEURperMWH"));
 
 	private TimeSeries ppaPriceInEURperMWH;
 
@@ -47,8 +46,7 @@ public class VariableRenewableOperatorPpa extends VariableRenewableOperator {
 	 * @throws MissingDataException if any required data is not provided */
 	public VariableRenewableOperatorPpa(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		ppaPriceInEURperMWH = input.getTimeSeriesOrDefault("PpaPriceInEURperMWH", null);
+		ppaPriceInEURperMWH = fromInput().getTimeSeriesOrDefault("PpaPriceInEURperMWH", null);
 
 		call(this::sendPpaMultipleTimes).on(Products.PpaInformationForecast)
 				.use(GreenHydrogenProducer.Products.PpaInformationForecastRequest);

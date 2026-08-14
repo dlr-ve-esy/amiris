@@ -2,6 +2,27 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
+## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - TBA
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+
+### Changed
+- **Breaking**: Update to FAME-Core v3.0, requires FAME-Io v4.0 #254 (@dlr-cjs)
+- **Breaking**: `PriceForecasterApi`: Renamed input attributes `ServiceURL` and `ResidualLoadInMWh` to `ServiceUrl` and `ResidualLoadInMWH` #256 (@dlr-cjs)
+- **Breaking**: `ConventionalTrader`: Renamed input attributes `minMarkup` and `maxMarkup` to `MinimumMarkup` and `MaximumMarkup` #256 (@dlr-cjs)
+- **Breaking**: `LoadShiftingTrader`: Renamed several input attributes #256 (@dlr-cjs)
+- **Breaking**: `CarbonMarket`: Renamed output columns name `Co2EmissionsInTons` to `Co2EmissionsInT` #253 (@dlr-cjs, @sstroemer)
+- **Breaking**: `PriceForecasterApi`: Renamed output columns `ElectricityPriceForecastVarianceInEURperMWH` and `ResidualLoadInMWh` to `PriceForecastStandardDeviationInEURperMWH` and `ResidualLoadInMWH` #253 #256 (@dlr-cjs, @dlr_fn)
+- **Breaking**: `HouseholdPvTraderExternal`: Renamed output columns `AwardedDemandInMWh` and `AwardedSupplyInMWh` to `AwardedDemandInMWH` and `AwardedSupplyInMWH` #256 (@dlr-cjs)
+- Switch logger to logback #153 (@dlr-cjs)
+- Build package with parallel execution capabilities in CI #250
+- README: update funding agency name #243 (@dlr-cjs)
+- docs: update Roadmap #244 (@dlr-cjs, @dlr_jk)
+- improved Getting-Started section in docs (@dlr-cjs)
+- docs: update model schema #251 (@dlr_fn, @dlr-cjs, @dlr-ach)
+
+### Fixed
+- Fix typo in schema #252 (@dlr-cjs)
+
 ## [4.1.3](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.3) - 2026-08-14
 ### Fixed
 - `MarketCoupling`: Fix incorrect consideration of re-transferred energy #171 (@dlr-cjs)
@@ -9,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed
-- Fix hard-coded deactivation of power forecast errors #247 (@dlr-cjs) 
+- Fix hard-coded deactivation of power forecast errors #247 (@dlr-cjs)
 
 ## [4.1.1](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.1) - 2026-04-23
 ### Fixed

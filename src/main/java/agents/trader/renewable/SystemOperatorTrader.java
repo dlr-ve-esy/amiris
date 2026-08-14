@@ -8,6 +8,7 @@ import agents.markets.meritOrder.Bid;
 import agents.markets.meritOrder.Constants;
 import agents.plantOperator.Marginal;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -18,8 +19,9 @@ public class SystemOperatorTrader extends AggregatorTrader {
 
 	/** Create new {@link SystemOperatorTrader}
 	 * 
-	 * @param dataProvider no specific data required here */
-	public SystemOperatorTrader(DataProvider dataProvider) {
+	 * @param dataProvider no specific data required here
+	 * @throws MissingDataException if any required data is missing */
+	public SystemOperatorTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
 	}
 

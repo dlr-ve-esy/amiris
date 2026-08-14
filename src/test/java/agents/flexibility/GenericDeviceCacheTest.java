@@ -4,11 +4,15 @@
 package agents.flexibility;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import agents.flexibility.GenericDevice.StateViolation;
@@ -304,5 +308,45 @@ public class GenericDeviceCacheTest {
 
 		cacheFor(QUARTER_HOUR);
 		assertEquals(-44, deviceCache.getMaxNetDischargingEnergyInMWH(), 1E-12);
+	}
+
+	@ParameterizedTest
+	@CsvSource(value = {"0", "1E-12", "-1E-12"})
+	public void canHoldEnergyLevelWithoutAction_negligibleInflow_returnsTrue(double inflow) {
+		setupGenericDeviceCache(0, 100, 0, 0.5, 0, 0, 0, inflow);
+		cacheFor(ONE_HOUR);
+		assertTrue(deviceCache.canHoldEnergyLevelWithoutAction());
+	}
+
+	@Test
+	public void canHoldEnergyLevelWithoutAction_inflowCut_returnsTrue() {
+		setupGenericDeviceCache(0, 100, 0, 0.5, 0, 0, 0, 42);
+		when(mockDevice.onOverflow()).thenReturn(StateViolation.CUT);
+		cacheFor(ONE_HOUR);
+		assertTrue(deviceCache.canHoldEnergyLevelWithoutAction());
+	}
+
+	@Test
+	public void canHoldEnergyLevelWithoutAction_inflowNotCut_returnsFalse() {
+		setupGenericDeviceCache(0, 100, 0, 0.5, 0, 0, 0, 42);
+		when(mockDevice.onOverflow()).thenReturn(StateViolation.ERROR);
+		cacheFor(ONE_HOUR);
+		assertFalse(deviceCache.canHoldEnergyLevelWithoutAction());
+	}
+
+	@Test
+	public void canHoldEnergyLevelWithoutAction_outflowCut_returnsTrue() {
+		setupGenericDeviceCache(0, 100, 0, 0.5, 0, 0, 0, -42);
+		when(mockDevice.onUnderflow()).thenReturn(StateViolation.CUT);
+		cacheFor(ONE_HOUR);
+		assertTrue(deviceCache.canHoldEnergyLevelWithoutAction());
+	}
+
+	@Test
+	public void canHoldEnergyLevelWithoutAction_outflowNotCut_returnsFalse() {
+		setupGenericDeviceCache(0, 100, 0, 0.5, 0, 0, 0, -42);
+		when(mockDevice.onUnderflow()).thenReturn(StateViolation.ERROR);
+		cacheFor(ONE_HOUR);
+		assertFalse(deviceCache.canHoldEnergyLevelWithoutAction());
 	}
 }

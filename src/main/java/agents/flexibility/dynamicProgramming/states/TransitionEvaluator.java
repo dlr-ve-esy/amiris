@@ -78,6 +78,20 @@ public class TransitionEvaluator {
 		return new int[] {maxChargingSteps, maxDischargingSteps};
 	}
 
+	/** @return value for transition from initial to final state */
+	private double calcValueFor(int initialStateIndex, int finalStateIndex) {
+		final double externalEnergyDeltaInMWH = deviceCache.simulateTransition(
+				stateDiscretiser.energyIndexToEnergyInMWH(initialStateIndex),
+				stateDiscretiser.energyIndexToEnergyInMWH(finalStateIndex));
+		final double assessmentValue = assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
+		if (initialStateIndex == finalStateIndex && deviceCache.canHoldEnergyLevelWithoutAction()) {
+			if (Double.isNaN(assessmentValue)) {
+				return 0;
+			}
+		}
+		return assessmentValue;
+	}
+
 	/** Returns the value of the transition from the given initial to final state at the time prepared for. Uses cached values if
 	 * available.
 	 * 
@@ -100,14 +114,6 @@ public class TransitionEvaluator {
 		double transitionValue = cachedValuesAvailable ? getCachedValueFor(initialStateIndex, finalStateIndex)
 				: calcValueFor(initialStateIndex, finalStateIndex);
 		return transitionValue + assessmentFunction.getSignOfCostValue() * additionalCostInEUR;
-	}
-
-	/** @return value for transition from initial to final state */
-	private double calcValueFor(int initialStateIndex, int finalStateIndex) {
-		final double externalEnergyDeltaInMWH = deviceCache.simulateTransition(
-				stateDiscretiser.energyIndexToEnergyInMWH(initialStateIndex),
-				stateDiscretiser.energyIndexToEnergyInMWH(finalStateIndex));
-		return assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
 	}
 
 	/** @return cached value of transition, if {@link #cachedValuesAvailable} */

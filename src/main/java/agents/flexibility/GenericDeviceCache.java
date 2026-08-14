@@ -14,6 +14,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class GenericDeviceCache {
 	static final String ERR_PERIOD_INIT = "GenericDeviceCache's `setPeriod()` must be called at least once before `prepareFor()`.";
 
+	static final double TOLERANCE = 1E-9;
 	private final GenericDevice device;
 	private double intervalDurationInHours = Double.NaN;
 
@@ -182,5 +183,18 @@ public class GenericDeviceCache {
 	 * @return variable cost of a device at currently cached time */
 	public double getVariableCostInEURperMWH() {
 		return variableCostInEURperMWH;
+	}
+
+	/** Returns true, if this device can hold the energy level without charging or discharging - either because it has negligible
+	 * net inflow, or because it can cut the inflow or outflow.
+	 * 
+	 * @return true if this device can hold the energy level and ignore any inflow / outflow */
+	public boolean canHoldEnergyLevelWithoutAction() {
+		if (netInflowEnergyInMWH < -TOLERANCE) {
+			return device.onUnderflow() == StateViolation.CUT;
+		} else if (netInflowEnergyInMWH > TOLERANCE) {
+			return device.onOverflow() == StateViolation.CUT;
+		}
+		return true;
 	}
 }

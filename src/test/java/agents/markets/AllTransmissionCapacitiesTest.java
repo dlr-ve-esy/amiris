@@ -72,12 +72,12 @@ public class AllTransmissionCapacitiesTest {
 	}
 
 	@Test
-	public void clear_removesPreviousData() {
+	public void reset_removesPreviousData() {
 		capacities.register(1L, 0L, 200);
 		capacities.register(0L, 1L, 100);
 		capacities.addTransmission(0L, 1L, 20);
 
-		capacities.clear();
+		capacities.reset();
 		assertEquals(0, capacities.getRemainingCapacity(0L, 1L), 1E-10);
 		assertEquals(0, capacities.getRemainingCapacity(1L, 0L), 1E-10);
 	}

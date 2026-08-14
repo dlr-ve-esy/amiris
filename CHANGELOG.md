@@ -4,8 +4,8 @@ SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
 ## [4.1.3](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.3) - TBA
 ### Fixed
-- `MarketCoupling`: Fix incorrect consideration of retransferred energy #171 (@dlr-cjs)
-- Fix crash on cut overflows with short markets #258 (@dlr-cjs)
+- `MarketCoupling`: Fix incorrect consideration of re-transferred energy #171 (@dlr-cjs)
+- `GenericFlexibilityTrader`: Fix crash on cut overflows with short markets #258 (@dlr-cjs)
 
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed

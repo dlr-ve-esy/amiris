@@ -87,7 +87,7 @@ public class DemandBalancer {
 	 *          method */
 	public void balance(Map<Long, CouplingData> couplingRequests) {
 		clearingResults.clear();
-		transmissionCapacities.clear();
+		transmissionCapacities.reset();
 		this.couplingRequests = couplingRequests;
 		Map<Long, List<Long>> couplingPartners = calculateCouplingPartners();
 		initialiseClearingResults(couplingPartners);

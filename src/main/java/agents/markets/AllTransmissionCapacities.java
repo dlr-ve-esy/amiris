@@ -15,13 +15,13 @@ public class AllTransmissionCapacities {
 	 * utilised capacity is positive in forwards direction and negative in backwards direction. */
 	private class CapacityData {
 		private double maximumForwardsInMW = 0;
-		private double maximumBackwardsInM = 0;
+		private double maximumBackwardsInMW = 0;
 		private double utilisedInMW = 0;
 
 		/** Reset both maximums and the utilisation to Zero */
 		public void clear() {
 			maximumForwardsInMW = 0;
-			maximumBackwardsInM = 0;
+			maximumBackwardsInMW = 0;
 			utilisedInMW = 0;
 		}
 	}
@@ -75,12 +75,12 @@ public class AllTransmissionCapacities {
 	private class BackwardsCapacity extends Capacity {
 		@Override
 		public void setMaximum(double maximumUtilisationInMW) {
-			data.maximumBackwardsInM = maximumUtilisationInMW;
+			data.maximumBackwardsInMW = maximumUtilisationInMW;
 		}
 
 		@Override
 		public double getRemainingCapacityInMW() {
-			return data.maximumBackwardsInM + data.utilisedInMW;
+			return data.maximumBackwardsInMW + data.utilisedInMW;
 		}
 
 		@Override
@@ -96,7 +96,7 @@ public class AllTransmissionCapacities {
 	private final BackwardsCapacity backwardsCapacity = new BackwardsCapacity();
 
 	/** Reset all transmission capacities to Zero */
-	public void clear() {
+	public void reset() {
 		for (var targets : capacities.values()) {
 			for (var target : targets.values()) {
 				target.clear();
@@ -141,7 +141,9 @@ public class AllTransmissionCapacities {
 		return get(origin, target).getRemainingCapacityInMW();
 	}
 
-	/** Reduces remaining transmission capacity from origin to target market by given additional utilisation
+	/** Reduces remaining transmission capacity from origin to target market by given additional utilisation. No checks are
+	 * performed if the line capacity is actually sufficient. Thus, use {@link #getRemainingCapacity(Long, Long)} first to determine
+	 * the maximum transmission that can be added.
 	 * 
 	 * @param origin ID of market that sends electricity
 	 * @param target ID of market that receives electricity

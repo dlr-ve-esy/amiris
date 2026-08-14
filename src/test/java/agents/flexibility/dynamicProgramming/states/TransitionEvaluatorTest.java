@@ -4,6 +4,7 @@
 package agents.flexibility.dynamicProgramming.states;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyDouble;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeast;
@@ -91,6 +92,46 @@ public class TransitionEvaluatorTest {
 	private void mockAssessment(double valuePerMWH) {
 		when(assessmentFunction.assessTransition(anyDouble()))
 				.thenAnswer(input -> -(double) input.getArgument(0) * valuePerMWH);
+	}
+
+	@Test
+	public void getTransitionValueFor_uncached_NotSameIndex_assessmentNaN_returnsNaN() {
+		mockDiscretisation(1.0);
+		mockTransition();
+		mockAssessment(Double.NaN);
+		evaluator.prepareFor(THE_TIME, true);
+		when(deviceCache.canHoldEnergyLevelWithoutAction()).thenReturn(true);
+		assertTrue(Double.isNaN(evaluator.getTransitionValueFor(0, 1)));
+	}
+
+	@Test
+	public void getTransitionValueFor_uncached_sameIndex_deviceCannotHold_assessmentNaN_returnsNaN() {
+		mockDiscretisation(1.0);
+		mockTransition();
+		mockAssessment(Double.NaN);
+		evaluator.prepareFor(THE_TIME, true);
+		when(deviceCache.canHoldEnergyLevelWithoutAction()).thenReturn(false);
+		assertTrue(Double.isNaN(evaluator.getTransitionValueFor(0, 0)));
+	}
+
+	@Test
+	public void getTransitionValueFor_uncached_sameIndex_deviceCanHold_assessmentNaN_returnsZero() {
+		mockDiscretisation(1.0);
+		mockTransition();
+		mockAssessment(Double.NaN);
+		evaluator.prepareFor(THE_TIME, true);
+		when(deviceCache.canHoldEnergyLevelWithoutAction()).thenReturn(true);
+		assertEquals(0, evaluator.getTransitionValueFor(0, 0));
+	}
+
+	@Test
+	public void getTransitionValueFor_uncached_sameIndex_deviceCanHold_assessmentNotNaN_returnsAssessment() {
+		mockDiscretisation(1.0);
+		mockTransition();
+		when(assessmentFunction.assessTransition(anyDouble())).thenReturn(42.);
+		evaluator.prepareFor(THE_TIME, true);
+		when(deviceCache.canHoldEnergyLevelWithoutAction()).thenReturn(true);
+		assertEquals(42., evaluator.getTransitionValueFor(0, 0));
 	}
 
 	@ParameterizedTest

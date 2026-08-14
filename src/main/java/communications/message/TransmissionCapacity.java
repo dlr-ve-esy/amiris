@@ -52,14 +52,7 @@ public class TransmissionCapacity implements Portable, Cloneable {
 	}
 
 	/** @return remaining amount of energy that can be transferred to the target market zone */
-	public double getRemainingTransferCapacityInMW() {
+	public double getTransferCapacityInMW() {
 		return remainingTransferCapacityInMW;
-	}
-
-	/** updates remaining transfer capacity to the given value
-	 * 
-	 * @param newRemainingTransferCapacityInMW to be used as new value */
-	public void setRemainingTransferCapacityInMW(double newRemainingTransferCapacityInMW) {
-		this.remainingTransferCapacityInMW = newRemainingTransferCapacityInMW;
 	}
 }

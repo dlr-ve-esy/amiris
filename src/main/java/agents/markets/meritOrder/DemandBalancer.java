@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import agents.markets.AllTransmissionCapacities;
 import agents.markets.DayAheadMarket;
 import agents.markets.MarketCoupling;
 import agents.markets.meritOrder.MeritOrderKernel.MeritOrderClearingException;
@@ -18,11 +19,15 @@ import agents.markets.meritOrder.books.SupplyOrderBook;
 import agents.markets.meritOrder.books.TransferOrderBook;
 import communications.portable.CouplingData;
 
-/** Encapsulates the actual market coupling algorithm; Dispatch the demand among energy exchanges in order to maximise the total
- * welfare. To this end, the algorithm reduces price differences of connected markets by transferring demand bids.
+/** The actual market coupling algorithm; Distribute the demand among energy exchanges in order to maximise the total welfare. To
+ * this end, the algorithm reduces price differences of connected markets by transferring demand bids.
  * 
- * @author A. Achraf El Ghazi, Felix Nitsch */
+ * @author A. Achraf El Ghazi, Felix Nitsch, Christoph Schimeczek */
 public class DemandBalancer {
+	static final String ERR_CLEARING_FAIL = "Market clearing failed for DayAheadMarket with ID: ";
+	static final String ERR_SHIFT_CLEARING_FAIL = "Could not calculate demand shift between DayAheadMarket with IDs %s and %s.";
+	static final String ERR_SHIFT_APPLY_FAIL = "Could not apply demand shift between DayAheadMarket with IDs %s and %s.";
+
 	private static final Logger logger = LoggerFactory.getLogger(DemandBalancer.class);
 	/** Minimal amount of energy to be shifted between markets */
 	static final double MIN_SHIFT_AMOUNT_IN_MWH = 0.1;
@@ -49,12 +54,13 @@ public class DemandBalancer {
 		}
 	}
 
-	/** Sets the offset, that is added to the maximal demand shift, that does not lead to price change of the involved markets. The
-	 * addition of this offset first guarantee price change */
-	private static final String CLEARING_ID = "MarketCoupling - DemandBalancer:";
+	/** The offset that is added to the maximal demand shift, that does not lead to price change of the involved markets. The
+	 * addition of this offset guarantees that the price changes. */
 	private final double minEffectiveDemandOffset;
+	/** Upper limit for the energy transfered in one iteration of the demand balancing algorithm */
 	private final double maxEnergyShiftPerIterationInMWH;
 	private Map<Long, CouplingData> couplingRequests;
+	private final AllTransmissionCapacities transmissionCapacities = new AllTransmissionCapacities();
 	private Map<Long, ClearingDetails> clearingResults = new HashMap<>();
 
 	/** Creates new {@link DemandBalancer}
@@ -81,22 +87,18 @@ public class DemandBalancer {
 	 *          method */
 	public void balance(Map<Long, CouplingData> couplingRequests) {
 		clearingResults.clear();
+		transmissionCapacities.reset();
 		this.couplingRequests = couplingRequests;
-		try {
-			Map<Long, List<Long>> couplingPartners = calculateCouplingPartners();
-			initialiseClearingResults(couplingPartners);
-			logger.trace("Start optimization (energy cost: " + calcEnergyCost() + ")");
+		Map<Long, List<Long>> couplingPartners = calculateCouplingPartners();
+		initialiseClearingResults(couplingPartners);
+		logger.trace("Start optimization (energy cost: " + calcEnergyCost() + ")");
 
-			DemandShiftResult demandShiftResult = null;
-			while (true) {
-				demandShiftResult = getNextCouplingPair(couplingPartners);
-				if (demandShiftResult == null) {
-					break;
-				}
-				applyDemandShiftFromTo(demandShiftResult);
+		while (true) {
+			DemandShiftResult demandShiftResult = getNextCouplingPair(couplingPartners);
+			if (demandShiftResult == null) {
+				break;
 			}
-		} catch (MeritOrderClearingException e) {
-			throw new RuntimeException(CLEARING_ID + " " + e.getMessage());
+			applyDemandShiftFromTo(demandShiftResult);
 		}
 	}
 
@@ -110,6 +112,7 @@ public class DemandBalancer {
 				if (partnerId != candidateId) {
 					CouplingData partnerData = couplingRequests.get(partnerId);
 					double transmissionCapacity = partnerData.getTransmissionTo(candidateData.getOrigin());
+					transmissionCapacities.register(partnerId, candidateId, transmissionCapacity);
 					if (transmissionCapacity > 0) {
 						partners.add(partnerId);
 					}
@@ -120,10 +123,8 @@ public class DemandBalancer {
 		return couplingPartners;
 	}
 
-	/** initialises {@link #clearingResults} for all energy exchanges in this market coupling process
-	 * 
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private void initialiseClearingResults(Map<Long, List<Long>> couplingPartners) throws MeritOrderClearingException {
+	/** Initialises {@link #clearingResults} for all energy exchanges in this market coupling process */
+	private void initialiseClearingResults(Map<Long, List<Long>> couplingPartners) {
 		for (Long id : couplingPartners.keySet()) {
 			getClearingResult(id);
 		}
@@ -141,10 +142,8 @@ public class DemandBalancer {
 	/** Finds the next best EnergyExchange(s) pair and calculates their demand redistribution
 	 * 
 	 * @param couplingPartners all potential coupling partners for each candidate exchange
-	 * @return the next best pair of EnergyExchanges and their demand redistribution or null if no valid pair can be found
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private DemandShiftResult getNextCouplingPair(Map<Long, List<Long>> couplingPartners)
-			throws MeritOrderClearingException {
+	 * @return the next best pair of EnergyExchanges and their demand redistribution or null if no valid pair can be found */
+	private DemandShiftResult getNextCouplingPair(Map<Long, List<Long>> couplingPartners) {
 		DemandShiftResult bestDemandShift = null;
 		double largestPriceDiff = 0;
 		for (Long candidateId : couplingRequests.keySet()) {
@@ -165,10 +164,8 @@ public class DemandBalancer {
 	 * 
 	 * @param candidateId ID of candidate exchange to find the best demand shifting for
 	 * @param couplingPartners list of all available coupling partners for the given candidate
-	 * @return best demand shift or null if no valid demand shifting partner is available
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private DemandShiftResult getBestCouplingPartner(Long candidateId, List<Long> couplingPartners)
-			throws MeritOrderClearingException {
+	 * @return best demand shift or null if no valid demand shifting partner is available */
+	private DemandShiftResult getBestCouplingPartner(Long candidateId, List<Long> couplingPartners) {
 		DemandShiftResult bestDemandShift = null;
 		double candidatePrice = getClearingResult(candidateId).marketPriceInEURperMWH;
 		double largestPriceDiff = 0;
@@ -189,16 +186,20 @@ public class DemandBalancer {
 	/** Returns the market clearing result of the specified EnergyExchange. For the actual computation of the market clearing it
 	 * uses {@link MarketCoupling #calculateMarketClearing(DemandOrderBook, SupplyOrderBook)}. However, before performing the actual
 	 * computation it checks if a market clearing for the specified EnergyExchange was already computed, if so, it returns it. The
-	 * result of any new market clearing computation is stored in {@link MarketCoupling #clearingResults}.
+	 * result of any new market clearing computation is also stored in {@link MarketCoupling #clearingResults}.
 	 * 
 	 * @param exchangeId to get the market clearing result for
 	 * @return the market clearing result of the given exchange
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private ClearingDetails getClearingResult(Long exchangeId) throws MeritOrderClearingException {
+	 * @throws RuntimeException if market clearing failed */
+	private ClearingDetails getClearingResult(Long exchangeId) {
 		ClearingDetails clearingResult = clearingResults.get(exchangeId);
 		if (clearingResult == null) {
 			CouplingData request = couplingRequests.get(exchangeId);
-			clearingResult = MarketClearing.internalClearing(request.getSupplyOrderBook(), request.getDemandOrderBook());
+			try {
+				clearingResult = MarketClearing.internalClearing(request.getSupplyOrderBook(), request.getDemandOrderBook());
+			} catch (MeritOrderClearingException e) {
+				throw new RuntimeException(ERR_CLEARING_FAIL + exchangeId);
+			}
 			clearingResults.put(exchangeId, clearingResult);
 		}
 		return clearingResult;
@@ -211,13 +212,11 @@ public class DemandBalancer {
 	 * @param expensiveMarketId agentId of {@link DayAheadMarket} with higher price
 	 * @param cheapMarketId agentId of {@link DayAheadMarket} with lower price
 	 * @return result of the applied demand shift for both involved {@link DayAheadMarket}s or null if no meaningful shifting can be
-	 *         applied
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private DemandShiftResult calcMinDemandShiftCausingPriceChange(Long expensiveMarketId, Long cheapMarketId)
-			throws MeritOrderClearingException {
+	 *         applied */
+	private DemandShiftResult calcMinDemandShiftCausingPriceChange(Long expensiveMarketId, Long cheapMarketId) {
 		CouplingData expensiveMarketData = couplingRequests.get(expensiveMarketId);
 		CouplingData cheapMarketData = couplingRequests.get(cheapMarketId);
-		double transmissionCapacity = cheapMarketData.getTransmissionTo(expensiveMarketData.getOrigin());
+		double transmissionCapacity = transmissionCapacities.getRemainingCapacity(cheapMarketId, expensiveMarketId);
 		if (transmissionCapacity <= 0) {
 			return null;
 		}
@@ -259,14 +258,18 @@ public class DemandBalancer {
 		int priceSettingDemandBidIdx = clearingOfExpensive.priceSettingDemandBidIdx;
 		DemandShiftResult demandShiftResult = shiftDemand(expensiveMarketId, cheapMarketId, toShiftDemand,
 				priceSettingDemandBidIdx, expensiveMarketData.getDemandOrderBook(), cheapMarketData.getDemandOrderBook());
-		ClearingDetails newClearingOfExpensive = MarketClearing.internalClearing(expensiveMarketData.getSupplyOrderBook(),
-				demandShiftResult.newDemandOfOrigin);
-		ClearingDetails newClearingOfCheap = MarketClearing.internalClearing(cheapMarketData.getSupplyOrderBook(),
-				demandShiftResult.newDemandOfTarget);
-		if (newClearingOfExpensive.marketPriceInEURperMWH < newClearingOfCheap.marketPriceInEURperMWH) {
-			return null;
+		try {
+			ClearingDetails newClearingOfExpensive = MarketClearing.internalClearing(expensiveMarketData.getSupplyOrderBook(),
+					demandShiftResult.newDemandOfOrigin);
+			ClearingDetails newClearingOfCheap = MarketClearing.internalClearing(cheapMarketData.getSupplyOrderBook(),
+					demandShiftResult.newDemandOfTarget);
+			if (newClearingOfExpensive.marketPriceInEURperMWH < newClearingOfCheap.marketPriceInEURperMWH) {
+				return null;
+			}
+			return demandShiftResult;
+		} catch (MeritOrderClearingException e) {
+			throw new RuntimeException(String.format(ERR_SHIFT_CLEARING_FAIL, expensiveMarketId, cheapMarketId));
 		}
-		return demandShiftResult;
 	}
 
 	/** Shifts the given amount of demand from the expensive DemandOrderBook to the cheap one. The shift begins at the demand bid
@@ -363,9 +366,8 @@ public class DemandBalancer {
 		return new Bid[] {remainingBid, shiftingBid};
 	}
 
-	/** @return price difference between candidate and partner markets
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private double calcPriceDifference(Long candidateId, Long partnerId) throws MeritOrderClearingException {
+	/** @return price difference between candidate and partner markets */
+	private double calcPriceDifference(Long candidateId, Long partnerId) {
 		return getClearingResult(candidateId).marketPriceInEURperMWH - getClearingResult(partnerId).marketPriceInEURperMWH;
 	}
 
@@ -375,44 +377,51 @@ public class DemandBalancer {
 	 * 
 	 * @param demandShiftResult demand shift result to be applied
 	 * @param expensiveExchangeId exchange to shift demand from
-	 * @param cheapExchangeId exchange to shift demand to
-	 * @throws MeritOrderClearingException if market clearing failed */
-	private void applyDemandShiftFromTo(DemandShiftResult demandShiftResult) throws MeritOrderClearingException {
+	 * @param cheapExchangeId exchange to shift demand to */
+	private void applyDemandShiftFromTo(DemandShiftResult demandShiftResult) {
 		CouplingData dataExpensive = couplingRequests.get(demandShiftResult.expensiveMarketId);
 		CouplingData dataCheap = couplingRequests.get(demandShiftResult.cheapMarketId);
 		SupplyOrderBook supplyBookExpensive = dataExpensive.getSupplyOrderBook();
 		SupplyOrderBook supplyBookCheap = dataCheap.getSupplyOrderBook();
-		double transmissionCapacity = dataCheap.getTransmissionTo(dataExpensive.getOrigin());
+		double transmissionCapacity = transmissionCapacities.getRemainingCapacity(demandShiftResult.cheapMarketId,
+				demandShiftResult.expensiveMarketId);
 
 		DemandOrderBook newDemandBookExpensive = demandShiftResult.newDemandOfOrigin;
 		DemandOrderBook newDemandBookCheap = demandShiftResult.newDemandOfTarget;
 		TransferOrderBook transferBook = demandShiftResult.transferBook;
 		double shiftedDemand = demandShiftResult.shiftedDemand;
 
-		ClearingDetails newClearingExpensive = MarketClearing.internalClearing(supplyBookExpensive, newDemandBookExpensive);
-		ClearingDetails newClearingCheap = MarketClearing.internalClearing(supplyBookCheap, newDemandBookCheap);
+		try {
+			ClearingDetails newClearingExpensive = MarketClearing.internalClearing(supplyBookExpensive,
+					newDemandBookExpensive);
+			ClearingDetails newClearingCheap = MarketClearing.internalClearing(supplyBookCheap, newDemandBookCheap);
+			ClearingDetails clearingResultExpensive = clearingResults.get(demandShiftResult.expensiveMarketId);
+			ClearingDetails clearingResultCheap = clearingResults.get(demandShiftResult.cheapMarketId);
 
-		ClearingDetails clearingResultExpensive = clearingResults.get(demandShiftResult.expensiveMarketId);
-		ClearingDetails clearingResultCheap = clearingResults.get(demandShiftResult.cheapMarketId);
+			dataExpensive.setDemandOrderBook(newDemandBookExpensive);
+			dataExpensive.updateImportBook(transferBook);
+			clearingResults.put(demandShiftResult.expensiveMarketId, newClearingExpensive);
 
-		dataExpensive.setDemandOrderBook(newDemandBookExpensive);
-		dataExpensive.updateImportBook(transferBook);
-		clearingResults.put(demandShiftResult.expensiveMarketId, newClearingExpensive);
+			dataCheap.setDemandOrderBook(newDemandBookCheap);
+			double newTransmissionCapacity = transmissionCapacity - shiftedDemand;
+			transmissionCapacities.addTransmission(demandShiftResult.cheapMarketId, demandShiftResult.expensiveMarketId,
+					shiftedDemand);
 
-		dataCheap.setDemandOrderBook(newDemandBookCheap);
-		double newTransmissionCapacity = transmissionCapacity - shiftedDemand;
-		dataCheap.updateTransmissionBook(dataExpensive.getOrigin(), newTransmissionCapacity);
-		dataCheap.updateExportBook(transferBook);
-		clearingResults.put(demandShiftResult.cheapMarketId, newClearingCheap);
+			dataCheap.updateExportBook(transferBook);
+			clearingResults.put(demandShiftResult.cheapMarketId, newClearingCheap);
 
-		logger.trace(oneOptimizationStepSummary(
-				demandShiftResult.expensiveMarketId, demandShiftResult.cheapMarketId, shiftedDemand,
-				clearingResultExpensive.marketPriceInEURperMWH, newClearingExpensive.marketPriceInEURperMWH,
-				clearingResultCheap.marketPriceInEURperMWH, newClearingCheap.marketPriceInEURperMWH,
-				transmissionCapacity, newTransmissionCapacity));
+			logger.trace(oneOptimizationStepSummary(
+					demandShiftResult.expensiveMarketId, demandShiftResult.cheapMarketId, shiftedDemand,
+					clearingResultExpensive.marketPriceInEURperMWH, newClearingExpensive.marketPriceInEURperMWH,
+					clearingResultCheap.marketPriceInEURperMWH, newClearingCheap.marketPriceInEURperMWH,
+					transmissionCapacity, newTransmissionCapacity));
+		} catch (MeritOrderClearingException e) {
+			throw new RuntimeException(
+					String.format(ERR_SHIFT_APPLY_FAIL, demandShiftResult.expensiveMarketId, demandShiftResult.cheapMarketId));
+		}
 	}
 
-	/** Returns a string summary of one optimization step
+	/** Returns a string summary of one optimisation step
 	 * 
 	 * @param expensiveMarketId ID of the market that demand is shifted from
 	 * @param cheapMarketId ID of the market that demand is shifted to
@@ -425,7 +434,7 @@ public class DemandBalancer {
 	 *          demand is shifted from before shifting
 	 * @param newTransmissionCapacity available electricity transmission capacity from the market that demand is shifted to to the
 	 *          demand is shifted from after shifting
-	 * @return */
+	 * @return String representation of given data */
 	private String oneOptimizationStepSummary(
 			long expensiveMarketId, long cheapMarketId, double shiftedDemand,
 			double expensiveMarketPriceInEURperMWH, double newExpensiveMarketPriceInEURperMWH,
@@ -436,5 +445,9 @@ public class DemandBalancer {
 				+ ": (" + expensiveMarketPriceInEURperMWH + ", " + newExpensiveMarketPriceInEURperMWH + ")"
 				+ ": (" + cheapMarketPriceInEURperMWH + ", " + newCheapMarketPriceInEURperMWH + ")"
 				+ ": (" + transmissionCapacity + ", " + newTransmissionCapacity + ")";
+	}
+
+	public AllTransmissionCapacities getTransmissionCapacities() {
+		return transmissionCapacities;
 	}
 }

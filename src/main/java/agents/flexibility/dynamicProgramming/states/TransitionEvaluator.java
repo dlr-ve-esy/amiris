@@ -5,7 +5,6 @@ package agents.flexibility.dynamicProgramming.states;
 
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
-import agents.flexibility.dynamicProgramming.Optimiser.Target;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -55,7 +54,7 @@ public class TransitionEvaluator {
 	/** Caches the transition values for (dis-)charging depending on state deltas */
 	private void cacheTransitionValuesNoSelfDischarge() {
 		int[] maxSteps = calcMaxSteps();
-		transitionValueConstantEnergy = calcConstantValue();
+		transitionValueConstantEnergy = calcValueFor(0, 0);
 		transitionValuesCharging = new double[maxSteps[0] + 1];
 		for (int chargingSteps = 1; chargingSteps <= maxSteps[0]; chargingSteps++) {
 			transitionValuesCharging[chargingSteps] = calcValueFor(0, chargingSteps);
@@ -79,23 +78,18 @@ public class TransitionEvaluator {
 		return new int[] {maxChargingSteps, maxDischargingSteps};
 	}
 
-	/** @return value for not changing the energy level */
-	private double calcConstantValue() {
-		double valueWithInflows = calcValueFor(0, 0);
-		if (deviceCache.canHoldEnergyLevelWithoutAction()) {
-			if (Double.isNaN(valueWithInflows)) {
-				return 0;
-			}
-		}
-		return valueWithInflows;
-	}
-
 	/** @return value for transition from initial to final state */
 	private double calcValueFor(int initialStateIndex, int finalStateIndex) {
 		final double externalEnergyDeltaInMWH = deviceCache.simulateTransition(
 				stateDiscretiser.energyIndexToEnergyInMWH(initialStateIndex),
 				stateDiscretiser.energyIndexToEnergyInMWH(finalStateIndex));
-		return assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
+		final double assessmentValue = assessmentFunction.assessTransition(externalEnergyDeltaInMWH);
+		if (initialStateIndex == finalStateIndex && deviceCache.canHoldEnergyLevelWithoutAction()) {
+			if (Double.isNaN(assessmentValue)) {
+				return 0;
+			}
+		}
+		return assessmentValue;
 	}
 
 	/** Returns the value of the transition from the given initial to final state at the time prepared for. Uses cached values if

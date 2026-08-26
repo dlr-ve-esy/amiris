@@ -46,7 +46,9 @@ public class EnergyAndTimeStateManager implements StateManager {
 		deviceCache.setPeriod(startingPeriod);
 		stateDiscretiser.setTimeResolution(startingPeriod.getDuration());
 		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
-		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
+		TimePeriod intervalOfFirstInitialState = StateManager.shiftLeftByOne(startingPeriod);
+		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps + 1,
+				intervalOfFirstInitialState);
 		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTime());
 		raiseOnSelfDischarge(startingPeriod);
 		stateEvaluations.initialise(startingPeriod, numberOfTimeSteps, stateDiscretiser.getStateCount());
@@ -82,18 +84,28 @@ public class EnergyAndTimeStateManager implements StateManager {
 
 	@Override
 	public int[] getFinalStates(int initialStateIndex) {
-		final double initialEnergyContentInMWH = stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex);
-		final double lowestEnergyContentInMWH = deviceCache.getMinTargetEnergyContentInMWH(initialEnergyContentInMWH);
-		final double highestEnergyContentInMWH = deviceCache.getMaxTargetEnergyContentInMWH(initialEnergyContentInMWH);
-		if (highestEnergyContentInMWH < lowestEnergyContentInMWH) {
-			if (highestEnergyContentInMWH < deviceCache.getEnergyContentLowerLimitInMWH()) {
-				return new int[] {STATE_UNDERFLOW};
-			} else if (lowestEnergyContentInMWH > deviceCache.getEnergyContentUpperLimitInMWH()) {
-				return new int[] {STATE_OVERFLOW};
-			} else {
-				throw new RuntimeException(ERR_INCONSISTENT);
+		final double initialEnergyInMWH = stateDiscretiser.getEnergyOfStateInMWH(initialStateIndex);
+		final double lowestEnergyNoLimitInMWH = deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(initialEnergyInMWH);
+		final double highestEnergyNoLimitInMWH = deviceCache.getMaxChargingTargetNoEnergyLimitMWH(initialEnergyInMWH);
+		final double lowerEnergyLimitInMWH = deviceCache.getEnergyContentLowerLimitInMWH();
+		final double upperEnergyLimitInMWH = deviceCache.getEnergyContentUpperLimitInMWH();
+
+		if (lowestEnergyNoLimitInMWH > upperEnergyLimitInMWH) {
+			if (device.canCutOverflows()) {
+				final int nextLevel = stateDiscretiser.energyToNearestEnergyIndex(upperEnergyLimitInMWH);
+				return new int[] {STATE_OVERFLOW, nextLevel};
 			}
+			return new int[] {STATE_OVERFLOW, STATE_OVERFLOW};
 		}
+		if (highestEnergyNoLimitInMWH < lowerEnergyLimitInMWH) {
+			if (device.canCutUnderflows()) {
+				final int nextLevel = stateDiscretiser.energyToNearestEnergyIndex(lowerEnergyLimitInMWH);
+				return new int[] {STATE_UNDERFLOW, nextLevel};
+			}
+			return new int[] {STATE_UNDERFLOW, STATE_UNDERFLOW};
+		}
+		final double lowestEnergyContentInMWH = Math.max(lowestEnergyNoLimitInMWH, lowerEnergyLimitInMWH);
+		final double highestEnergyContentInMWH = Math.min(highestEnergyNoLimitInMWH, upperEnergyLimitInMWH);
 		return stateDiscretiser.getFollowUpStates(initialStateIndex, lowestEnergyContentInMWH, highestEnergyContentInMWH);
 	}
 

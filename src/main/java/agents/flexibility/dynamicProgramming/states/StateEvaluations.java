@@ -16,9 +16,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class StateEvaluations {
-	static final String ERR_OVERFLOW = "Unavoidable energy overflow during planning at time: ";
-	static final String ERR_UNDERFLOW = "Unavoidable energy underflow during planning at time: ";
-	static final String ERR_INFEASIBLE = "Maybe too large inflows / outflows after: ";
+	static final String HINT = " --> Ensure dispatch is possible considering inflow, energy limits, (dis-)charging limits, and self discharge; then increase PlanningHorizon or reduce SchedulingHorizon.";
+	static final String ERR_OVERFLOW = "Cannot plan dispatch to avoid energy overflow at: ";
+	static final String ERR_UNDERFLOW = "Cannot plan dispatch to avoid energy underflow at: ";
+	static final String ERR_INFEASIBLE = "Cannot plan valid dispatch at: ";
 
 	/** Used to avoid rounding errors in floating point calculation of transition steps */
 	static final double PRECISION_GUARD = 1E-6;
@@ -165,11 +166,11 @@ public class StateEvaluations {
 		if (stateIndex < 0) {
 			switch (stateIndex) {
 				case StateManager.STATE_OVERFLOW:
-					throw new DispatchPlanningError(ERR_OVERFLOW + time);
+					throw new DispatchPlanningError(ERR_OVERFLOW + time + HINT);
 				case StateManager.STATE_UNDERFLOW:
-					throw new DispatchPlanningError(ERR_UNDERFLOW + time);
+					throw new DispatchPlanningError(ERR_UNDERFLOW + time + HINT);
 				default:
-					throw new DispatchPlanningError(ERR_INFEASIBLE + time);
+					throw new DispatchPlanningError(ERR_INFEASIBLE + time + HINT);
 			}
 		}
 	}

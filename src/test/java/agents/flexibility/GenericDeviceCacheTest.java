@@ -62,177 +62,170 @@ public class GenericDeviceCacheTest {
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_noSelfDischargeNoInflowInitialZero_equalsNetCharging() {
+	public void getMaxChargingTargetNoEnergyLimitMWH_noSelfDischargeNoInflowInitialZero_equalsNetCharging() {
 		setupGenericDeviceCache(100, 0, 1, 1, 500, 0, 0, 0);
 		cacheFor(ONE_HOUR);
-		assertEquals(100, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(100, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-12);
 
 		cacheFor(TWO_HOURS);
-		assertEquals(200, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(200, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-12);
 
 		setupGenericDeviceCache(100, 0, 1, 1, 500, 0, 0, 0);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(25, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(25, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-12);
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_noSelfDischargeNoInflowInitialNonzero_addsInitial() {
+	public void getMaxChargingTargetNoEnergyLimitMWH_noSelfDischargeNoInflowInitialNonzero_addsInitial() {
 		setupGenericDeviceCache(100, 0, 1, 1, 500, 0, 0, 0);
 		cacheFor(ONE_HOUR);
-		assertEquals(110, deviceCache.getMaxTargetEnergyContentInMWH(10), 1E-12);
+		assertEquals(110, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(10), 1E-12);
 
 		cacheFor(TWO_HOURS);
-		assertEquals(190, deviceCache.getMaxTargetEnergyContentInMWH(-10), 1E-12);
+		assertEquals(190, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(-10), 1E-12);
 
 		cacheFor(QUARTER_HOUR);
-		assertEquals(35, deviceCache.getMaxTargetEnergyContentInMWH(10), 1E-12);
+		assertEquals(35, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(10), 1E-12);
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_noSelfDischargeWithInflowInitialZero_addsInflow() {
+	public void getMaxChargingTargetNoEnergyLimitMWH_noSelfDischargeWithInflowInitialZero_addsInflow() {
 		setupGenericDeviceCache(100, 0, 1, 1, 500, 0, 0, 20);
 		cacheFor(ONE_HOUR);
-		assertEquals(120, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(120, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-12);
 
 		cacheFor(TWO_HOURS);
-		assertEquals(240, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(240, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-12);
 
 		cacheFor(QUARTER_HOUR);
-		assertEquals(30, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(30, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-12);
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_withSelfDischargeNoInflow_subtractsSelfDischarge() {
+	public void getMaxChargingTargetNoEnergyLimitMWH_withSelfDischargeNoInflow_subtractsSelfDischarge() {
 		setupGenericDeviceCache(200, 0, 1, 1, 500, 0, 0.1, 0);
 		cacheFor(ONE_HOUR);
-		assertEquals(200, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
-		assertEquals(290, deviceCache.getMaxTargetEnergyContentInMWH(100), 1E-2);
+		assertEquals(200, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-2);
+		assertEquals(290, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(100), 1E-2);
 
 		cacheFor(TWO_HOURS);
-		assertEquals(440.5, deviceCache.getMaxTargetEnergyContentInMWH(50), 1E-2);
+		assertEquals(440.5, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(50), 1E-2);
 
 		cacheFor(QUARTER_HOUR);
-		assertEquals(244.801, deviceCache.getMaxTargetEnergyContentInMWH(200), 1E-2);
+		assertEquals(244.801, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(200), 1E-2);
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_UnderflowCrash_returnsValueBelowLowerLimit() {
+	public void getMaxChargingTargetNoEnergyLimitMWH_underflow_returnsValueBelowLowerLimit() {
 		setupGenericDeviceCache(0, 0, 1, 1, 10, 0, 0, -10);
-		when(mockDevice.onUnderflow()).thenReturn(StateViolation.ERROR);
 		cacheFor(ONE_HOUR);
-		assertEquals(-10, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
+		assertEquals(-10, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-2);
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_UnderflowCut_returnsLowerLimit() {
-		setupGenericDeviceCache(0, 0, 1, 1, 10, 0, 0, -10);
-		when(mockDevice.onUnderflow()).thenReturn(StateViolation.CUT);
+	public void getMaxChargingTargetNoEnergyLimitMWH_overflow_returnsValueAboveUpperLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, 10);
 		cacheFor(ONE_HOUR);
-		assertEquals(0, deviceCache.getMaxTargetEnergyContentInMWH(0), 1E-2);
+		assertEquals(10, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(0), 1E-2);
 	}
 
 	@Test
 	public void simulateTransition_useMaxTargetEnergy_returnsMaxPower() {
 		setupGenericDeviceCache(200, 0, 1, 0, 500, 0, 0.1, 0);
 		cacheFor(TWO_HOURS);
-		double targetEnergyLevelInMWH = deviceCache.getMaxTargetEnergyContentInMWH(0);
-		assertEquals(400, deviceCache.simulateTransition(0, targetEnergyLevelInMWH), 1E-12);
+		assertEquals(400, deviceCache.simulateTransition(0, 400), 1E-12);
 	}
 
 	@Test
-	public void getMaxTargetEnergyContentInMWH_withSelfDischargeInflowAndInitial_correctCalc() {
+	public void getMaxChargingTargetNoEnergyLimitMWH_withSelfDischargeInflowAndInitial_correctCalc() {
 		setupGenericDeviceCache(200, 0, 1, 0, 500, 0, 0.1, 50);
 		cacheFor(ONE_HOUR);
-		assertEquals(232, deviceCache.getMaxTargetEnergyContentInMWH(-20), 1E-2);
+		assertEquals(232, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(-20), 1E-2);
 
 		setupGenericDeviceCache(200, 0, 1, 1, 500, 0, 0.1, -50);
 		cacheFor(TWO_HOURS);
-		assertEquals(372.9, deviceCache.getMaxTargetEnergyContentInMWH(90), 1E-2);
+		assertEquals(372.9, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(90), 1E-2);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(71.590, deviceCache.getMaxTargetEnergyContentInMWH(35), 1E-2);
+		assertEquals(71.590, deviceCache.getMaxChargingTargetNoEnergyLimitMWH(35), 1E-2);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_noSelfDischargeNoInflowInitialZero_equalsNetCharging() {
+	public void getMaxDischargingTargetNoEnergyLimitInMWH_noSelfDischargeNoInflowInitialZero_equalsNetCharging() {
 		setupGenericDeviceCache(0, 100, 1, 1, 0, -500, 0, 0);
 		cacheFor(ONE_HOUR);
-		assertEquals(-100, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(-100, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-12);
 		cacheFor(TWO_HOURS);
-		assertEquals(-200, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(-200, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-12);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(-25, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(-25, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-12);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_noSelfDischargeNoInflowInitialNonzero_addsInitial() {
+	public void getMaxDischargingTargetNoEnergyLimitInMWH_noSelfDischargeNoInflowInitialNonzero_addsInitial() {
 		setupGenericDeviceCache(0, 100, 1, 1, 0, -500, 0, 0);
 		cacheFor(ONE_HOUR);
-		assertEquals(100, deviceCache.getMinTargetEnergyContentInMWH(200), 1E-12);
+		assertEquals(100, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(200), 1E-12);
 		cacheFor(TWO_HOURS);
-		assertEquals(0, deviceCache.getMinTargetEnergyContentInMWH(200), 1E-12);
+		assertEquals(0, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(200), 1E-12);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(-15, deviceCache.getMinTargetEnergyContentInMWH(10), 1E-12);
+		assertEquals(-15, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(10), 1E-12);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_noSelfDischargeWithInflowInitialZero_addsInflow() {
+	public void getMaxDischargingTargetNoEnergyLimitInMWH_noSelfDischargeWithInflowInitialZero_addsInflow() {
 		setupGenericDeviceCache(0, 100, 1, 1, 0, -500, 0, -20);
 		cacheFor(ONE_HOUR);
-		assertEquals(-120, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(-120, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-12);
 		cacheFor(TWO_HOURS);
-		assertEquals(-240, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(-240, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-12);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(-30, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-12);
+		assertEquals(-30, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-12);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_withSelfDischargeNoInflowInitialZero_subtractsSelfDischarge() {
+	public void getMaxDischargingTargetNoEnergyLimitInMWH_withSelfDischargeNoInflowInitialZero_subtractsSelfDischarge() {
 		setupGenericDeviceCache(0, 200, 1, 1, 0, -500, 0.1, 0);
 		cacheFor(ONE_HOUR);
-		assertEquals(-209, deviceCache.getMinTargetEnergyContentInMWH(-10), 1E-2);
+		assertEquals(-209, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(-10), 1E-2);
 		cacheFor(TWO_HOURS);
-		assertEquals(-367.600, deviceCache.getMinTargetEnergyContentInMWH(40), 1E-2);
+		assertEquals(-367.600, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(40), 1E-2);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(47.400, deviceCache.getMinTargetEnergyContentInMWH(100), 1E-2);
+		assertEquals(47.400, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(100), 1E-2);
 	}
 
 	@Test
 	public void simulateTransition_useMinTargetEnergy_returnsMinPower() {
 		setupGenericDeviceCache(0, 200, 0, 1, 0, -500, 0.1, 0);
 		cacheFor(TWO_HOURS);
-		double targetEnergyLevelInMWH = deviceCache.getMinTargetEnergyContentInMWH(0);
-		assertEquals(-400, deviceCache.simulateTransition(0, targetEnergyLevelInMWH), 1E-12);
+		assertEquals(-400, deviceCache.simulateTransition(0, -400), 1E-12);
 
 		cacheFor(QUARTER_HOUR);
-		targetEnergyLevelInMWH = deviceCache.getMinTargetEnergyContentInMWH(0);
-		assertEquals(-50, deviceCache.simulateTransition(0, targetEnergyLevelInMWH), 1E-12);
+		assertEquals(-50, deviceCache.simulateTransition(0, -50), 1E-12);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_withSelfDischargeInflowAndInitial_correctCalc() {
+	public void getMaxDischargingTargetNoEnergyLimitInMWH_withSelfDischargeInflowAndInitial_correctCalc() {
 		setupGenericDeviceCache(0, 200, 1, 1, 0, -500, 0.1, 50);
 		cacheFor(ONE_HOUR);
-		assertEquals(-132, deviceCache.getMinTargetEnergyContentInMWH(20), 1E-2);
+		assertEquals(-132, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(20), 1E-2);
 
 		setupGenericDeviceCache(0, 200, 1, 1, 0, -500, 0.1, -50);
 		cacheFor(QUARTER_HOUR);
-		assertEquals(-13.800, deviceCache.getMinTargetEnergyContentInMWH(50), 1E-2);
+		assertEquals(-13.800, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(50), 1E-2);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_OverflowCrash_returnsAboveUpperLimit() {
+	public void getMaxDischargingTargetNoEnergyLimitInMWH_overflow_returnsAboveUpperLimit() {
 		setupGenericDeviceCache(0, 0, 1, 1, 2, 0, 0, 10);
-		when(mockDevice.onOverflow()).thenReturn(StateViolation.ERROR);
 		cacheFor(ONE_HOUR);
-		assertEquals(10, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
+		assertEquals(10, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-2);
 	}
 
 	@Test
-	public void getMinTargetEnergyContentInMWH_OverflowCut_returnsUpperLimit() {
-		setupGenericDeviceCache(0, 0, 1, 1, 2, 0, 0, 10);
-		when(mockDevice.onOverflow()).thenReturn(StateViolation.CUT);
+	public void getMinTargetEnergyContentInMWH_underflow_returnsBelowLowerLimit() {
+		setupGenericDeviceCache(0, 0, 1, 1, 0, 0, 0, -10);
 		cacheFor(ONE_HOUR);
-		assertEquals(2, deviceCache.getMinTargetEnergyContentInMWH(0), 1E-2);
+		assertEquals(-10, deviceCache.getMaxDischargingTargetNoEnergyLimitInMWH(0), 1E-2);
 	}
 
 	@Test

@@ -23,6 +23,10 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
 
+## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - 2026-08-26
+### Fixed
+- `GenericFlexibilityTrader`: Fix crash on time-variable energy limits #262 (@dlr-cjs)
+
 ## [4.1.3](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.3) - 2026-08-14
 ### Fixed
 - `MarketCoupling`: Fix incorrect consideration of re-transferred energy #171 (@dlr-cjs)

@@ -46,7 +46,9 @@ public class EnergyAndTimeStateManager implements StateManager {
 		deviceCache.setPeriod(startingPeriod);
 		stateDiscretiser.setTimeResolution(startingPeriod.getDuration());
 		numberOfTimeSteps = Optimiser.calcHorizonInPeriodSteps(startingPeriod, planningHorizonInHours);
-		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps, startingPeriod);
+		TimePeriod intervalOfFirstInitialState = StateManager.shiftLeftByOne(startingPeriod);
+		double[] energyBoundaries = StateManager.analyseAvailableEnergyLevels(device, numberOfTimeSteps + 1,
+				intervalOfFirstInitialState);
 		stateDiscretiser.setBoundaries(energyBoundaries, device.getMaximumShiftTime());
 		raiseOnSelfDischarge(startingPeriod);
 		stateEvaluations.initialise(startingPeriod, numberOfTimeSteps, stateDiscretiser.getStateCount());

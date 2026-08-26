@@ -2,6 +2,10 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
+## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - TBA
+### Fixed
+- `GenericFlexibilityTrader`: Fix crash on time-variable energy limits #262 (@dlr-cjs)
+
 ## [4.1.3](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.3) - 2026-08-14
 ### Fixed
 - `MarketCoupling`: Fix incorrect consideration of re-transferred energy #171 (@dlr-cjs)

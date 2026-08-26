@@ -157,6 +157,14 @@ public interface StateManager {
 		return startingPeriod.shiftByDuration(timeIndex).getStartTime();
 	}
 
+	/** Returns a new {@link TimePeriod} shifted by one duration to earlier times
+	 * 
+	 * @param timePeriod to be shifted to earlier times by one duration
+	 * @return {@link TimePeriod} before the given timePeriod */
+	static TimePeriod shiftLeftByOne(TimePeriod timePeriod) {
+		return new TimePeriod(timePeriod.getStartTime().earlierBy(timePeriod.getDuration()), timePeriod.getDuration());
+	}
+
 	/** Returns number of time shifts of given starting period to begin with given time
 	 * 
 	 * @param time to begin with

@@ -11,11 +11,10 @@ import communications.message.AmountAtTime;
 import communications.message.PointInTime;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -27,8 +26,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * 
  * @author Christoph Schimeczek */
 public class PriceForecasterFile extends Agent implements DamForecastProvider {
-	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newSeries("PriceForecastsInEURperMWH").help("Time series of price forecasts")).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.add(Make.newSeries("PriceForecastsInEURperMWH").help("Time series of price forecasts"));
 
 	@Output
 	private static enum OutputFields {
@@ -44,8 +43,7 @@ public class PriceForecasterFile extends Agent implements DamForecastProvider {
 	 * @throws MissingDataException in case mandatory input is missing */
 	public PriceForecasterFile(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		priceForecasts = input.getTimeSeries("PriceForecastsInEURperMWH");
+		priceForecasts = fromInput().getTimeSeries("PriceForecastsInEURperMWH");
 
 		call(this::sendPriceForecast).on(DamForecastProvider.Products.PriceForecast)
 				.use(DamForecastClient.Products.PriceForecastRequest);

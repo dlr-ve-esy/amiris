@@ -28,7 +28,7 @@ public class LoadShiftingPortfolio {
 	private double currentEnergyShiftStorageLevelInMWH;
 	private final double energyLimitUpInMWH;
 	private final double energyLimitDownInMWH;
-	private final TimeSeries variableShiftCostsInEURPerMWH;
+	private final TimeSeries variableShiftCostsInEURperMWH;
 	private final TimeSeries baselineLoadSeries;
 	private final double baselinePeakLoadInMW;
 	private final double efficiency;
@@ -41,7 +41,7 @@ public class LoadShiftingPortfolio {
 					Make.newDouble("PowerInMW"), Make.newSeries("PowerUpAvailability"),
 					Make.newSeries("PowerDownAvailability"), Make.newDouble("EnergyResolutionInMWH"),
 					Make.newDouble("EnergyLimitUpInMWH"), Make.newDouble("EnergyLimitDownInMWH"),
-					Make.newInt("MaximumShiftTimeInHours"), Make.newSeries("VariableShiftCostsInEURPerMWH"),
+					Make.newInt("MaximumShiftTimeInHours"), Make.newSeries("VariableShiftCostsInEURperMWH"),
 					Make.newSeries("BaselineLoadTimeSeries"), Make.newDouble("BaselinePeakLoadInMW"),
 					Make.newDouble("Efficiency").optional(), Make.newInt("InterferenceTimeInHours").optional(),
 					Make.newInt("MaximumActivations").optional())
@@ -61,7 +61,7 @@ public class LoadShiftingPortfolio {
 		setEnergyShiftStorageLevelInMWH(input.getDouble("InitialEnergyLevelInMWH"));
 		maximumShiftTimeInHours = input.getInteger("MaximumShiftTimeInHours");
 		setCurrentShiftTimeInHours(input.getInteger("InitialShiftTimeInHours"));
-		variableShiftCostsInEURPerMWH = input.getTimeSeries("VariableShiftCostsInEURPerMWH");
+		variableShiftCostsInEURperMWH = input.getTimeSeries("VariableShiftCostsInEURperMWH");
 		baselineLoadSeries = input.getTimeSeries("BaselineLoadTimeSeries");
 		baselinePeakLoadInMW = input.getDouble("BaselinePeakLoadInMW");
 		efficiency = input.getDoubleOrDefault("Efficiency", 1.0);
@@ -152,7 +152,7 @@ public class LoadShiftingPortfolio {
 		if (isProlongedShift(energyChangeInMWh, shiftTime, initialEnergyLevelInMWH)) {
 			double finalEnergyLevelInMWH = initialEnergyLevelInMWH + energyChangeInMWh;
 			double prolongedEnergyLevelInMWH = Math.min(Math.abs(initialEnergyLevelInMWH), Math.abs(finalEnergyLevelInMWH));
-			return prolongedEnergyLevelInMWH * getVariableShiftCostsInEURPerMWH(timeStamp);
+			return prolongedEnergyLevelInMWH * getVariableShiftCostsInEURperMWH(timeStamp);
 		} else {
 			return 0.;
 		}
@@ -200,13 +200,13 @@ public class LoadShiftingPortfolio {
 	 * 
 	 * @param timeStamp at which the variable shift costs are requested
 	 * @return variable costs of load shifting in EUR/MWh */
-	public double getVariableShiftCostsInEURPerMWH(TimeStamp timeStamp) {
-		return variableShiftCostsInEURPerMWH.getValueLinear(timeStamp);
+	public double getVariableShiftCostsInEURperMWH(TimeStamp timeStamp) {
+		return variableShiftCostsInEURperMWH.getValueLinear(timeStamp);
 	}
 
 	/** @return time series of variable costs of load shifting in EUR/MWh */
-	public TimeSeries getVariableShiftCostsInEURPerMWHSeries() {
-		return variableShiftCostsInEURPerMWH;
+	public TimeSeries getVariableShiftCostsInEURperMWHSeries() {
+		return variableShiftCostsInEURperMWH;
 	}
 
 	/** @return time series of the baseline demand relative to {@link #baselinePeakLoadInMW} */

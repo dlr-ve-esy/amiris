@@ -115,15 +115,28 @@ compatibility:jdk25:
   extends: .compatibility
   image: maven:3-eclipse-temurin-25
 
-# Package AMIRIS & build javadoc
-deploy:jdk11:
+.deploy:
   stage: deploy
-  script: ['mvn $MAVEN_CLI_OPTS package', 'mvn javadoc:javadoc']
-  artifacts:
-    paths: ["target/*.jar", "target/reports/apidocs"]
-    expire_in: 1 hour
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
+
+# Package AMIRIS & build javadoc
+deploy:javadoc:
+  extends: .deploy
+  script: ['mvn $MAVEN_CLI_OPTS package', 'mvn javadoc:javadoc']
+  artifacts:
+    paths: ["target/reports/apidocs"]
+    expire_in: 1 hour
+
+deploy:jar:
+  extends: .deploy
+  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
+  artifacts:
+    paths: ["target/*.jar"]
+    expire_in: 1 hour
+  script:
+    - 'sed -i -E "s/<dependencies>/<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>de.dlr.gitlab.fame<\/groupId>\n\t\t\t<artifactId>mpi-ompi-impl<\/artifactId>\n\t\t\t<version>1.0.3<\/version>\n\t\t<\/dependency>\n/g" pom.xml'
+    - 'mvn $MAVEN_CLI_OPTS package'
 
 # Publish javadoc to pages
 pages:

@@ -431,4 +431,14 @@ public class GenericDevice {
 	public StateViolation onUnderflow() {
 		return onUnderflow;
 	}
+
+	/** @return true if overflows can be cut */
+	public boolean canCutOverflows() {
+		return onOverflow == StateViolation.CUT;
+	}
+
+	/** @return true if underflows can be cut */
+	public boolean canCutUnderflows() {
+		return onUnderflow == StateViolation.CUT;
+	}
 }

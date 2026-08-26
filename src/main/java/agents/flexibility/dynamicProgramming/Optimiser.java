@@ -81,8 +81,11 @@ public final class Optimiser {
 			double bestAssessmentValue = initialAssessmentValue;
 			int bestFinalStateIndex = Integer.MIN_VALUE;
 			int[] finalStates = stateManager.getFinalStates(initialStateIndex);
-			if (finalStates.length == 1 && finalStates[0] < 0) {
-				bestFinalStateIndex = finalStates[0];
+			if (finalStates.length == 2 && finalStates[0] < 0) {
+				bestFinalStateIndex = finalStates[1];
+				if (finalStates[1] >= 0) {
+					bestAssessmentValue = 0;
+				}
 			} else {
 				for (int finalStateIndex : finalStates) {
 					double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)
@@ -116,8 +119,11 @@ public final class Optimiser {
 			double bestAssessmentValue = initialAssessmentValue;
 			int bestFinalStateIndex = StateManager.STATE_INFEASIBLE;
 			int[] finalBoundaries = stateManager.getFinalStates(initialStateIndex);
-			if (finalBoundaries.length == 1) {
-				bestFinalStateIndex = finalBoundaries[0];
+			if (finalBoundaries[0] < 0) {
+				bestFinalStateIndex = finalBoundaries[1];
+				if (finalBoundaries[1] >= 0) {
+					bestAssessmentValue = 0;
+				}
 			} else {
 				for (int finalStateIndex = finalBoundaries[0]; finalStateIndex <= finalBoundaries[1]; finalStateIndex++) {
 					double value = stateManager.getTransitionValueFor(initialStateIndex, finalStateIndex)

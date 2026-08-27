@@ -35,19 +35,19 @@ Although not strictly necessary, [Basic Knowledge of Electricity Markets](https:
 
 ## Applications
 
-The development of AMIRIS started in 2008.
-Since then, AMIRIS has seen many different applications.
-Selected recent applications:
+The development of AMIRIS began in 2008.
+Since then, AMIRIS has been applied to a wide range of research questions in the energy domain.
+Selected recent applications include:
 
-- AMIRIS was used to assess **storage profitability** in renewable-dominated energy scenarios. [Preprint](https://dx.doi.org/10.2139/ssrn.5320926 )
-- A novel approach to account for **competing flexibility options** was backtested on open [historical data](https://zenodo.org/records/16978510). [Preprint](https://zenodo.org/records/17087877)
-- In [TradeRES](https://traderes.eu/) AMIRIS was used to analyse cost recovery of renewables in ~100% renewable electricity systems under different **Energy Policy Instruments**. [Paper](https://doi.org/10.1109/EEM60825.2024.10608886)
-- Intertwined dynamics between **Energy Community Markets** and national electricity markets were analysed with AMIRIS. [Paper](https://doi.org/10.1016/j.egyr.2024.06.052)
-- Interactions of **Household Flexibility** (heat pumps, electric vehicles, and electricity storage units) with the German energy system were modelled with AMIRIS. [Paper](https://elib.dlr.de/207802)
-- In project VERMEER **Impacts of Cold Dunkelflaute** events on the European electricity system were investigated using **Market Coupling** in AMIRIS. [Paper](https://zenodo.org/records/10561382) [Report](https://elib.dlr.de/196641/)
-- AMIRIS was used to assess the **Economic Potential of Large Flexibility Providers** in future electricity market scenarios. [Paper](https://doi.org/10.1016/j.est.2024.110959)
-- **Monetary Saving Potentials of Load Shifting** were analysed using AMIRIS. [Dissertation](https://depositonce.tu-berlin.de/items/4a364bac-9e97-4d35-8eb6-645824cfc02d)
-- A wide range of scenarios for **Future Electricity Markets** was explored using an AMIRIS [scenario generator](https://doi.org/10.5281/zenodo.8382789). [Paper](https://doi.org/10.1016/j.egyr.2024.11.013)
+- **Storage profitability** in renewable-dominated energy scenarios. [Paper](https://doi.org/10.1016/j.adapen.2026.100277) [Dissertation](https://doi.org/10.5281/zenodo.17219249)
+- **Competing flexibility options**, backtested on open [historical data](https://zenodo.org/records/16978510). [Paper](https://doi.org/10.1016/j.est.2025.120054)
+- **Renewable cost recovery** under different **energy policy instruments** in nearly 100% renewable electricity systems [TradeRES](https://traderes.eu/). [Paper](https://doi.org/10.1109/EEM60825.2024.10608886)
+- Interactions between **energy community markets** and national electricity markets. [Paper](https://doi.org/10.1016/j.egyr.2024.06.052)
+- **Household flexibility** from heat pumps, electric vehicles, and electricity storage in the German energy system. [Paper](https://elib.dlr.de/207802)
+- **Cold Dunkelflaute** impacts on the European electricity system using **market coupling**. [Paper](https://zenodo.org/records/10561382) [Report](https://elib.dlr.de/196641/)
+- Economic potential of **large flexibility providers** in future electricity markets. [Paper](https://doi.org/10.1016/j.est.2024.110959)
+- **Monetary Saving Potentials** of **Load Shifting**. [Dissertation](https://depositonce.tu-berlin.de/items/4a364bac-9e97-4d35-8eb6-645824cfc02d)
+- **Future electricity market scenarios** using the AMIRIS [scenario generator](https://doi.org/10.5281/zenodo.8382789). [Paper](https://doi.org/10.1016/j.egyr.2024.11.013)
 
 ## Non-Applications
 

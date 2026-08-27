@@ -43,7 +43,7 @@ Selected recent applications include:
 - **Competing flexibility options**, backtested on open [historical data](https://zenodo.org/records/16978510). [Paper](https://doi.org/10.1016/j.est.2025.120054)
 - **Renewable cost recovery** under different **energy policy instruments** in nearly 100% renewable electricity systems [TradeRES](https://traderes.eu/). [Paper](https://doi.org/10.1109/EEM60825.2024.10608886)
 - Interactions between **energy community markets** and national electricity markets. [Paper](https://doi.org/10.1016/j.egyr.2024.06.052)
-- **Household flexibility** from heat pumps, electric vehicles, and electricity storage in the German energy system. [Paper](https://elib.dlr.de/207802)
+- **Household flexibility** from heat pumps, electric vehicles, and electricity storage in the German energy system. [Paper](https://elib.dlr.de/207802) [Dissertation](https://doi.org/10.13154/294-13771)
 - **Cold Dunkelflaute** impacts on the European electricity system using **market coupling**. [Paper](https://zenodo.org/records/10561382) [Report](https://elib.dlr.de/196641/)
 - Economic potential of **large flexibility providers** in future electricity markets. [Paper](https://doi.org/10.1016/j.est.2024.110959)
 - **Monetary Saving Potentials** of **Load Shifting**. [Dissertation](https://depositonce.tu-berlin.de/items/4a364bac-9e97-4d35-8eb6-645824cfc02d)

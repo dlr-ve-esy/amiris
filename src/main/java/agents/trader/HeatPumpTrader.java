@@ -60,7 +60,7 @@ public class HeatPumpTrader extends FlexibilityTrader {
 	@Output
 	private static enum OutputFields {
 		COP, FinalRoomTemperatureInCelsius, StoredEnergyInMWH
-	};
+	}
 
 	private final TimeSpan operationPeriod = new TimeSpan(1, Interval.HOURS);
 

@@ -62,7 +62,7 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 	public static enum Products {
 		/** A registration message to the marketing agent */
 		SetRegistration
-	};
+	}
 
 	/** A group of plants of the same energy carrier and support type attributed to a dedicated PowerPlantOperator */
 	private final TechnologySet technologySet;

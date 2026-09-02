@@ -15,7 +15,7 @@ public class DispatchResult {
 	private double co2EmissionsInTons = 0;
 
 	/** Create {@link DispatchResult} with all values initialised to 0 */
-	public DispatchResult() {};
+	public DispatchResult() {}
 
 	/** Create new {@link DispatchResult} based on given values
 	 * 

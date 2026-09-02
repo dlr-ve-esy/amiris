@@ -20,7 +20,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - README: update funding agency name #243 (@dlr-cjs)
 - README: update section `Applications` #264 (@dlr_fn) 
 - docs: update Roadmap #244 (@dlr-cjs, @dlr_jk)
-- README: place hint to star the project #176 (@dlr-cjs)
+- README: place hint to star the project and add user logos #176 (@dlr-cjs)
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)

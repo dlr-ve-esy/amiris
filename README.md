@@ -101,9 +101,9 @@ We express our gratitude to all [contributors](CONTRIBUTING.md#list-of-contribut
 * [Ask questions](https://forum.openmod.org/tag/amiris)
 * [Contribute an issue or code](./docs/Community/Contribute.md)
 
-### Used by
+## Used by
 
-The following (incomplete) list features prominent organisations employing AMIRIS.
+The following (incomplete) list features prominent organisations employing AMIRIS:
 
 <table><tr>
   <td><a href="https://www.dlr.de/de/ve/forschung-und-transfer/infrastruktur/modelle/amiris">

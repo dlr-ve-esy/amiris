@@ -136,5 +136,5 @@ public abstract class LoadShiftingStrategist extends Strategist {
 
 	protected final void updateSchedule(TimePeriod timePeriod) {
 		throw new RuntimeException("This shall not be used!");
-	};
+	}
 }

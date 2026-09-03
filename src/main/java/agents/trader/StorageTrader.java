@@ -44,7 +44,7 @@ public class StorageTrader extends FlexibilityTrader {
 	private static enum OutputFields {
 		OfferedChargePriceInEURperMWH, OfferedDischargePriceInEURperMWH, AwardedChargeEnergyInMWH,
 		AwardedDischargeEnergyInMWH, StoredEnergyInMWH
-	};
+	}
 
 	private final Device storage;
 	private final ArbitrageStrategist strategist;

@@ -34,7 +34,7 @@ public class VariableRenewableOperatorPpa extends VariableRenewableOperator {
 		PpaInformation,
 		/** Logs own PPA potential */
 		PotentialLogging,
-	};
+	}
 
 	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newSeries("PpaPriceInEURperMWH"));
 

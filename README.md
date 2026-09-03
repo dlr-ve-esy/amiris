@@ -56,16 +56,21 @@ While individual actors can optimise their decisions, AMIRIS **does not optimise
 Further, AMIRIS **does not enforce system-wide constraints** like a carbon emission cap.
 Thus, we recommend using optimisation-based tools like [REMix](https://gitlab.com/dlr-ve/esy/remix/framework), [PyPSA](https://pypsa.org/) or [oemof](https://oemof.org/) to answer questions like "What is the cheapest electricity system given a carbon emission cap of X?".
 
-## Community
+## Support
 
 AMIRIS is mainly developed by the German Aerospace Center, Institute of Networked Energy Systems.
-We provide multi-level support for AMIRIS users as listed on our dedicated [Support Page](./docs/Community/Support.md).
+We provide multi-level support for AMIRIS users including Email contact, Q&A, and weekly support meetings.
+Please find the details on our dedicated [Support Page](./docs/Community/Support.md).
+
+## Contribute
+
 **We welcome all contributions**: bug reports, feature requests, documentation enhancements, and code.
 Please see our [Contribution Guidelines](./docs/Community/Contribute.md).
 
 ## Citing AMIRIS
 
-If you use AMIRIS in an academic context please cite [doi: 10.21105/joss.05041](https://doi.org/10.21105/joss.05041).
+If you like AMIRIS or use it, consider giving the project a :star:.
+In an academic context please cite [doi: 10.21105/joss.05041](https://doi.org/10.21105/joss.05041).
 In other contexts, please include a link to our [Gitlab repository](https://gitlab.com/dlr-ve/esy/amiris/amiris).
 
 ```
@@ -95,3 +100,16 @@ We express our gratitude to all [contributors](CONTRIBUTING.md#list-of-contribut
 * [Read previous publications & material](https://zenodo.org/communities/amiris)
 * [Ask questions](https://forum.openmod.org/tag/amiris)
 * [Contribute an issue or code](./docs/Community/Contribute.md)
+
+## Used by
+
+The following (incomplete) list features prominent organisations employing AMIRIS:
+
+<table><tr>
+  <td><a href="https://www.dlr.de/en/ve/research-and-transfer/research-infrastructure/modelling-tools/amiris">
+    <img src="./docs/uploads/logos/DLR.jpg" alt="German Aerospace Center - Institute of Networked Energy Systems, Stuttgart" height="100">
+  </a></td>
+  <td><a href="https://boku.ac.at/en/personen/person/CAC12771D2DCFF26">
+    <img src="./docs/uploads/logos/BOKU.png" alt="University of Natural Resources and Life Sciences, Vienna" height="100">
+  </a></td>
+</tr></table>

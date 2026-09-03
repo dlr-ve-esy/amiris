@@ -3,7 +3,7 @@ The given dates and feature specifications are likely subject to change.
 We might not have funding yet to achieve all our roadmap targets - do not hesitate to contact us to draft a joint project proposal.
 Also, if you need a specific feature feel free to submit a [feature request](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/issues).
 
-## 4.2 (2026-06)
+## 4.2 (2026-09)
 * Agents
 * Modules
 * Outputs

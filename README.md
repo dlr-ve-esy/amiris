@@ -106,10 +106,10 @@ We express our gratitude to all [contributors](CONTRIBUTING.md#list-of-contribut
 The following (incomplete) list features prominent organisations employing AMIRIS:
 
 <table><tr>
-  <td><a href="https://www.dlr.de/de/ve/forschung-und-transfer/infrastruktur/modelle/amiris">
+  <td><a href="https://www.dlr.de/en/ve/research-and-transfer/research-infrastructure/modelling-tools/amiris">
     <img src="./docs/uploads/logos/DLR.jpg" alt="German Aerospace Center - Institute of Networked Energy Systems, Stuttgart" height="100">
   </a></td>
-  <td><a href="https://boku.ac.at/personen/person/CAC12771D2DCFF26">
+  <td><a href="https://boku.ac.at/en/personen/person/CAC12771D2DCFF26">
     <img src="./docs/uploads/logos/BOKU.png" alt="University of Natural Resources and Life Sciences, Vienna" height="100">
   </a></td>
 </tr></table>

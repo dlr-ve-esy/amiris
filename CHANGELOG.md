@@ -15,7 +15,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - **Breaking**: `HouseholdPvTraderExternal`: Renamed output columns `AwardedDemandInMWh` and `AwardedSupplyInMWh` to `AwardedDemandInMWH` and `AwardedSupplyInMWH` #256 (@dlr-cjs)
 - Switch logger to logback #153 (@dlr-cjs)
 - Build package with parallel execution capabilities in CI #250
-- improved Getting-Started section in docs (@dlr-cjs)
+- docs: improve Getting-Started section (@dlr-cjs)
 - docs: update model schema #251 (@dlr_fn, @dlr-cjs, @dlr-ach)
 - README: update funding agency name #243 (@dlr-cjs)
 - README: update section `Applications` #264 (@dlr_fn) 

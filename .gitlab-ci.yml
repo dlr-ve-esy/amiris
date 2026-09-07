@@ -18,7 +18,7 @@ stages:
 default:
   image: maven:3-eclipse-temurin-11
   before_script:
-    - apt-get install jq gawk bash coreutils
+    - apt-get install bash coreutils
   artifacts: # save EcoCI outputs
     paths:
       - eco-ci-output.txt

@@ -17,7 +17,7 @@ stages:
 
 default:
   image: maven:3-eclipse-temurin-11
-  before_script:
+  before_script: # base image: ubuntu
     - apt-get install bash coreutils
   artifacts: # save EcoCI outputs
     paths:
@@ -54,9 +54,10 @@ lint:changelog:
     - git fetch
     - 'echo "Base is: $CI_MERGE_REQUEST_DIFF_BASE_SHA"'
     - CHANGELOG_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD CHANGELOG.md)
-    - 'if [[ "CHANGELOG.md" == $CHANGELOG_CHANGED ]]; then exit 0; else echo "No changes found in CHANGELOG.md compared to target branch."; exit 1; fi'
+    - 'if [[ "CHANGELOG.md" == $CHANGELOG_CHANGED ]]; then EXIT_CODE=0; else echo "No changes found in CHANGELOG.md compared to target branch."; EXIT_CODE=1; fi'
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
+    - exit $EXIT_CODE
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
@@ -68,6 +69,8 @@ lint:reuse:
     name: fsfe/reuse:latest
     entrypoint: [""]
   cache: [] # do not use cached files here, as those will be incorrectly assessed by the reuse linter
+  before_script: #base image: alpine
+    - apk add --no-cache curl jq gawk bash git coreutils
   script:
     - !reference [.start_measurement, script]
     - reuse lint

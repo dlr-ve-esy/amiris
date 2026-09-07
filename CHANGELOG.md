@@ -16,6 +16,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Switch logger to logback #153 (@dlr-cjs)
 - Build package with parallel execution capabilities in CI #250
 - docs: improve Getting-Started section (@dlr-cjs)
+- docs: improve description of Timeseries #255 (@dlr-cjs)
 - docs: update model schema #251 (@dlr_fn, @dlr-cjs, @dlr-ach)
 - README: update funding agency name #243 (@dlr-cjs)
 - README: update section `Applications` #264 (@dlr_fn) 

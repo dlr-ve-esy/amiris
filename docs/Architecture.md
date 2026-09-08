@@ -2,7 +2,7 @@ Here you find the architecture documentation of AMIRIS.
 This documentation addresses AMIRIS version 5.0.0.
 
 This section is still under construction.
-Once complete, it and shall follow the [Arc42](https://arc42.org/) template.
+Once complete, it shall follow the [Arc42](https://arc42.org/) template.
 
 ## [Introduction & Goals](./Architecture/Introduction.md)
 

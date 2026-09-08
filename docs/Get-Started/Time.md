@@ -15,8 +15,8 @@ If you prepare simulation input data, we suggest to follow the same approach.
 
 ## Simulation Start Times
 
-Example AMIRIS simulations begin a two minutes before the end of the previous year.
-This is due to the standard configuration of the power plant park being built at the end of a year - and having the power plants ready before the first market clearing in the new year.
+Example AMIRIS simulations begin two minutes before the end of the previous year.
+This is necessary to have the power plants ready before the first market clearing. In the standard configuration, the power plant park is being built at the end of a year - hence we need to adjust the simulation start accordingly.
 
 ## Timeseries, Interpolation, and Forecast
 

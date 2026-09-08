@@ -25,6 +25,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 
 ### Added
 - Add first elements of architecture documentation #255 (@dlr-cjs)
+- Add electricity use and emission tracking to CI #266 (@dlr-cjs)
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)

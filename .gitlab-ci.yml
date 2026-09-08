@@ -177,11 +177,8 @@ deploy:jar:
 pages:
   stage: .post
   script: 
-    - !reference [.start_measurement, script]
     - "mkdir public"
     - "cp -r target/reports/apidocs/* public"
-    - !reference [.get_measurement, script]
-    - !reference [.display_results, script]
   artifacts:
     paths: 
       - public

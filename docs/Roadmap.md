@@ -3,7 +3,7 @@ The given dates and feature specifications are likely subject to change.
 We might not have funding yet to achieve all our roadmap targets - do not hesitate to contact us to draft a joint project proposal.
 Also, if you need a specific feature feel free to submit a [feature request](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/issues).
 
-## 4.2 (2026-09)
+## 5.0 (2026-09)
 * Agents
 * Modules
 * Outputs
@@ -13,7 +13,7 @@ Also, if you need a specific feature feel free to submit a [feature request](htt
 * Framework
   * Update to FAME-Core 3.0
 
-## 4.3 (2026-08)
+## 5.1 (2026-10)
 * Agents
 * Modules
   * ElectrolysisTrader, GreenHydrogenTraderMonthly: use SensitivityForecasts
@@ -25,7 +25,7 @@ Also, if you need a specific feature feel free to submit a [feature request](htt
 * Framework
 
 
-## 4.4 (2026-10)
+## 5.2 (2026-11)
 * Agents
 * Modules
   * Policy: Implement CfDs with cap & floor as well as dynamic claw-back
@@ -35,7 +35,7 @@ Also, if you need a specific feature feel free to submit a [feature request](htt
 * Documentation
 * Framework
 
-## 4.5 (2026-12)
+## 5.3 (2026-12)
 * Agents
   * New agent: Thermal Energy Storage Power plant - stores electricity as heat and has additional heating devices
 * Modules

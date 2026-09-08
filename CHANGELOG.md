@@ -22,6 +22,9 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - docs: update Roadmap #244 (@dlr-cjs, @dlr_jk)
 - README: place hint to star the project and add user logos #176 (@dlr-cjs)
 
+### Added
+- Add electricity use and emission tracking to CI #266 (@dlr-cjs)
+
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
 

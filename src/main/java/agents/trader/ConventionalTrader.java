@@ -22,11 +22,10 @@ import communications.message.AwardData;
 import communications.portable.BidsAtTime;
 import communications.portable.MarginalsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -38,8 +37,11 @@ import util.Util;
  *
  * @author Christoph Schimeczek, Marc Deissenroth, Ulrich Frey */
 public class ConventionalTrader extends TraderWithClients implements PowerPlantScheduler {
-	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newDouble("minMarkup").optional(), Make.newDouble("maxMarkup").optional()).buildTree();
+	static final String PARAM_MIN = "MinimumMarkup";
+	static final String PARAM_MAX = "MaximumMarkup";
+
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.add(Make.newDouble(PARAM_MIN).optional(), Make.newDouble(PARAM_MAX).optional());
 
 	private double minMarkup;
 	private double maxMarkup;
@@ -50,9 +52,8 @@ public class ConventionalTrader extends TraderWithClients implements PowerPlantS
 	 * @throws MissingDataException if any required data is not */
 	public ConventionalTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		minMarkup = input.getDoubleOrDefault("minMarkup", 0.);
-		maxMarkup = input.getDoubleOrDefault("maxMarkup", 0.);
+		minMarkup = fromInput().getDoubleOrDefault(PARAM_MIN, 0.);
+		maxMarkup = fromInput().getDoubleOrDefault(PARAM_MAX, 0.);
 		ensureValidMarkups();
 
 		call(this::sendForecastBids).on(Trader.Products.BidsForecast)

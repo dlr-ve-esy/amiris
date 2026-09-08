@@ -6,11 +6,10 @@ package agents.plantOperator.renewable;
 import agents.plantOperator.Marginal;
 import agents.plantOperator.RenewablePlantOperator;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
@@ -20,7 +19,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class VariableRenewableOperator extends RenewablePlantOperator {
 	static final String ERR_PPA_PRICE_MISSING = "PPA was requested, but no PPA price found in inputs of ";
 
-	@Input private static final Tree parameters = Make.newTree().add(Make.newSeries("YieldProfile")).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newSeries("YieldProfile"));
 
 	private TimeSeries tsYieldProfile;
 
@@ -30,8 +29,7 @@ public class VariableRenewableOperator extends RenewablePlantOperator {
 	 * @throws MissingDataException if any required data is not provided */
 	public VariableRenewableOperator(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		tsYieldProfile = input.getTimeSeries("YieldProfile");
+		tsYieldProfile = fromInput().getTimeSeries("YieldProfile");
 	}
 
 	/** @return single {@link Marginal} considering variable yield */

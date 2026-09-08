@@ -25,7 +25,7 @@ public abstract class TraderWithClients extends Trader {
 		GateClosureForward,
 		/** Time of forecast calculation forwarded to clients */
 		ForecastRequestForward
-	};
+	}
 
 	/** Creates a {@link TraderWithClients}
 	 * 

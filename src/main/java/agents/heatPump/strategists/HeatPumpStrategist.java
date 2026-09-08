@@ -96,7 +96,7 @@ public abstract class HeatPumpStrategist extends Strategist {
 				maxElectricalPowerInMW = getAggregatedElectricalHeatPumpPower(timePeriod);
 		}
 		sensitivity.updatePowers(maxElectricalPowerInMW, 0);
-	};
+	}
 
 	/** Calculate aggregated electric power of heat pumps that charge the thermal storage
 	 * 

@@ -6,7 +6,8 @@ Instructions on how to set up, execute and modify AMIRIS
 
 AMIRIS is a *JAVA* application configured via *Python* scripts.
 
-To run AMIRIS **Python 3.9 or higher** and Java Development Kit **JDK 11 or higher** are required.
+To run AMIRIS **Python 3.10 or higher** and Java Development Kit **JDK 11 or higher** are required.
+The latter can be obtained from e.g. [here](https://adoptium.net/).
 
 ## Skills
 
@@ -19,12 +20,13 @@ To design new agents and interactions from scratch a basic understanding of [FAM
 
 These tools are recommended when working with AMIRIS:
 
-| Action                 | Format    | Tools                                      | Level         |
-|------------------------|-----------|--------------------------------------------|---------------|
-| Run AMIRIS             | command   | command line (e.g. bash, powershell)       | user          |
-| Inspect AMIRIS results | CSV       | spreadsheet application (e.g. Excel, Calc) | user          |
-| Configure AMIRIS       | YAML, CSV | text editor (e.g. Notepad++, NodepadNext)  | user          |
-| New agents / logic     | Java      | Java IDE (e.g. Eclipse, Intellij, VSCode)  | programmer    |
+| Action                 | Format    | Tools                                       | Level                 |
+|------------------------|-----------|---------------------------------------------|-----------------------|
+| Run AMIRIS             | command   | command line (e.g. bash, powershell)        | user                  |
+| Inspect AMIRIS results | CSV       | spreadsheet application (e.g. Excel, Calc)  | user                  |
+| Configure AMIRIS       | YAML, CSV | text editor (e.g. Notepad++, NodepadNext)   | user                  |
+| New agents / logic     | Java      | Java IDE (e.g. Eclipse, Intellij, VSCode)   | programmer            |
+| Multi-Core Mode        | command   | Docker (or Linux, openMPI, Maven, git, gcc) | programmer (or admin) |
 
 # Install and Run AMIRIS
 
@@ -57,11 +59,15 @@ Co2Prices: 200
 
 Rerun the simulation and observe the impact of your changes on the electricity prices.
 
-Please also refer to the [FAME-Wiki](https://gitlab.com/fame-framework/wiki/-/wikis) when applying more advanced adaptations to your scenario, such as changing the [simulation duration](https://gitlab.com/fame-framework/wiki/-/wikis/GetStarted/core/Contracts).
+# Learn the Details
+
+Details on how to prepare time series input are explained in this dedicated section about [Time in AMIRIS](./Get-Started/Time.md).
+See our [Architecture Documentation](../Architecture.md) to learn about the context of components and design decisions in AMIRIS.
+Check the [FAME-Wiki](https://gitlab.com/fame-framework/wiki/-/wikis) on how to perform advanced adaptations to your scenario, such as changing the [simulation duration](https://gitlab.com/fame-framework/wiki/-/wikis/GetStarted/core/Contracts).
 
 # Build AMIRIS
 
-So far you only ran the AMIRIS model as it is provided.
+So far, you only ran the AMIRIS model as it is provided.
 If you were to modify code and change agent logic of AMIRIS, you would also need to package the application.
 See the [AMIRIS Build Guide](./Get-Started/Build.md) for instructions.
 
@@ -70,9 +76,13 @@ See the [AMIRIS Build Guide](./Get-Started/Build.md) for instructions.
 AMIRIS, as any FAME application, can be run using a single process, or in parallel mode with multiple processes.
 By default, AMIRIS runs in single process mode.
 Most configurations execute quite fast (depending on your machine, of course) even with only a single process.
-Running any of the AMIRIS-Examples takes only a few seconds on a standard laptop computer.
+Running any of the AMIRIS-Examples takes only a few seconds on a standard desktop computer.
 
-If you want to use it in parallel mode, you need to install [Open-MPI](https://www.open-mpi.org/) or [MPJ-Express](http://mpjexpress.org/) first.
-Since those libraries are platform-dependent they require a manual compilation.
-The exact procedure depends on the chosen parallelization library and your operating system.
-Please follow the instructions in the [FAME-Wiki](https://gitlab.com/fame-framework/wiki/-/wikis/GetStarted/parallel/RunParallel).
+However, if your simulations take too long, you might want to run AMIRIS in parallel mode.
+Since version v4.2, AMIRIS jar files are prepared to be used together with an OpenMPI installation.
+
+For this you need a system with [Open-MPI](https://www.open-mpi.org/) that has been compiled with the java-dependency in mind, see the [FAME-Wiki](https://gitlab.com/fame-framework/wiki/-/wikis/GetStarted/parallel/RunParallel).
+Since this is platform-dependent it requires a manual compilation.
+Achieving this on your system, however, is not an easy task.
+
+Alternatively, you can employ this [Docker image](https://gitlab.com/fame-framework/fame-mpi-facade/container_registry) which provides you with an OpenMPI installation that is java-enabled and works hand-in-hand with the provided AMIRIS jar files.

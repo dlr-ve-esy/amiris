@@ -14,11 +14,10 @@ import communications.message.TransmissionCapacity;
 import communications.portable.CouplingData;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -49,11 +48,10 @@ public class MarketCoupling extends Agent {
 	static final String PARAM_MIN_OFFSET = "MinimumDemandOffsetInMWH";
 	static final String PARAM_MAX_SHIFT = "MaximumShiftedEnergyPerIterationInMWH";
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(Make.newDouble(PARAM_MIN_OFFSET).optional()
 					.help("Offset added to the demand shift that ensures a price change at the involved markets."),
-					Make.newDouble(PARAM_MAX_SHIFT).optional())
-			.buildTree();
+					Make.newDouble(PARAM_MAX_SHIFT).optional());
 
 	@Output
 	private static enum OutputColumns {
@@ -82,9 +80,8 @@ public class MarketCoupling extends Agent {
 	 * @throws MissingDataException if any required data is not provided */
 	public MarketCoupling(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		double minEffectiveDemandOffset = input.getDoubleOrDefault(PARAM_MIN_OFFSET, DEFAULT_DEMAND_SHIFT_OFFSET);
-		double maxEnergyShift = input.getDoubleOrDefault(PARAM_MAX_SHIFT, DEFAULT_MAX_SHIFT);
+		double minEffectiveDemandOffset = fromInput().getDoubleOrDefault(PARAM_MIN_OFFSET, DEFAULT_DEMAND_SHIFT_OFFSET);
+		double maxEnergyShift = fromInput().getDoubleOrDefault(PARAM_MAX_SHIFT, DEFAULT_MAX_SHIFT);
 		demandBalancer = new DemandBalancer(minEffectiveDemandOffset, maxEnergyShift);
 
 		call(this::forecastCoupledMarkets).on(Products.MarketCouplingForecastResult)

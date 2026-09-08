@@ -37,7 +37,7 @@ public class MultiAgentMedian extends ArbitrageStrategist {
 	/** Denotes actions in corresponding sections of the planning interval */
 	private enum State {
 		CHARGE, DISCHARGE, IDLE
-	};
+	}
 
 	private final Polynomial assessmentFunction;
 	private final double[] forecastPrices = new double[forecastSteps];

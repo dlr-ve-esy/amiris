@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.TreeMap;
 import agents.forecast.forecastApi.ForecastApiRequest;
 import agents.forecast.forecastApi.ForecastApiResponse;
 import agents.forecast.sensitivity.CostInsensitive;
@@ -24,11 +24,10 @@ import communications.message.ForecastClientRegistration;
 import communications.message.PointInTime;
 import communications.portable.Sensitivity;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -66,22 +65,21 @@ public class PriceForecasterApi extends MarketForecaster implements SensitivityF
 	private TimeStamp nextClearingTimeStep = now();
 	private TimeStamp lastForecastedTime = new TimeStamp(Long.MIN_VALUE);
 
-	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newString("ServiceURL").help("URL to amiris-priceforecast api"),
-					Make.newInt("LookBackWindowInHours")
-							.help("Number of TimeSteps for look back, (default=ForecastPeriodInHours)").optional(),
-					Make.newInt("ForecastWindowExtensionInHours")
-							.help("Number of TimeSteps additional to forecast horizon to be requested from API, (default=0)")
-							.optional(),
-					Make.newDouble("ForecastErrorToleranceInEURperMWH").help(
-							"Max accepted deviation between forecasted and realized electricity prices; if violated price forecasts are updated; if negative, no checks are performed(default=-1)")
-							.optional(),
-					Make.newSeries("ResidualLoadInMWh").optional())
-			.buildTree();
+	static final String PARAM_URL = "ServiceUrl";
+	static final String PARAM_LOOKBACK = "LookBackWindowInHours";
+	static final String PARAM_EXTENSION = "ForecastWindowExtensionInHours";
+	static final String PARAM_TOLERANCE = "ForecastErrorToleranceInEURperMWH";
+	static final String PARAM_RESIDUAL = "ResidualLoadInMWH";
+
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.add(Make.newString(PARAM_URL), Make.newInt(PARAM_LOOKBACK).optional(),
+					Make.newInt(PARAM_EXTENSION).optional(),
+					Make.newDouble(PARAM_TOLERANCE).optional(),
+					Make.newSeries(PARAM_RESIDUAL).optional());
 
 	@Output
 	private static enum OutputFields {
-		ElectricityPriceForecastVarianceInEURperMWH
+		PriceForecastStandardDeviationInEURperMWH
 	}
 
 	/** Creates new {@link PriceForecasterApi}
@@ -90,13 +88,12 @@ public class PriceForecasterApi extends MarketForecaster implements SensitivityF
 	 * @throws MissingDataException in case mandatory input is missing */
 	public PriceForecasterApi(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		String serviceUrl = input.getString("ServiceURL");
+		String serviceUrl = fromInput().getString(PARAM_URL);
 		urlService = new UrlModelService<ForecastApiRequest, ForecastApiResponse>(serviceUrl) {};
-		lookBackWindowInHours = input.getIntegerOrDefault("LookBackWindowInHours", forecastPeriodInHours);
-		forecastWindowExtensionInHours = input.getIntegerOrDefault("ForecastWindowExtensionInHours", 0);
-		forecastErrorToleranceInEURperMWH = input.getDoubleOrDefault("ForecastErrorToleranceInEURperMWH", -1.);
-		tsResidualLoadInMWh = input.getTimeSeriesOrDefault("ResidualLoadInMWh", null);
+		lookBackWindowInHours = fromInput().getIntegerOrDefault(PARAM_LOOKBACK, forecastPeriodInHours);
+		forecastWindowExtensionInHours = fromInput().getIntegerOrDefault(PARAM_EXTENSION, 0);
+		forecastErrorToleranceInEURperMWH = fromInput().getDoubleOrDefault(PARAM_TOLERANCE, -1.);
+		tsResidualLoadInMWh = fromInput().getTimeSeriesOrDefault(PARAM_RESIDUAL, null);
 
 		call(this::logClearingPrices).onAndUse(DayAheadMarket.Products.Awards);
 		call(this::registerClearingTime).onAndUse(DayAheadMarket.Products.GateClosureInfo);
@@ -240,7 +237,8 @@ public class PriceForecasterApi extends MarketForecaster implements SensitivityF
 		removeDataBefore(priceForecastVariances, now());
 		store(MarketForecaster.OutputFields.ElectricityPriceForecastInEURperMWH,
 				priceForecastMeans.firstEntry().getValue());
-		store(OutputFields.ElectricityPriceForecastVarianceInEURperMWH, priceForecastVariances.firstEntry().getValue());
+		store(OutputFields.PriceForecastStandardDeviationInEURperMWH,
+				Math.sqrt(priceForecastVariances.firstEntry().getValue()));
 	}
 
 	/** Ensure that clients registered for the correct type of sensitivity forecast */

@@ -3,14 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.loadShifting.strategists;
 
-import endUser.EndUserTariff;
 import agents.loadShifting.LoadShiftingPortfolio;
 import agents.loadShifting.strategists.OptimisationInputs.Solver;
 import agents.markets.meritOrder.Constants;
 import agents.markets.meritOrder.sensitivities.MeritOrderSensitivity;
 import agents.markets.meritOrder.sensitivities.PriceNoSensitivity;
 import agents.storage.arbitrageStrategists.ArbitrageStrategist;
-import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
@@ -18,6 +16,7 @@ import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
+import endUser.EndUserTariff;
 import util.UrlModelService;
 
 /** Determines a scheduling strategy for a {@link LoadShiftingPortfolio} in order to minimise overall costs for energy
@@ -26,7 +25,7 @@ import util.UrlModelService;
  * @author Johannes Kochems, Christoph Schimeczek */
 public class ShiftConsumerCostMinimiserExternal extends LoadShiftingStrategist {
 	/** Input parameters for {@link ShiftConsumerCostMinimiserExternal} */
-	@Input public static final Tree apiParameters = Make.newTree()
+	public static final Tree apiParameters = Make.newTree()
 			.add(Make.newString("ServiceUrl"), Make.newInt("UseAnnualLimit"), Make.newEnum("Solver", Solver.class),
 					Make.newSeries("PriceSensitivityEstimate"))
 			.buildTree();
@@ -80,8 +79,8 @@ public class ShiftConsumerCostMinimiserExternal extends LoadShiftingStrategist {
 		inputs.setPeak_demand_before(portfolio.getBaselinePeakLoad());
 		inputs.setPeak_load_price(tariffStrategist.calcCapacityRelatedPriceInEURPerMW(startTime.getStartTime()));
 		inputs.setSolver(solver);
-		inputs.setVariable_costs_down(convertToArray(portfolio.getVariableShiftCostsInEURPerMWHSeries(), startTime));
-		inputs.setVariable_costs_up(convertToArray(portfolio.getVariableShiftCostsInEURPerMWHSeries(), startTime));
+		inputs.setVariable_costs_down(convertToArray(portfolio.getVariableShiftCostsInEURperMWHSeries(), startTime));
+		inputs.setVariable_costs_up(convertToArray(portfolio.getVariableShiftCostsInEURperMWHSeries(), startTime));
 		inputs.setMax_activations(portfolio.getMaximumActivations());
 		inputs.setInitial_energy_level(portfolio.getCurrentEnergyShiftStorageLevelInMWH());
 		inputs.setPrice_sensitivity(convertToArray(priceSensitivity, startTime));

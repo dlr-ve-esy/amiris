@@ -2,6 +2,34 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
+## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-08
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
+
+### Changed
+- **Breaking**: Update to FAME-Core v3.0, requires FAME-Io v4.0 #254 (@dlr-cjs)
+- **Breaking**: `PriceForecasterApi`: Renamed input attributes `ServiceURL` and `ResidualLoadInMWh` to `ServiceUrl` and `ResidualLoadInMWH` #256 (@dlr-cjs)
+- **Breaking**: `ConventionalTrader`: Renamed input attributes `minMarkup` and `maxMarkup` to `MinimumMarkup` and `MaximumMarkup` #256 (@dlr-cjs)
+- **Breaking**: `LoadShiftingTrader`: Renamed several input attributes #256 (@dlr-cjs)
+- **Breaking**: `CarbonMarket`: Renamed output columns name `Co2EmissionsInTons` to `Co2EmissionsInT` #253 (@dlr-cjs, @sstroemer)
+- **Breaking**: `PriceForecasterApi`: Renamed output columns `ElectricityPriceForecastVarianceInEURperMWH` and `ResidualLoadInMWh` to `PriceForecastStandardDeviationInEURperMWH` and `ResidualLoadInMWH` #253 #256 (@dlr-cjs, @dlr_fn)
+- **Breaking**: `HouseholdPvTraderExternal`: Renamed output columns `AwardedDemandInMWh` and `AwardedSupplyInMWh` to `AwardedDemandInMWH` and `AwardedSupplyInMWH` #256 (@dlr-cjs)
+- Switch logger to logback #153 (@dlr-cjs)
+- Build package with parallel execution capabilities in CI #250
+- docs: improve Getting-Started section (@dlr-cjs)
+- docs: improve description of Timeseries #255 (@dlr-cjs)
+- docs: update model schema #251 (@dlr_fn, @dlr-cjs, @dlr-ach)
+- README: update funding agency name #243 (@dlr-cjs)
+- README: update section `Applications` #264 (@dlr_fn) 
+- docs: update Roadmap #244 (@dlr-cjs, @dlr_jk)
+- README: place hint to star the project and add user logos #176 (@dlr-cjs)
+
+### Added
+- Add first elements of architecture documentation #255 (@dlr-cjs)
+- Add electricity use and emission tracking to CI #266 (@dlr-cjs)
+
+### Fixed
+- Fix typo in schema #252 (@dlr-cjs)
+
 ## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - 2026-08-26
 ### Fixed
 - `GenericFlexibilityTrader`: Fix crash on time-variable energy limits #262 (@dlr-cjs)
@@ -13,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed
-- Fix hard-coded deactivation of power forecast errors #247 (@dlr-cjs) 
+- Fix hard-coded deactivation of power forecast errors #247 (@dlr-cjs)
 
 ## [4.1.1](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.1) - 2026-04-23
 ### Fixed
@@ -57,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 - license headers: Use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#400)_
 
 ### Changed
 - **Breaking**: Rename `GenericFlexibilityTrader` assessment function types #166 (@dlr-cjs, @dlr_jk)
@@ -136,7 +164,8 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Fix incongruent energy levels in `EnergyStateManager` that could cause a crash #164 (@dlr-cjs)
 
 ## [3.5.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v3.5.0) - 2025-05-05
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#350)_
+
 ### Changed
 - Change data type of `ImportCostInEURperMWH` to time series #150 (@dlr_jk)
 - Rename `Strategist` in `dynamicProgramming` to `Optimiser` #156 (@dlr-cjs)
@@ -195,7 +224,8 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Configure artifacts to expire after one year #130 (@dlr_fn, @dlr-cjs)
 
 ## [3.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v3.0.0) - 2024-09-20
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#300)_
+
 ### Changed
 - **Breaking**: Change `FuelType` input parameter from `enum` to `string_set` and move to `FuelsTrader` #120 (@dlr_fn, @dlr-cjs)
 - **Breaking**: Change `Set` input parameter from `enum` to `string_set` and rename to `PolicySet` #5 (@dlr_fn, @dlr-cjs)
@@ -240,7 +270,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Increased FAME-Core version to 1.6 #106 (@dlr-cjs, @dlr_fn)
 
 ## [2.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v2.0.0) - 2024-03-12
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#200)_
 
 ### Changed
 - **Breaking**: Rename `EnergyExchange` to `DayAheadMarketSingleZone` #41 (@dlr-cjs)

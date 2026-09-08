@@ -14,11 +14,10 @@ import communications.message.ForecastClientRegistration;
 import communications.message.PointInTime;
 import communications.portable.Sensitivity;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -33,13 +32,13 @@ public class SensitivityForecaster extends MarketForecaster implements Sensitivi
 	static final String WARN_INVALID = "Merit-order sensitivity in forcaster %s at time %s is not valid for either demand or supply. Ensure positive values for both!";
 	private static Logger logger = LoggerFactory.getLogger(SensitivityForecaster.class);
 
-	@Input private static final Tree parameters = Make.newTree().add(Make.newGroup("MultiplierEstimation").optional()
-			.add(Make.newDouble("IgnoreAwardFactor").optional()
-					.help("Awards with less energy than maximum energy divided by this factor are ignored."))
-			.add(Make.newInt("InitialEstimateWeight").optional().help("Weight of the initial estimate."))
-			.add(Make.newInt("DecayInterval").optional()
-					.help("Interval steps after which a factor weight has reduced to exp(-1).")))
-			.buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.add(Make.newGroup("MultiplierEstimation").optional()
+					.add(Make.newDouble("IgnoreAwardFactor").optional()
+							.help("Awards with less energy than maximum energy divided by this factor are ignored."))
+					.add(Make.newInt("InitialEstimateWeight").optional().help("Weight of the initial estimate."))
+					.add(Make.newInt("DecayInterval").optional()
+							.help("Interval steps after which a factor weight has reduced to exp(-1).")));
 
 	private final FlexibilityAssessor flexibilityAssessor;
 	private final HashMap<Long, ForecastType> typePerClient = new HashMap<>();
@@ -51,10 +50,9 @@ public class SensitivityForecaster extends MarketForecaster implements Sensitivi
 	 * @throws MissingDataException if any required data is not provided */
 	public SensitivityForecaster(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		double cutOffFactor = input.getDoubleOrDefault("MultiplierEstimation.IgnoreAwardFactor", 1000.);
-		int initialEstimateWeight = input.getIntegerOrDefault("MultiplierEstimation.InitialEstimateWeight", 24);
-		int decayInterval = input.getIntegerOrDefault("MultiplierEstimation.DecayInterval", -1);
+		double cutOffFactor = fromInput().getDoubleOrDefault("MultiplierEstimation.IgnoreAwardFactor", 1000.);
+		int initialEstimateWeight = fromInput().getIntegerOrDefault("MultiplierEstimation.InitialEstimateWeight", 24);
+		int decayInterval = fromInput().getIntegerOrDefault("MultiplierEstimation.DecayInterval", -1);
 		flexibilityAssessor = new FlexibilityAssessor(cutOffFactor, initialEstimateWeight, decayInterval);
 
 		call(this::registerClients).onAndUse(SensitivityForecastClient.Products.ForecastRegistration);

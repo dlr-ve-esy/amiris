@@ -22,11 +22,11 @@ import communications.message.ForecastClientRegistration;
 import communications.message.PointInTime;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -48,10 +48,10 @@ public class HeuristicStorageTrader extends Trader implements SensitivityForecas
 	static final String PARAM_SCHEDULE = "SchedulingHorizonInHours";
 	static final String PARAM_PREFACTORS = "AssessmentFunctionPrefactors";
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.addAs(GROUP_DEVICE, GenericDevice.parameters)
 			.add(Make.newDouble(PARAM_PERIOD)).add(Make.newDouble(PARAM_HORIZON)).add(Make.newDouble(PARAM_SCHEDULE))
-			.add(Make.newDouble(PARAM_PREFACTORS).list()).buildTree();
+			.add(Make.newDouble(PARAM_PREFACTORS).list());
 
 	/** Output columns of {@link HeuristicStorageTrader} */
 	@Output
@@ -72,10 +72,9 @@ public class HeuristicStorageTrader extends Trader implements SensitivityForecas
 	 * @throws MissingDataException if any required data is not provided */
 	public HeuristicStorageTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		device = new GenericDevice(input.getGroup(GROUP_DEVICE));
-		operationPeriod = new TimeSpan(Math.round(input.getDouble(PARAM_PERIOD) * Constants.STEPS_PER_HOUR));
-		strategy = createStrategist(input);
+		device = new GenericDevice(fromInput().getGroup(GROUP_DEVICE));
+		operationPeriod = new TimeSpan(Math.round(fromInput().getDouble(PARAM_PERIOD) * Constants.STEPS_PER_HOUR));
+		strategy = createStrategist(fromInput());
 
 		call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);
 		call(this::requestElectricityForecast).on(SensitivityForecastClient.Products.SensitivityRequest)

@@ -16,11 +16,11 @@ import communications.message.AwardData;
 import communications.portable.CouplingData;
 import communications.portable.TransmissionCapacitySeries;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
@@ -58,15 +58,14 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 		AwardedNetEnergyFromImportInMWH
 	}
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.add(
 					Make.newStringSet("MarketZone").optional()
 							.help("Identifier specifying the market zone this DayAheadMarket is representing"),
 					Make.newGroup("Transmission").list().optional()
 							.add(Make.newStringSet("MarketZone"),
 									Make.newSeries("CapacityInMW")
-											.help("Net transfer capacity of supply from own to connected market zone.")))
-			.buildTree();
+											.help("Net transfer capacity of supply from own to connected market zone.")));
 
 	/** Market region of this energy exchange instance */
 	private final String ownMarketZone;
@@ -93,10 +92,9 @@ public class DayAheadMarketMultiZone extends DayAheadMarket implements MarketCou
 	 * @throws MissingDataException if any required data is not provided */
 	public DayAheadMarketMultiZone(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		ownMarketZone = input.getStringOrDefault("MarketZone", null);
+		ownMarketZone = fromInput().getStringOrDefault("MarketZone", null);
 		if (ownMarketZone != null) {
-			loadTransmissionCapacities(input.getGroupList("Transmission"));
+			loadTransmissionCapacities(fromInput().getGroupList("Transmission"));
 		}
 
 		call(this::shareTransmissionCapacities).on(Products.TransmissionCapacities);

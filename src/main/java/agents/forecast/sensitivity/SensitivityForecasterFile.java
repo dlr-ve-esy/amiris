@@ -13,11 +13,10 @@ import communications.message.PointInTime;
 import communications.portable.Sensitivity;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -31,8 +30,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class SensitivityForecasterFile extends Agent implements SensitivityForecastProvider {
 	static final String ERR_INCOMPATIBLE = "Requested type of forecast by Client '%d' is incompatible. SensitivityForecasterFile can only send: '%s'";
 
-	@Input private static final Tree parameters = Make.newTree()
-			.add(Make.newSeries("PriceForecastsInEURperMWH").help("Time series of price forecasts")).buildTree();
+	@Input public static final GroupBuilder parameters = Make.newTree()
+			.add(Make.newSeries("PriceForecastsInEURperMWH").help("Time series of price forecasts"));
 
 	@Output
 	private static enum OutputFields {
@@ -48,8 +47,7 @@ public class SensitivityForecasterFile extends Agent implements SensitivityForec
 	 * @throws MissingDataException in case mandatory input is missing */
 	public SensitivityForecasterFile(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		priceForecasts = input.getTimeSeries("PriceForecastsInEURperMWH");
+		priceForecasts = fromInput().getTimeSeries("PriceForecastsInEURperMWH");
 
 		call(this::writeForecast).onAndUse(DayAheadMarket.Products.GateClosureInfo);
 		call(this::registerClients).onAndUse(SensitivityForecastClient.Products.ForecastRegistration);

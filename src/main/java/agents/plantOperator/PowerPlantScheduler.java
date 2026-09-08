@@ -18,5 +18,5 @@ public interface PowerPlantScheduler extends AgentAbility {
 		Payout,
 		/** Electricity production assignment to clients */
 		DispatchAssignment
-	};
+	}
 }

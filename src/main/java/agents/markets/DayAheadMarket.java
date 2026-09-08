@@ -9,11 +9,10 @@ import agents.markets.meritOrder.MarketClearing;
 import communications.message.ClearingTimes;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -27,9 +26,9 @@ import de.dlr.gitlab.fame.time.TimeSpan;
 public abstract class DayAheadMarket extends Agent {
 	static final String LONE_LIST = "At most one round of market clearing is currently implemented.";
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.addAs("Clearing", MarketClearing.parameters)
-			.add(Make.newInt("GateClosureInfoOffsetInSeconds")).buildTree();
+			.add(Make.newInt("GateClosureInfoOffsetInSeconds"));
 
 	/** Products of {@link DayAheadMarket}s */
 	@Product
@@ -63,9 +62,8 @@ public abstract class DayAheadMarket extends Agent {
 	 * @throws MissingDataException if any required data is not provided */
 	public DayAheadMarket(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
-		marketClearing = new MarketClearing(input.getGroup("Clearing"));
-		gateClosureInfoOffset = new TimeSpan(input.getInteger("GateClosureInfoOffsetInSeconds"));
+		marketClearing = new MarketClearing(fromInput().getGroup("Clearing"));
+		gateClosureInfoOffset = new TimeSpan(fromInput().getInteger("GateClosureInfoOffsetInSeconds"));
 
 		/** Sends out ClearingTimes */
 		call(this::sendGateClosureInfo).on(Products.GateClosureInfo);

@@ -37,11 +37,10 @@ import communications.message.HydrogenPolicyRegistration;
 import communications.portable.BidsAtTime;
 import communications.portable.HydrogenSupportData;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -54,10 +53,10 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * @author Christoph Schimeczek */
 public class ElectrolysisTrader extends FlexibilityTrader
 		implements FuelsTrader, PowerPlantScheduler, HydrogenSupportClient {
-	@Input private static final Tree parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
+	@Input public static final GroupBuilder parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
 			.addAs("Device", Electrolyzer.parameters)
 			.addAs("Strategy", ElectrolyzerStrategist.parameters)
-			.addAs("Support", HydrogenSupportClient.parameters).buildTree();
+			.addAs("Support", HydrogenSupportClient.parameters);
 
 	/** Available output columns */
 	@Output
@@ -91,14 +90,13 @@ public class ElectrolysisTrader extends FlexibilityTrader
 	 * @throws MissingDataException if any required input is missing */
 	public ElectrolysisTrader(DataProvider data) throws MissingDataException {
 		super(data);
-		ParameterData input = parameters.join(data);
-		electrolyzer = new Electrolyzer(input.getGroup("Device"));
-		strategist = ElectrolyzerStrategist.newStrategist(input.getGroup("Strategy"), electrolyzer);
+		electrolyzer = new Electrolyzer(fromInput().getGroup("Device"));
+		strategist = ElectrolyzerStrategist.newStrategist(fromInput().getGroup("Strategy"), electrolyzer);
 
-		fuelType = FuelsTrader.readFuelType(input);
+		fuelType = FuelsTrader.readFuelType(fromInput());
 		fuelData = new FuelData(fuelType);
 
-		registrationData = HydrogenSupportClient.getRegistration(input.getOptionalGroup("Support"));
+		registrationData = HydrogenSupportClient.getRegistration(fromInput().getOptionalGroup("Support"));
 
 		call(this::prepareForecasts).on(Trader.Products.BidsForecast).use(MarketForecaster.Products.ForecastRequest);
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.PriceForecastRequest)

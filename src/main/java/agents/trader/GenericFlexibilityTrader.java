@@ -27,11 +27,10 @@ import communications.message.ForecastClientRegistration;
 import communications.message.PointInTime;
 import communications.portable.BidsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
+import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
 import de.dlr.gitlab.fame.agent.input.Make;
-import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.communication.CommUtils;
 import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.message.Message;
@@ -54,12 +53,11 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 	static final String GROUP_STATES = "StateDiscretisation";
 	static final String GROUP_BIDS = "Bidding";
 
-	@Input private static final Tree parameters = Make.newTree()
+	@Input public static final GroupBuilder parameters = Make.newTree()
 			.addAs(GROUP_DEVICE, GenericDevice.parameters)
 			.addAs(GROUP_ASSESSMENT, AssessmentFunctionBuilder.parameters)
 			.addAs(GROUP_STATES, StateManagerBuilder.parameters)
-			.addAs(GROUP_BIDS, BidSchedulerBuilder.parameters)
-			.buildTree();
+			.addAs(GROUP_BIDS, BidSchedulerBuilder.parameters);
 
 	/** Output columns of {@link GenericFlexibilityTrader}s */
 	@Output
@@ -86,12 +84,11 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 	 * @throws MissingDataException if any required data is not provided */
 	public GenericFlexibilityTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		ParameterData input = parameters.join(dataProvider);
 
-		device = new GenericDevice(input.getGroup(GROUP_DEVICE));
-		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT), device);
-		stateManager = StateManagerBuilder.build(device, assessmentFunction, input.getGroup(GROUP_STATES));
-		var bidScheduler = BidSchedulerBuilder.build(input.getGroup(GROUP_BIDS));
+		device = new GenericDevice(fromInput().getGroup(GROUP_DEVICE));
+		assessmentFunction = AssessmentFunctionBuilder.build(fromInput().getGroup(GROUP_ASSESSMENT), device);
+		stateManager = StateManagerBuilder.build(device, assessmentFunction, fromInput().getGroup(GROUP_STATES));
+		var bidScheduler = BidSchedulerBuilder.build(fromInput().getGroup(GROUP_BIDS));
 		strategist = new Optimiser(stateManager, bidScheduler, assessmentFunction.getTargetType());
 
 		call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);

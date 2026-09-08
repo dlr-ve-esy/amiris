@@ -26,7 +26,7 @@ public interface GreenHydrogenProducer extends AgentAbility {
 		ConsumedElectricityInMWH,
 		/** Total received money for selling electricity in EUR */
 		ReceivedMoneyForElectricityInEUR,
-	};
+	}
 
 	/** Available products */
 	@Product
@@ -35,7 +35,7 @@ public interface GreenHydrogenProducer extends AgentAbility {
 		PpaInformationRequest,
 		/** Request for forecasted Power Purchase Agreement (PPA) contract data with electricity production unit */
 		PpaInformationForecastRequest
-	};
+	}
 
 	/** Sends {@link PointInTime}s to connected clients based on {@link ClearingTimes} message
 	 * 

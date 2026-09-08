@@ -6,8 +6,9 @@ Negative values represent times before that date.
 Additional to this integer representation, FAME-Io offers also a more [readable format](https://gitlab.com/fame-framework/fame-io/-/blob/dev/docs/source/input/csv_files.md) for CSV input files and contract times: `YYYY-MM-DD_hh:mm:ss`.
 
 To allow the exchange of timeseries from different years without the need of removing or adding days **leap year are ignored**.
-Thus, simulated time assumes 365 days per year, 24 hours per day and 730 hours per month.
-Simulated time ignores leap-years, changes due to day-light savings time and uneven month durations.
+Simulated time assumes 365 days per year, 24 hours per day.
+A week is assumed to have 168 hours (7x24), and a month is one twelfth of a year, i.e. 730 hours.
+Thus, simulated time ignores leap-years, changes due to day-light savings time and uneven month durations.
 
 In leap years, **FAME does not remove February 29th** but instead ends the year on December 30th.
 This is done to avoid cuts in the middle of real-world timeseries - the end of a year shows peculiar behaviour anyways.

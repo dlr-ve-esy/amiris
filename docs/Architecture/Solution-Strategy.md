@@ -1,9 +1,9 @@
 ## Technology decisions
 
-| Goal / Requirement                                                                                               | Solution Strategy |
-|------------------------------------------------------------------------------------------------------------------|-------------------|
-| We want high performance of the code                                                                             | Use Java          |
-| We want do not want to deal with agent scheduling, reading input files, writing output files, or parallelisation | Use FAME          |
+| Goal / Requirement                                                                                           | Solution Strategy |
+|--------------------------------------------------------------------------------------------------------------|-------------------|
+| We want high performance of the code.                                                                        | Use Java          |
+| We do not want to deal with agent scheduling, reading input files, writing output files, or parallelisation. | Use FAME          |
 
 ## Other decisions
 

@@ -133,6 +133,8 @@ test:packaging:mpi:
     - 'mvn $MAVEN_CLI_OPTS package'
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 .compatibility:
   extends: .unittest
@@ -179,9 +181,10 @@ deploy:jar:
     paths:
       - "target/*.jar"
     expire_in: 1 day
+  variables: # avoid redirect of .m2 repository as defined in default
+    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   script:
     - !reference [.start_measurement, script]
-    - unset MAVEN_OPTS
     - 'sed -i -E "s/<dependencies>/<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>de.dlr.gitlab.fame<\/groupId>\n\t\t\t<artifactId>mpi-ompi-impl<\/artifactId>\n\t\t\t<version>1.0.4<\/version>\n\t\t<\/dependency>\n/g" pom.xml'
     - 'mvn $MAVEN_CLI_OPTS package'
     - !reference [.get_measurement, script]

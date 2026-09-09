@@ -14,8 +14,8 @@ SPDX-License-Identifier: Apache-2.0 -->
 			<version>3.0.1</version>
 			<exclusions>
 				<exclusion>
-					<artifactId>slf4j-api</artifactId>
 	                <groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -38,8 +38,8 @@ SPDX-License-Identifier: Apache-2.0 -->
 			<type>maven-plugin</type>
 			<exclusions>
 				<exclusion>
-					<artifactId>slf4j-api</artifactId>
 	                <groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -102,11 +102,6 @@ SPDX-License-Identifier: Apache-2.0 -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.2</version>
-                <configuration>
-                    <classpathDependencyExcludes>
-                        <classpathDependencyExclude>org.slf4j:slf4j-reload4j</classpathDependencyExclude>
-                    </classpathDependencyExcludes>
-                </configuration>
             </plugin>
             <plugin>
 				<groupId>org.codehaus.mojo</groupId>

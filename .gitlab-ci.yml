@@ -41,7 +41,7 @@ cache:
 
 
 # Ensure CHANGELOG.md was updated
-lint:changelog:
+check:changelog:
   stage: changelog
   cache: [] # do not use cached files here, as those are not required
   script:
@@ -115,7 +115,7 @@ lint:spotless:
     - if: $CI_COMMIT_REF_NAME == "main"
 
 # Execute unit tests with JDK11
-test:Coverage:jdk11:
+test:coverage:jdk11:
   extends: .unittest
   stage: test
   after_script:
@@ -123,7 +123,7 @@ test:Coverage:jdk11:
   coverage: '/COVERAGE::\d+\.\d+/'
 
 # Test packaging with mpi-enabled image
-test:deploy:jar:
+test:packaging:mpi:
   stage: test
   image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
   script:

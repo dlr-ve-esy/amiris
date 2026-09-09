@@ -48,7 +48,7 @@ lint:changelog:
     - git fetch
     - 'echo "Base is: $CI_MERGE_REQUEST_DIFF_BASE_SHA"'
     - CHANGELOG_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD CHANGELOG.md)
-    - 'if [[ "CHANGELOG.md" == $CHANGELOG_CHANGED ]]; then EXIT_CODE=0; else echo "No changes found in CHANGELOG.md compared to target branch."; EXIT_CODE=1; fi'
+    - 'if [[ "CHANGELOG.md" == $CHANGELOG_CHANGED ]]; then EXIT_CODE=0; else echo "Error: No changes found in CHANGELOG.md compared to target branch."; EXIT_CODE=1; fi'
     - exit $EXIT_CODE
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"

@@ -122,6 +122,17 @@ test:Coverage:jdk11:
     - "cat target/site/jacoco/index.html | grep -o 'Total[^%]*%' | grep -o '[0-9.,]* of [0-9.,]*' | sed 's/[,.]//g' | sed 's/ of / /g' | awk '{printf \"COVERAGE::%.2f\\n\", ((1.0 - ($1 / $2)) *100)}'"
   coverage: '/COVERAGE::\d+\.\d+/'
 
+# Test packaging with mpi-enabled image
+test:deploy:jar:
+  stage: test
+  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
+  script:
+    - !reference [.start_measurement, script]
+    - unset MAVEN_OPTS
+    - 'sed -i -E "s/<dependencies>/<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>de.dlr.gitlab.fame<\/groupId>\n\t\t\t<artifactId>mpi-ompi-impl<\/artifactId>\n\t\t\t<version>1.0.4<\/version>\n\t\t<\/dependency>\n/g" pom.xml'
+    - 'mvn $MAVEN_CLI_OPTS package'
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
 
 .compatibility:
   extends: .unittest
@@ -139,6 +150,7 @@ compatibility:jdk21:
 compatibility:jdk25:
   extends: .compatibility
   image: maven:3-eclipse-temurin-25
+
 
 .deploy:
   stage: deploy
@@ -159,6 +171,7 @@ deploy:javadoc:
       - "target/reports/apidocs"
     expire_in: 1 day
 
+# Package with mpi-enabled image
 deploy:jar:
   extends: .deploy
   image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
@@ -168,6 +181,7 @@ deploy:jar:
     expire_in: 1 day
   script:
     - !reference [.start_measurement, script]
+    - unset MAVEN_OPTS
     - 'sed -i -E "s/<dependencies>/<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>de.dlr.gitlab.fame<\/groupId>\n\t\t\t<artifactId>mpi-ompi-impl<\/artifactId>\n\t\t\t<version>1.0.4<\/version>\n\t\t<\/dependency>\n/g" pom.xml'
     - 'mvn $MAVEN_CLI_OPTS package'
     - !reference [.get_measurement, script]

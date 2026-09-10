@@ -2,8 +2,8 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
-## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - TBA
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-10
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 
 ### Changed
 - **Breaking**: Update to FAME-Core v3.0, requires FAME-Io v4.0 #254 (@dlr-cjs)
@@ -29,6 +29,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
+- Fix packaging with MPI using Java 11 container #268 !284 (@dlr-cjs)
 
 ## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - 2026-08-26
 ### Fixed
@@ -85,7 +86,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - license headers: Use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#400)_
 
 ### Changed
 - **Breaking**: Rename `GenericFlexibilityTrader` assessment function types #166 (@dlr-cjs, @dlr_jk)
@@ -164,7 +165,8 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Fix incongruent energy levels in `EnergyStateManager` that could cause a crash #164 (@dlr-cjs)
 
 ## [3.5.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v3.5.0) - 2025-05-05
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#350)_
+
 ### Changed
 - Change data type of `ImportCostInEURperMWH` to time series #150 (@dlr_jk)
 - Rename `Strategist` in `dynamicProgramming` to `Optimiser` #156 (@dlr-cjs)
@@ -223,7 +225,8 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Configure artifacts to expire after one year #130 (@dlr_fn, @dlr-cjs)
 
 ## [3.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v3.0.0) - 2024-09-20
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#300)_
+
 ### Changed
 - **Breaking**: Change `FuelType` input parameter from `enum` to `string_set` and move to `FuelsTrader` #120 (@dlr_fn, @dlr-cjs)
 - **Breaking**: Change `Set` input parameter from `enum` to `string_set` and rename to `PolicySet` #5 (@dlr_fn, @dlr-cjs)
@@ -268,7 +271,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Increased FAME-Core version to 1.6 #106 (@dlr-cjs, @dlr_fn)
 
 ## [2.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v2.0.0) - 2024-03-12
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#200)_
 
 ### Changed
 - **Breaking**: Rename `EnergyExchange` to `DayAheadMarketSingleZone` #41 (@dlr-cjs)

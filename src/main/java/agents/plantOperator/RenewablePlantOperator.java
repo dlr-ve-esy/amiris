@@ -25,6 +25,7 @@ import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
 import de.dlr.gitlab.fame.data.TimeSeries;
+import de.dlr.gitlab.fame.service.output.Output;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
 /** A {@link PowerPlantOperator} for renewable plants
@@ -64,6 +65,13 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 		SetRegistration
 	}
 
+	/** Outputs of {@link RenewablePlantOperator} */
+	@Output
+	protected static enum OutputFields {
+		/** Received support payments */
+		ReceivedSupportInEUR,
+	}
+
 	/** A group of plants of the same energy carrier and support type attributed to a dedicated PowerPlantOperator */
 	private final TechnologySet technologySet;
 	/** TimeSeries of total peak production capacity */
@@ -91,6 +99,7 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 				.use(TraderWithClients.Products.ForecastRequestForward);
 		call(this::sendSupplyMarginals).on(PowerPlantOperator.Products.MarginalCost)
 				.use(TraderWithClients.Products.GateClosureForward);
+		call(this::digestSupportForward).on(AggregatorTrader.Products.SupportForward);
 	}
 
 	/** Registers the {@link TechnologySet} to be marketed by a single associated {@link AggregatorTrader} */
@@ -144,6 +153,16 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 	/** @param time to calculate costs for
 	 * @return single Marginal item calculated for the given time */
 	abstract protected Marginal calcSingleMarginal(TimeStamp time);
+
+	/** Digest support payment information forwarded
+	 * 
+	 * @param input support payment information forwarded from {@link AggregatorTrader}
+	 * @param contracts not used */
+	private void digestSupportForward(ArrayList<Message> input, List<Contract> contracts) {
+		Message message = CommUtils.getExactlyOneEntry(input);
+		AmountAtTime supportPayment = message.getDataItemOfType(AmountAtTime.class);
+		store(OutputFields.ReceivedSupportInEUR, supportPayment.amount);
+	}
 
 	/** Returns the installed power at the specified time
 	 * 

@@ -5,6 +5,7 @@ package agents.plantOperator.renewable;
 
 import java.util.ArrayList;
 import java.util.List;
+import agents.plantOperator.PowerPlantOperator;
 import agents.trader.electrolysis.GreenHydrogenProducer;
 import communications.message.PointInTime;
 import communications.message.PpaInformation;
@@ -77,6 +78,6 @@ public class VariableRenewableOperatorPpa extends VariableRenewableOperator {
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 		TimeStamp time = contract.getNextTimeOfDeliveryAfter(now());
 		double availablePower = getInstalledPowerAtTimeInMW(time) * getYieldAtTime(time);
-		store(OutputFields.OfferedEnergyInMWH, availablePower);
+		store(PowerPlantOperator.OutputFields.OfferedEnergyInMWH, availablePower);
 	}
 }

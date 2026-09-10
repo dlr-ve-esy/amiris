@@ -99,7 +99,7 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 				.use(TraderWithClients.Products.ForecastRequestForward);
 		call(this::sendSupplyMarginals).on(PowerPlantOperator.Products.MarginalCost)
 				.use(TraderWithClients.Products.GateClosureForward);
-		call(this::digestSupportForward).on(AggregatorTrader.Products.SupportForward);
+		call(this::digestSupportForward).onAndUse(AggregatorTrader.Products.SupportForward);
 	}
 
 	/** Registers the {@link TechnologySet} to be marketed by a single associated {@link AggregatorTrader} */

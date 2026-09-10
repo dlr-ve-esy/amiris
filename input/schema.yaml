@@ -1032,6 +1032,10 @@ AgentTypes:
         MetaData:
           description: "Yield potential of contracted technology set(s)"
           isAbout: [{name: "yield profile", "@id": "OEO_00140139"}]
+      SupportForward: &AggregatorTrader_P_SupportForward
+        MetaData:
+          description: "Support forwarded to client"
+          isAbout: [{name: "remuneration", "@id": "OEO_00020125"}]
     Outputs:
       OfferedEnergyInMWH: *DamTrader_O_OfferedEnergy
       AwardedEnergyInMWH: *DamTrader_O_AwardedEnergy
@@ -1082,6 +1086,7 @@ AgentTypes:
       SupportInfoRequest: *AggregatorTrader_P_SupportInfoRequest
       SupportPayoutRequest: *AggregatorTrader_P_SupportPayoutRequest
       YieldPotential: *AggregatorTrader_P_YieldPotential
+      SupportForward: *AggregatorTrader_P_SupportForward
     Outputs:
       OfferedEnergyInMWH: *DamTrader_O_OfferedEnergy
       AwardedEnergyInMWH: *DamTrader_O_AwardedEnergy
@@ -1108,6 +1113,7 @@ AgentTypes:
       SupportInfoRequest: *AggregatorTrader_P_SupportInfoRequest
       SupportPayoutRequest: *AggregatorTrader_P_SupportPayoutRequest
       YieldPotential: *AggregatorTrader_P_YieldPotential
+      SupportForward: *AggregatorTrader_P_SupportForward
     Outputs:
       OfferedEnergyInMWH: *DamTrader_O_OfferedEnergy
       AwardedEnergyInMWH: *DamTrader_O_AwardedEnergy

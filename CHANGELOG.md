@@ -29,7 +29,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
-- Fix packaging with MPI #268 (@dlr-cjs)
+- Fix packaging with MPI using Java 11 container #268 (@dlr-cjs)
 
 ## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - 2026-08-26
 ### Fixed

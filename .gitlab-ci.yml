@@ -69,9 +69,7 @@ lint:reuse:
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 # Check if javadoc building works
 lint:javadoc:
@@ -83,8 +81,7 @@ lint:javadoc:
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 # Ensure files follow common code style using "spotless"
 lint:spotless:
@@ -97,9 +94,7 @@ lint:spotless:
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "dev"
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 
 # Settings for unit tests & coverage analysis
@@ -110,9 +105,7 @@ lint:spotless:
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "dev"
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 # Execute unit tests with JDK11
 test:coverage:jdk11:
@@ -125,17 +118,17 @@ test:coverage:jdk11:
 # Test packaging with mpi-enabled image
 test:packaging:mpi:
   stage: test
-#  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
-#  variables: # avoid redirect of .m2 repository as defined in default
-#    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"  
+  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
+  variables: # avoid redirect of .m2 repository as defined in default
+    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"  
   script:
     - !reference [.start_measurement, script]
-#    - 'sed -i -E "s/<dependencies>/<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>de.dlr.gitlab.fame<\/groupId>\n\t\t\t<artifactId>mpi-ompi-impl<\/artifactId>\n\t\t\t<version>1.0.4<\/version>\n\t\t<\/dependency>\n/g" pom.xml'
+    - 'sed -i -E "s/<dependencies>/<dependencies><dependency><groupId>de.dlr.gitlab.fame<\/groupId><artifactId>mpi-ompi-impl<\/artifactId><version>1.0.5<\/version><\/dependency>\n/g" pom.xml'
     - 'mvn $MAVEN_CLI_OPTS package'
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "main"
 
 .compatibility:
   extends: .unittest
@@ -158,7 +151,7 @@ compatibility:jdk25:
 .deploy:
   stage: deploy
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_COMMIT_BRANCH == "main"
 
 # Package AMIRIS & build javadoc
 deploy:javadoc:
@@ -177,16 +170,16 @@ deploy:javadoc:
 # Package with mpi-enabled image
 deploy:jar:
   extends: .deploy
-#  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
+  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
   artifacts:
     paths:
       - "target/*.jar"
     expire_in: 1 day
-#  variables: # avoid redirect of .m2 repository as defined in default
-#    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  variables: # avoid redirect of .m2 repository as defined in default
+    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   script:
     - !reference [.start_measurement, script]
-#    - 'sed -i -E "s/<dependencies>/<dependencies><dependency><groupId>de.dlr.gitlab.fame<\/groupId><artifactId>mpi-ompi-impl<\/artifactId><version>1.0.4<\/version><exclusions><exclusion><groupId>org.slf4j<\/groupId><artifactId>slf4j-api<\/artifactId><\/exclusion><\/exclusions><\/dependency>\n/g" pom.xml'
+    - 'sed -i -E "s/<dependencies>/<dependencies><dependency><groupId>de.dlr.gitlab.fame<\/groupId><artifactId>mpi-ompi-impl<\/artifactId><version>1.0.5<\/version><\/dependency>\n/g" pom.xml'
     - 'mvn $MAVEN_CLI_OPTS package'
     - !reference [.get_measurement, script]
     - !reference [.display_results, script]
@@ -201,4 +194,4 @@ pages:
     paths: 
       - public
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_COMMIT_BRANCH == "main"

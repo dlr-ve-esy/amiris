@@ -8,7 +8,7 @@ import de.dlr.gitlab.fame.protobuf.AgentMessage.MessageContent.ProtoDataItem;
 import de.dlr.gitlab.fame.protobuf.AgentMessage.MessageContent.ProtoDataItem.Builder;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
-/** Specifies an arbitrary amount at a specific time
+/** Specifies information of a renewable power purchasing agreement
  * 
  * @author Leonard Willeke, Johannes Kochems */
 public class PpaInformation extends PointInTime {
@@ -21,7 +21,7 @@ public class PpaInformation extends PointInTime {
 
 	/** Creates a new {@link PpaInformation} message
 	 * 
-	 * @param timeStamp to which the specified amount is associated with
+	 * @param timeStamp to which the PPA elements are associated with
 	 * @param price value associated with the given timeStamp
 	 * @param yieldPotential energy yield value associated with the given timeStamp
 	 * @param marginalCosts marginal costs of the associated renewable plant */

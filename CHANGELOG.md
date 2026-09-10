@@ -2,6 +2,12 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
+
+## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - TBA
+### Added
+- Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
+
+
 ## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - TBA
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 

@@ -336,7 +336,10 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		for (var bids : bidsBinnedByOfferPrice.values()) {
 			double productionPotentialInBinInMWH = bids.stream().mapToDouble(b -> b.powerPotential).sum();
 			actualProductionPotentialInMWH += productionPotentialInBinInMWH;
-			double assignmentShare = Math.min(1., energyToDispatch / productionPotentialInBinInMWH);
+			double assignmentShare = 0;
+			if (productionPotentialInBinInMWH != 0) {
+				assignmentShare = Math.min(1., energyToDispatch / productionPotentialInBinInMWH);
+			}
 			for (ProducerBid bid : bids) {
 				double dispatchedEnergy = assignmentShare * bid.powerPotential;
 				energyToDispatch = Math.max(0, energyToDispatch - dispatchedEnergy);

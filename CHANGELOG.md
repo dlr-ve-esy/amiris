@@ -2,7 +2,10 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
-## [5.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.1.0) - TBA
+## [5.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.1.0) - tba.
+### Changed
+- codemeta: updated affiliation of Nitsch to BOKU University #269 (@dlr_fn)
+
 ### Added
 - Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
 

@@ -11,6 +11,7 @@ import agents.trader.TraderWithClients;
 import agents.trader.renewable.AggregatorTrader;
 import communications.message.AmountAtTime;
 import communications.message.ClearingTimes;
+import communications.message.ContractualPayout;
 import communications.message.TechnologySet;
 import communications.portable.MarginalsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
@@ -99,7 +100,6 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 				.use(TraderWithClients.Products.ForecastRequestForward);
 		call(this::sendSupplyMarginals).on(PowerPlantOperator.Products.MarginalCost)
 				.use(TraderWithClients.Products.GateClosureForward);
-		call(this::digestSupportForward).onAndUse(AggregatorTrader.Products.SupportForward);
 	}
 
 	/** Registers the {@link TechnologySet} to be marketed by a single associated {@link AggregatorTrader} */
@@ -154,14 +154,13 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 	 * @return single Marginal item calculated for the given time */
 	abstract protected Marginal calcSingleMarginal(TimeStamp time);
 
-	/** Digest support payment information forwarded
-	 * 
-	 * @param input support payment information forwarded from {@link AggregatorTrader}
-	 * @param contracts not used */
-	private void digestSupportForward(ArrayList<Message> input, List<Contract> contracts) {
+	@Override
+	protected void digestPayment(ArrayList<Message> input, List<Contract> contracts) {
 		Message message = CommUtils.getExactlyOneEntry(input);
-		AmountAtTime supportPayment = message.getDataItemOfType(AmountAtTime.class);
-		store(OutputFields.ReceivedSupportInEUR, supportPayment.amount);
+		ContractualPayout payout = message.getDataItemOfType(ContractualPayout.class);
+		store(PowerPlantOperator.OutputFields.ReceivedMoneyInEUR, payout.totalRevenuesInEUR);
+		digestPaymentPerPlant(payout.validAt, payout.totalRevenuesInEUR);
+		store(OutputFields.ReceivedSupportInEUR, payout.supportInEUR);
 	}
 
 	/** Returns the installed power at the specified time

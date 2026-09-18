@@ -27,6 +27,7 @@ import agents.trader.TraderWithClients;
 import communications.message.AmountAtTime;
 import communications.message.AwardData;
 import communications.message.ClearingTimes;
+import communications.message.ContractualPayout;
 import communications.message.SupportRequestData;
 import communications.message.SupportResponseData;
 import communications.message.TechnologySet;
@@ -143,7 +144,6 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		call(this::assignDispatch).on(PowerPlantScheduler.Products.DispatchAssignment).use(DayAheadMarket.Products.Awards);
 		call(this::requestSupportPayout).on(Products.SupportPayoutRequest);
 		call(this::digestSupportPayout).onAndUse(SupportPolicy.Products.SupportPayout);
-		call(this::forwardSupportPayout).on(Products.SupportForward);
 		call(this::payoutClients).on(PowerPlantScheduler.Products.Payout);
 	}
 
@@ -421,7 +421,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		store(OutputColumns.RefundedSupportInEUR, refundedSupport);
 	}
 
-	/** Forward support pay-out and market revenues to clients
+	/** Forward total revenues and support pay-out to clients
 	 * 
 	 * @param messages not used
 	 * @param contracts with clients to pay-out, typically {@link RenewablePlantOperator}s */
@@ -433,8 +433,10 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 			double marketRevenue = calcMarketRevenue(plantOperatorId, accountingPeriod);
 			receivedMarketRevenues += marketRevenue;
 			double payout = applyPayoutStrategy(plantOperatorId, accountingPeriod, marketRevenue);
-			AmountAtTime contractualPayout = new AmountAtTime(now(), payout);
+			double support = clientMap.get(plantOperatorId).getSupportRevenueInEUR().getOrDefault(accountingPeriod, 0.0);
+			ContractualPayout contractualPayout = new ContractualPayout(now(), payout, support);
 			fulfilNext(contract, contractualPayout);
+			clientMap.get(plantOperatorId).clearBefore(now());
 		}
 		store(OutputColumns.ReceivedMarketRevenues, receivedMarketRevenues);
 	}
@@ -464,21 +466,6 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 			}
 		}
 		return marketRevenue;
-	}
-
-	/** Forward information on support payment to client
-	 * 
-	 * @param messages not used
-	 * @param contracts with clients whom to forward support payment information, typically {@link RenewablePlantOperator}s */
-	private void forwardSupportPayout(ArrayList<Message> messages, List<Contract> contracts) {
-		for (Contract contract : contracts) {
-			long plantOperatorId = contract.getReceiverId();
-			TimePeriod accountingPeriod = SupportPolicy.extractAccountingPeriod(now(), contract, 1796L); // -3L
-			double supportRevenue = clientMap.get(plantOperatorId).getSupportRevenueInEUR().get(accountingPeriod);
-			AmountAtTime forwardedSupportPayment = new AmountAtTime(now(), supportRevenue);
-			fulfilNext(contract, forwardedSupportPayment);
-			clientMap.get(plantOperatorId).clearBefore(now());
-		}
 	}
 
 }

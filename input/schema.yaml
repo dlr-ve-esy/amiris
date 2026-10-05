@@ -431,6 +431,14 @@ AgentTypes:
                   description: "A group for a TechnologySet holding the specific MPVAR information."
                   unit: EUR/MWh
                   isAbout: [{name: "levelised cost of electricity", "@id": "OEO_00020127"}]
+              MaxNumberOfNegativeHours:
+                AttributeType: integer
+                Mandatory: false
+                List: false
+                MetaData:
+                  description: "Number of subsequent hours with negative power prices for which support is granted; values >= 0 allowed; -1 unlimited number of hours"
+                  unit: h
+                  isAbout: [ { name: "time span", "@id": "OEO_00030035" } ]
             MetaData:
               description: "A variable market premium."
               isAbout: [{name: "market premium", "@id": "OEO_00020109"}]
@@ -447,6 +455,14 @@ AgentTypes:
                   description: "A group for a TechnologySet holding the specific MPFIX information."
                   unit: EUR/MWh
                   isAbout: [{name: "market premium", "@id": "OEO_00020109"}]
+              MaxNumberOfNegativeHours:
+                AttributeType: integer
+                Mandatory: false
+                List: false
+                MetaData:
+                  description: "Number of subsequent hours with negative power prices for which support is granted; values >= 0 allowed; -1 unlimited number of hours"
+                  unit: h
+                  isAbout: [ { name: "time span", "@id": "OEO_00030035" } ]
             MetaData:
               description: "A fixed market premium."
               isAbout: [{name: "market premium", "@id": "OEO_00020109"}]
@@ -463,6 +479,14 @@ AgentTypes:
                   description: "A TimeSeries with the Lcoe used as the value to be applied in a variable ex post market premium scheme."
                   unit: EUR/MWh
                   isAbout: [{name: "levelised cost of electricity", "@id": "OEO_00020127"}]
+              MaxNumberOfNegativeHours:
+                AttributeType: integer
+                Mandatory: false
+                List: false
+                MetaData:
+                  description: "Number of subsequent hours with negative power prices for which support is granted; values >= 0 allowed; -1 unlimited number of hours"
+                  unit: h
+                  isAbout: [ { name: "time span", "@id": "OEO_00030035" } ]
             MetaData:
               description: "A group for a TechnologySet holding the specific CFD information."
               isAbout: [{name: "economic instrument", "@id": "OEO_00010456"}]

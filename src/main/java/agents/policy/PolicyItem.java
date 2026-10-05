@@ -109,7 +109,7 @@ public abstract class PolicyItem implements Portable {
 	 * @param group input group containing the requested paramter
 	 * @return maxNumberOfNegativeHours if set or its default */
 	protected int readMaxNumberOfNegativeHours(ParameterData group) {
-		int maxNumberOfNegativeHours = group.getIntegerOrDefault("MaxNumberOfNegativeHours", INFINITE_NEGATIVE_HOURS);
+		int maxNumberOfNegativeHours = group.getIntegerOrDefault("MaxNumberOfNegativeHours", 0);
 		if (maxNumberOfNegativeHours < 0 && maxNumberOfNegativeHours != INFINITE_NEGATIVE_HOURS) {
 			throw new RuntimeException(ERR_INVALID_NEGATIVE + maxNumberOfNegativeHours);
 		}

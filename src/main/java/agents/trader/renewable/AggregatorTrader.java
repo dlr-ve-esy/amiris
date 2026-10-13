@@ -27,6 +27,7 @@ import agents.trader.TraderWithClients;
 import communications.message.AmountAtTime;
 import communications.message.AwardData;
 import communications.message.ClearingTimes;
+import communications.message.ContractualPayout;
 import communications.message.SupportRequestData;
 import communications.message.SupportResponseData;
 import communications.message.TechnologySet;
@@ -84,7 +85,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		/** Request to obtain support payments for contracted technology set(s) */
 		SupportPayoutRequest,
 		/** Yield potential of contracted technology set(s) */
-		YieldPotential
+		YieldPotential,
 	}
 
 	/** Helper class to store producer ID along with each Bid */
@@ -333,7 +334,10 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		for (var bids : bidsBinnedByOfferPrice.values()) {
 			double productionPotentialInBinInMWH = bids.stream().mapToDouble(b -> b.powerPotential).sum();
 			actualProductionPotentialInMWH += productionPotentialInBinInMWH;
-			double assignmentShare = Math.min(1., energyToDispatch / productionPotentialInBinInMWH);
+			double assignmentShare = 0;
+			if (productionPotentialInBinInMWH != 0) {
+				assignmentShare = Math.min(1., energyToDispatch / productionPotentialInBinInMWH);
+			}
 			for (ProducerBid bid : bids) {
 				double dispatchedEnergy = assignmentShare * bid.powerPotential;
 				energyToDispatch = Math.max(0, energyToDispatch - dispatchedEnergy);
@@ -415,7 +419,7 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		store(OutputColumns.RefundedSupportInEUR, refundedSupport);
 	}
 
-	/** Forward support pay-out to clients
+	/** Forward total revenues and support pay-out to clients
 	 * 
 	 * @param messages not used
 	 * @param contracts with clients to pay-out, typically {@link RenewablePlantOperator}s */
@@ -427,7 +431,8 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 			double marketRevenue = calcMarketRevenue(plantOperatorId, accountingPeriod);
 			receivedMarketRevenues += marketRevenue;
 			double payout = applyPayoutStrategy(plantOperatorId, accountingPeriod, marketRevenue);
-			AmountAtTime contractualPayout = new AmountAtTime(now(), payout);
+			double support = clientMap.get(plantOperatorId).getSupportRevenueInEUR().getOrDefault(accountingPeriod, 0.0);
+			ContractualPayout contractualPayout = new ContractualPayout(now(), payout, support);
 			fulfilNext(contract, contractualPayout);
 			clientMap.get(plantOperatorId).clearBefore(now());
 		}
@@ -460,4 +465,5 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		}
 		return marketRevenue;
 	}
+
 }

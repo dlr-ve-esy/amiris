@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 MetaData:
   name: "AMIRIS"
-  version: "5.0.0"
+  version: "5.1.0"
   title: "open Agent-based Market model for the Investigation of Renewable and Integrated energy Systems"
   homepage: "https://helmholtz.software/software/amiris"
   documentation: "https://gitlab.com/dlr-ve/esy/amiris/amiris/-/blob/v5.0.0/docs/home.md"
@@ -431,6 +431,19 @@ AgentTypes:
                   description: "A group for a TechnologySet holding the specific MPVAR information."
                   unit: EUR/MWh
                   isAbout: [{name: "levelised cost of electricity", "@id": "OEO_00020127"}]
+              IsEligibleAtNegativePrices:
+                AttributeType: integer
+                Mandatory: false
+                List: false
+                Values:
+                  0:
+                    MetaData:
+                      description: "Support is not granted for times with negative market prices."
+                  1:
+                    MetaData:
+                      description: "Support is granted for times with negative market prices."
+                MetaData:
+                  description: "Set to 1 if support is granted for times with negative market prices; set to 0 if support is not granted at these times."
             MetaData:
               description: "A variable market premium."
               isAbout: [{name: "market premium", "@id": "OEO_00020109"}]
@@ -447,6 +460,19 @@ AgentTypes:
                   description: "A group for a TechnologySet holding the specific MPFIX information."
                   unit: EUR/MWh
                   isAbout: [{name: "market premium", "@id": "OEO_00020109"}]
+              IsEligibleAtNegativePrices:
+                AttributeType: integer
+                Mandatory: false
+                List: false
+                Values:
+                  0:
+                    MetaData:
+                      description: "Support is not granted for times with negative market prices."
+                  1:
+                    MetaData:
+                      description: "Support is granted for times with negative market prices."
+                MetaData:
+                  description: "Set to 1 if support is granted for times with negative market prices; set to 0 if support is not granted at these times."
             MetaData:
               description: "A fixed market premium."
               isAbout: [{name: "market premium", "@id": "OEO_00020109"}]
@@ -463,6 +489,19 @@ AgentTypes:
                   description: "A TimeSeries with the Lcoe used as the value to be applied in a variable ex post market premium scheme."
                   unit: EUR/MWh
                   isAbout: [{name: "levelised cost of electricity", "@id": "OEO_00020127"}]
+              IsEligibleAtNegativePrices:
+                AttributeType: integer
+                Mandatory: false
+                List: false
+                Values:
+                  0:
+                    MetaData:
+                      description: "Support is not granted for times with negative market prices."
+                  1:
+                    MetaData:
+                      description: "Support is granted for times with negative market prices."
+                MetaData:
+                  description: "Set to 1 if support is granted for times with negative market prices; set to 0 if support is not granted at these times."
             MetaData:
               description: "A group for a TechnologySet holding the specific CFD information."
               isAbout: [{name: "economic instrument", "@id": "OEO_00010456"}]

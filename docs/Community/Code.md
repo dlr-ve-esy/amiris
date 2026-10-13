@@ -60,17 +60,18 @@ where
 |-------------|--------------------|------------------|--------------------------------------------------------------------|
 | build       | :wrench:           | `wrench`           | update the build system or external dependencies                   |
 | ci          | :rocket:           | `rocket`           | change CI configurations                                           |
-| style       | :lipstick:         | `lipstick`         | change style or formatting, not affecting code meaning             |
+| delete      | :fire:             | `fire`             | remove code or files                                              |
+| docs        | :memo:             | `memo`             | change the documentation, e.g., README, license headers, changelog |
 | feat        | :sparkles:         | `sparkles`         | implement a feature                                                |
 | fix         | :bug:              | `bug`              | fix a bug                                                          |
-| docs        | :memo:             | `memo`             | change the documentation, e.g., README, license headers, changelog |
-| test        | :white_check_mark: | `white_check_mark` | add, update or correct tests                                       |
 | perf        | :zap:              | `zap`              | improve performance                                                |
-| refactor    | :recycle:          | `recycle`          | code changes that neither fix a bug nor add a feature                   |
+| refactor    | :recycle:          | `recycle`          | code changes that neither fix a bug nor add a feature              |
 | release     | :bookmark:         | `bookmark`         | release a version                                                  |
+| style       | :lipstick:         | `lipstick`         | change style or formatting, not affecting code meaning             |
+| test        | :white_check_mark: | `white_check_mark` | add, update or correct tests                                       |
 
 ## Pull-request
-### Before submitting 
+### Before submitting
 
 Please, check the following points before submitting a pull request:
 1. Please complete the [Contributor License Agreement](./docs/Community/CLA.pdf) and send it to [amiris@dlr.de](mailto:amiris@dlr.de).

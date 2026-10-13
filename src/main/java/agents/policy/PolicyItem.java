@@ -26,7 +26,7 @@ public abstract class PolicyItem implements Portable {
 
 	static final ParameterBuilder lcoeParam = Make.newSeries("Lcoe");
 	static final ParameterBuilder premiumParam = Make.newSeries("Premium");
-	static final ParameterBuilder maxNumberOfNegativeHoursParam = Make.newInt("MaxNumberOfNegativeHours").optional();
+	static final ParameterBuilder eligibleAtNegativePricesParam = Make.newInt("IsEligibleAtNegativePrices").optional();
 	private static final int INFINITE_NEGATIVE_HOURS = -1;
 
 	/** Available support instruments */
@@ -104,16 +104,15 @@ public abstract class PolicyItem implements Portable {
 	 * @throws MissingDataException if any required data is not provided */
 	abstract protected void setDataFromConfig(ParameterData group) throws MissingDataException;
 
-	/** Read data for maximum number of negative hours from given input
+	/** Convert eligibility of this Policy at negative prices to "maximum number of negative hours" parameter; since values other
+	 * than -1 or 0 for "MaxNumberOfNegativeHours" are not supported in the code, the pseudo-boolean configuration parameter
+	 * "IsEligibleAtNegativePrices" is exposed instead.
 	 * 
-	 * @param group input group containing the requested paramter
-	 * @return maxNumberOfNegativeHours if set or its default */
+	 * @param group input group containing the requested parameter
+	 * @return maxNumberOfNegativeHours converted from eligibility at negative prices */
 	protected int readMaxNumberOfNegativeHours(ParameterData group) {
-		int maxNumberOfNegativeHours = group.getIntegerOrDefault("MaxNumberOfNegativeHours", 0);
-		if (maxNumberOfNegativeHours < 0 && maxNumberOfNegativeHours != INFINITE_NEGATIVE_HOURS) {
-			throw new RuntimeException(ERR_INVALID_NEGATIVE + maxNumberOfNegativeHours);
-		}
-		return maxNumberOfNegativeHours;
+		int isEligibleAtNegativePrices = group.getIntegerOrDefault("IsEligibleAtNegativePrices", 1);
+		return isEligibleAtNegativePrices > 0 ? -1 : 0;
 	}
 
 	/** @return true if PolicyItem returns a type of market premium */

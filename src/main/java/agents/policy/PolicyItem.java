@@ -111,7 +111,7 @@ public abstract class PolicyItem implements Portable {
 	 * @param group input group containing the requested parameter
 	 * @return maxNumberOfNegativeHours converted from eligibility at negative prices */
 	protected int readMaxNumberOfNegativeHours(ParameterData group) {
-		int isEligibleAtNegativePrices = group.getIntegerOrDefault("IsEligibleAtNegativePrices", 0);
+		int isEligibleAtNegativePrices = group.getIntegerOrDefault("IsEligibleAtNegativePrices", 1);
 		return isEligibleAtNegativePrices > 0 ? -1 : 0;
 	}
 

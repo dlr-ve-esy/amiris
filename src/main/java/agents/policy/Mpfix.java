@@ -22,7 +22,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class Mpfix extends PolicyItem {
 	static final String ERR_NEGATIVE_PREMIUM = "Fixed market premium was negative at: ";
 
-	static final Tree parameters = Make.newTree().optional().add(premiumParam, maxNumberOfNegativeHoursParam).buildTree();
+	static final Tree parameters = Make.newTree().optional().add(premiumParam, eligibleAtNegativePricesParam).buildTree();
 
 	/** The fixed market premium in EUR/MWh */
 	private TimeSeries premium;

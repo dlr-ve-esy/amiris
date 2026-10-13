@@ -6,7 +6,7 @@ It sends the Portfolios to connected [ConventionalPlantOperators](./Conventional
 
 # Details
 
-The `PlantBuildingManager` builds power plants for a given [PowerPlantPrototype](../Modules/PowerplantPrototype.md).
+The `PlantBuildingManager` builds power plants for a given [PowerPlantPrototype](../Modules/PowerPlantPrototype.md).
 It creates new [PowerPlants](../Modules/PowerPlant.md) and tear-down old ones.
 Based on given inputs for the power plant prototypes, the `PlantBuildingManager` generates a new [Portfolio](../Modules/Portfolio.md) and sends it to a connected ConventionalPlantOperator.
 The `PlantBuildingManager` is abstract and has no strategies on its own to set up the power plant portfolios.
@@ -19,7 +19,7 @@ No dependencies per se - the `PlantBuildingManager` depends only on given input 
 
 # Input from file
 
-- `Prototype` Group, defined in [PowerPlantPrototype](../Modules/PowerplantPrototype.md)
+- `Prototype` Group, defined in [PowerPlantPrototype](../Modules/PowerPlantPrototype.md)
 - `PortfolioBuildingOffsetInSeconds` time offset between contracted delivery time of the portfolio and their actual first activation
 
 # Input from environment
@@ -42,7 +42,7 @@ None, see subclasses
 
 * [PowerPlant](../Modules/PowerPlant.md)
 * [Portfolio](../Modules/Portfolio.md)
-* [PowerPlantPrototype](../Modules/PowerplantPrototype.md)
+* [PowerPlantPrototype](../Modules/PowerPlantPrototype.md)
 
 # Messages
 

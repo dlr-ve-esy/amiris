@@ -53,7 +53,9 @@ public abstract class PowerPlantOperator extends Agent {
 		/** Fixed operation and maintenance costs */
 		FixedCostsInEUR,
 		/** Annual share of investment cost */
-		InvestmentAnnuityInEUR
+		InvestmentAnnuityInEUR,
+		/** Received support payments */
+		ReceivedSupportInEUR,
 	}
 
 	private final AnnualCostCalculator annualCost;
@@ -97,6 +99,7 @@ public abstract class PowerPlantOperator extends Agent {
 		ContractualPayout payout = message.getDataItemOfType(ContractualPayout.class);
 		store(OutputFields.ReceivedMoneyInEUR, payout.totalRevenuesInEUR);
 		digestPaymentPerPlant(payout.validAt, payout.totalRevenuesInEUR);
+		store(OutputFields.ReceivedSupportInEUR, payout.supportInEUR);
 	}
 
 	/** Optional function to digest payments for individual plants of plant operator

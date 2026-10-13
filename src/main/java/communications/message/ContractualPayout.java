@@ -19,13 +19,13 @@ public class ContractualPayout extends PointInTime {
 
 	/** Creates a new {@link ContractualPayout} message
 	 * 
-	 * @param timeStamp contractual payout is valid at
-	 * @param totalRevenues total revenues to be paid out
-	 * @param support to be paid ou */
-	public ContractualPayout(TimeStamp timeStamp, double totalRevenues, double support) {
+	 * @param timeStamp at which the pay-out is valid
+	 * @param totalRevenuesInEUR total revenues to be paid out in EUR
+	 * @param supportInEUR part of total revenues that is attributed to support payments */
+	public ContractualPayout(TimeStamp timeStamp, double totalRevenuesInEUR, double supportInEUR) {
 		super(timeStamp);
-		totalRevenuesInEUR = totalRevenues;
-		supportInEUR = support;
+		this.totalRevenuesInEUR = totalRevenuesInEUR;
+		this.supportInEUR = supportInEUR;
 	}
 
 	/** Mandatory for deserialisation of {@link DataItem}s

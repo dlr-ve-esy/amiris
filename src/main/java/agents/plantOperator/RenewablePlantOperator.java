@@ -11,7 +11,6 @@ import agents.trader.TraderWithClients;
 import agents.trader.renewable.AggregatorTrader;
 import communications.message.AmountAtTime;
 import communications.message.ClearingTimes;
-import communications.message.ContractualPayout;
 import communications.message.TechnologySet;
 import communications.portable.MarginalsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
@@ -26,7 +25,6 @@ import de.dlr.gitlab.fame.communication.Contract;
 import de.dlr.gitlab.fame.communication.Product;
 import de.dlr.gitlab.fame.communication.message.Message;
 import de.dlr.gitlab.fame.data.TimeSeries;
-import de.dlr.gitlab.fame.service.output.Output;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
 /** A {@link PowerPlantOperator} for renewable plants
@@ -64,13 +62,6 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 	public static enum Products {
 		/** A registration message to the marketing agent */
 		SetRegistration
-	}
-
-	/** Outputs of {@link RenewablePlantOperator} */
-	@Output
-	protected static enum OutputFields {
-		/** Received support payments */
-		ReceivedSupportInEUR,
 	}
 
 	/** A group of plants of the same energy carrier and support type attributed to a dedicated PowerPlantOperator */
@@ -153,15 +144,6 @@ public abstract class RenewablePlantOperator extends PowerPlantOperator {
 	/** @param time to calculate costs for
 	 * @return single Marginal item calculated for the given time */
 	abstract protected Marginal calcSingleMarginal(TimeStamp time);
-
-	@Override
-	protected void digestPayment(ArrayList<Message> input, List<Contract> contracts) {
-		Message message = CommUtils.getExactlyOneEntry(input);
-		ContractualPayout payout = message.getDataItemOfType(ContractualPayout.class);
-		store(PowerPlantOperator.OutputFields.ReceivedMoneyInEUR, payout.totalRevenuesInEUR);
-		digestPaymentPerPlant(payout.validAt, payout.totalRevenuesInEUR);
-		store(OutputFields.ReceivedSupportInEUR, payout.supportInEUR);
-	}
 
 	/** Returns the installed power at the specified time
 	 * 

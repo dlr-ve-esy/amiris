@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0 -->
 ### Changed
 - codemeta: updated affiliation of Nitsch to BOKU University #269 (@dlr_fn)
 
+### Removed
+- remove outdated tests with Python #274 (@dlr-cjs)
+
 ## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-10
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 

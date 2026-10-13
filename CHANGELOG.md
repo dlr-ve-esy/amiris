@@ -6,6 +6,9 @@ SPDX-License-Identifier: Apache-2.0 -->
 ### Changed
 - codemeta: updated affiliation of Nitsch to BOKU University #269 (@dlr_fn)
 
+### Removed
+- Remove outdated tests with Python #274 (@dlr-cjs)
+
 ### Fixed
 - Fix spelling errors in docs for `PowerPlantPrototype` #273 (@dlr_jk)
 

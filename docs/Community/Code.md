@@ -60,7 +60,7 @@ where
 |-------------|--------------------|------------------|--------------------------------------------------------------------|
 | build       | :wrench:           | `wrench`           | update the build system or external dependencies                   |
 | ci          | :rocket:           | `rocket`           | change CI configurations                                           |
-| delete      | :fire:             | `fire`             | remove code or files                                              |
+| delete      | :fire:             | `fire`             | remove code or files                                               |
 | docs        | :memo:             | `memo`             | change the documentation, e.g., README, license headers, changelog |
 | feat        | :sparkles:         | `sparkles`         | implement a feature                                                |
 | fix         | :bug:              | `bug`              | fix a bug                                                          |

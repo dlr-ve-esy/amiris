@@ -86,8 +86,6 @@ public abstract class AggregatorTrader extends TraderWithClients implements Powe
 		SupportPayoutRequest,
 		/** Yield potential of contracted technology set(s) */
 		YieldPotential,
-		/** Support forwarded to client */
-		SupportForward
 	}
 
 	/** Helper class to store producer ID along with each Bid */

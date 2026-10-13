@@ -10,8 +10,12 @@ SPDX-License-Identifier: Apache-2.0 -->
 - Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
 - Policy: Add remuneration switch for hours with negative prices #271 #275 (@dlr_jk, @dlr-cjs)
 
+### Removed
+- Remove outdated tests with Python #274 (@dlr-cjs)
+
 ### Fixed
-- Fix zero division in `AggregatorTrader` #270 (@dlr_jk)
+- Fix division by zero in `AggregatorTrader` #270 (@dlr_jk)
+- Fix spelling errors in docs for `PowerPlantPrototype` #273 (@dlr_jk)
 
 ## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-10
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_

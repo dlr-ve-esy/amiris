@@ -1,6 +1,6 @@
 # In short
 
-The `PowerplantPrototype` comprises basic data of conventional power plants and is used in [PowerPlants](./PowerPlant.md) and [Portfolios](./Portfolio.md).
+The `PowerPlantPrototype` comprises basic data of conventional power plants and is used in [PowerPlants](./PowerPlant.md) and [Portfolios](./Portfolio.md).
 
 # In detail
 
@@ -15,7 +15,7 @@ Covered parameters are:
 
 # Input
 
-`PowerplantPrototype` also defines a ParameterTree of input parameters.
+`PowerPlantPrototype` also defines a ParameterTree of input parameters.
 This set can be used in associated Agents to assemble their set of input parameters.
 Required inputs are:
 

@@ -11,6 +11,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ### Fixed
 - Fix zero division in `AggregatorTrader` #270 (@dlr_jk)
+- Fix `MaxNumberOfNegativeHours` missing from schema #271 (@dlr_jk)
 
 ## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-10
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
@@ -40,7 +41,6 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
 - Fix packaging with MPI using Java 11 container #268 !284 (@dlr-cjs)
-- Fix `MaxNumberOfNegativeHours` missing from schema #271 (@dlr_jk)
 
 ## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - 2026-08-26
 ### Fixed

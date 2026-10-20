@@ -4,6 +4,7 @@
 package agents.electrolysis;
 
 import java.util.Arrays;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import agents.markets.meritOrder.Constants;
 import agents.markets.meritOrder.books.DemandOrderBook;
 import agents.markets.meritOrder.books.SupplyOrderBook;
@@ -17,7 +18,6 @@ import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
-import util.Polynomial;
 
 /** Dispatches an electrolysis unit with the aim to minimise its cost using an electricity price forecast and a hydrogen
  * production goal
@@ -25,15 +25,21 @@ import util.Polynomial;
  * @author Christoph Schimeczek */
 public class SingleAgentSimple extends ElectrolyzerStrategist {
 	/** Inputs specific to {@link SingleAgentSimple} electrolyzer strategists */
+
+	static final String PARAM_TARGET = "HydrogenProductionTargetInMWH";
+	static final String PARAM_INTERVAL = "ProductionTargetIntervalInHours";
+	static final String PARAM_COEFF = "PriceSensitivityFunction";
+	static final String PARAM_STEP = "PowerStepInMW";
+
 	public static final Tree parameters = Make.newTree().optional().add(
-			Make.newSeries("HydrogenProductionTargetInMWH").help("How much hydrogen to produce per production interval"),
-			Make.newInt("ProductionTargetIntervalInHours").help("How many hours a production interval spans"),
-			Make.newDouble("PriceSensitivityFunction").list().help("Price change per additional load in EUR per MWH per MWH"),
-			Make.newDouble("PowerStepInMW")).buildTree();
+			Make.newSeries(PARAM_TARGET).help("How much hydrogen to produce per production interval"),
+			Make.newInt(PARAM_INTERVAL).help("How many hours a production interval spans"),
+			Make.newDouble(PARAM_COEFF).list().help("Price change per additional load in EUR per MWH per MWH"),
+			Make.newDouble(PARAM_STEP)).buildTree();
 
 	private final TimeSeries productionTargets;
 	private final int productionInterval;
-	private final Polynomial priceSensitivity;
+	private final PolynomialFunction priceSensitivity;
 	private final double powerStepInMW;
 
 	private TimePeriod productionPeriod;
@@ -45,10 +51,11 @@ public class SingleAgentSimple extends ElectrolyzerStrategist {
 	 * @throws MissingDataException if any required input data is missing */
 	public SingleAgentSimple(ParameterData generalInput, ParameterData specificInput) throws MissingDataException {
 		super(generalInput);
-		productionTargets = specificInput.getTimeSeries("HydrogenProductionTargetInMWH");
-		productionInterval = specificInput.getInteger("ProductionTargetIntervalInHours");
-		priceSensitivity = new Polynomial(specificInput.getList("PriceSensitivityFunction", Double.class));
-		powerStepInMW = specificInput.getDouble("PowerStepInMW");
+		productionTargets = specificInput.getTimeSeries(PARAM_TARGET);
+		productionInterval = specificInput.getInteger(PARAM_INTERVAL);
+		double[] coefficients = specificInput.getList(PARAM_COEFF, Double.class).stream().mapToDouble(d -> d).toArray();
+		priceSensitivity = new PolynomialFunction(coefficients);
+		powerStepInMW = specificInput.getDouble(PARAM_STEP);
 		Arrays.fill(priceScheduleInEURperMWH, Constants.SCARCITY_PRICE_IN_EUR_PER_MWH);
 	}
 
@@ -146,7 +153,7 @@ public class SingleAgentSimple extends ElectrolyzerStrategist {
 
 	/** @return estimate price increase due to additional demand */
 	private double calcPriceIncrease(double currentPrice, double additionalDemandInMWH) {
-		return priceSensitivity.evaluateAt(currentPrice) * additionalDemandInMWH;
+		return priceSensitivity.value(currentPrice) * additionalDemandInMWH;
 	}
 
 	/** transfer optimised dispatch to schedule arrays */

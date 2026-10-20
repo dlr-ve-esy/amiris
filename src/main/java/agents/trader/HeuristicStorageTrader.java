@@ -6,6 +6,7 @@ package agents.trader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import agents.flexibility.BidSchedule;
 import agents.flexibility.GenericDevice;
 import agents.forecast.sensitivity.SensitivityForecastClient;
@@ -36,7 +37,6 @@ import de.dlr.gitlab.fame.time.Constants.Interval;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
-import util.Polynomial;
 
 /** A Trader that operates a {@link GenericDevice} and uses a heuristic dispatch strategy based on sensitivity forecasts
  * 
@@ -87,12 +87,12 @@ public class HeuristicStorageTrader extends Trader implements SensitivityForecas
 
 	/** @return {@link HeuristicMedian} strategist created from input */
 	private HeuristicMedian createStrategist(ParameterData input) throws MissingDataException {
-		Polynomial polynomial = new Polynomial(input.getList(PARAM_PREFACTORS, Double.class));
+		double[] coefficients = input.getList(PARAM_PREFACTORS, Double.class).stream().mapToDouble(d -> d).toArray();
 		double forecastHorizonInHours = input.getDouble(PARAM_HORIZON) * Constants.STEPS_PER_HOUR;
 		int forecastPeriods = (int) Math.round(forecastHorizonInHours / operationPeriod.getSteps());
 		double scheduleDuration = input.getDouble(PARAM_SCHEDULE) * Constants.STEPS_PER_HOUR;
 		int schedulePeriods = (int) Math.round(scheduleDuration / operationPeriod.getSteps());
-		return new HeuristicMedian(polynomial, device, forecastPeriods, schedulePeriods);
+		return new HeuristicMedian(new PolynomialFunction(coefficients), device, forecastPeriods, schedulePeriods);
 	}
 
 	/** Send registration information to {@link SensitivityForecastProvider}

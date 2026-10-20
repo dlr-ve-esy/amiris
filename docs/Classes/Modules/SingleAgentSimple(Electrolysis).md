@@ -8,7 +8,7 @@ SingleAgentSimple tries to utilise hours with high economic potential within the
 
 * `HydrogenProductionTargetInMWH` Time series specifying the targeted *total* hydrogen production within the `ProductionTargetIntervalInHours`; **Important:** Always synchronise data points with production target interval (e.g.: production interval X hours &rarr; total hydrogen production target specifications every X hours)
 * `ProductionTargetIntervalInHours` Time resolution of `HydrogenProductionTargetInMWH` time series data points; **Beware**: If this time resolution does not match that of the time series and time series is anything other than a constant &rarr; results will be wrong! *Attention*: Value should not be smaller than forecast period!
-* `PriceSensitivityFunction` Estimate of how the electricity price rises with increasing the demand at a given price (i.e. price change per demand change over price); given as linear factors of a [Polynomial](../Polynomial.md)
+* `PriceSensitivityFunction` Estimate of how the electricity price rises with increasing the demand at a given price (i.e. price change per demand change over price); given as linear factors of a polynomial
 * `PowerStepInMW` Energy resolution of the algorithm: the smaller, the more steps are required to complete the algorithm
 
 # Details

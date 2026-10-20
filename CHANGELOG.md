@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ### Removed
 - Remove outdated tests with Python #274 (@dlr-cjs)
+- Replace class `Polynomial` with commons-math `PolynomialFunction`#277 (@dlr-cjs)
 
 ### Fixed
 - Fix division by zero in `AggregatorTrader` #270 (@dlr_jk)

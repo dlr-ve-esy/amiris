@@ -18,6 +18,7 @@ import de.dlr.gitlab.fame.data.TimeSeries;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
+import util.Util;
 
 /** Dispatches an electrolysis unit with the aim to minimise its cost using an electricity price forecast and a hydrogen
  * production goal
@@ -53,8 +54,7 @@ public class SingleAgentSimple extends ElectrolyzerStrategist {
 		super(generalInput);
 		productionTargets = specificInput.getTimeSeries(PARAM_TARGET);
 		productionInterval = specificInput.getInteger(PARAM_INTERVAL);
-		double[] coefficients = specificInput.getList(PARAM_COEFF, Double.class).stream().mapToDouble(d -> d).toArray();
-		priceSensitivity = new PolynomialFunction(coefficients);
+		priceSensitivity = Util.createPolynomial(specificInput.getList(PARAM_COEFF, Double.class));
 		powerStepInMW = specificInput.getDouble(PARAM_STEP);
 		Arrays.fill(priceScheduleInEURperMWH, Constants.SCARCITY_PRICE_IN_EUR_PER_MWH);
 	}

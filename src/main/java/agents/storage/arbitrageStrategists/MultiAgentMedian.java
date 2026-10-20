@@ -58,8 +58,7 @@ public class MultiAgentMedian extends ArbitrageStrategist {
 	public MultiAgentMedian(ParameterData generalInput, ParameterData specificInput, Device storage)
 			throws MissingDataException {
 		super(generalInput, storage);
-		double[] c = specificInput.getList(PARAM_PREFACTORS, Double.class).stream().mapToDouble(d -> d).toArray();
-		assessmentFunction = new PolynomialFunction(c);
+		assessmentFunction = Util.createPolynomial(specificInput.getList(PARAM_PREFACTORS, Double.class));
 	}
 
 	@Override

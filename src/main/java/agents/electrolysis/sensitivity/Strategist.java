@@ -6,7 +6,6 @@ package agents.electrolysis.sensitivity;
 import java.util.ArrayList;
 import agents.electrolysis.Electrolyzer;
 import agents.flexibility.BidSchedule;
-import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunctionBuilder;
 import agents.markets.meritOrder.Constants;
@@ -37,6 +36,7 @@ public abstract class Strategist {
 	static final String PARAM_TOLERANCE = "BidToleranceInEURperMWH";
 	static final String GROUP_BIDS = "Bidding";
 
+	// TODO: Add monthly equivalence input and class
 	public static final Tree parameters = Make.newTree().addAs(GROUP_ASSESSMENT, AssessmentFunctionBuilder.parameters)
 			.add(Make.newGroup(GROUP_BIDS).add(Make.newDouble(PARAM_DURATION), Make.newDouble(PARAM_TOLERANCE).optional()))
 			.addAs(ElectrolyzerStrategist.GROUP_STRATEGY, ElectrolyzerStrategist.parameters)
@@ -61,16 +61,26 @@ public abstract class Strategist {
 	 * 
 	 * @param input parameters associated with strategists
 	 * @param electrolyzer for which to create dispatch strategies
-	 * @param operationPeriod time interval of a dispatch product
+	 * @param operationSpan time interval of a dispatch product
 	 * @throws MissingDataException if any required input is missing */
-	protected Strategist(ParameterData input, Electrolyzer electrolyzer, TimePeriod operationPeriod)
+	protected Strategist(ParameterData input, Electrolyzer electrolyzer, TimeSpan operationSpan)
 			throws MissingDataException {
 		ParameterData bidding = input.getGroup(GROUP_BIDS);
-		scheduleDurationPeriods = Optimiser.calcHorizonInPeriodSteps(operationPeriod, bidding.getDouble(PARAM_DURATION));
+		scheduleDurationPeriods = calcMarketingIntervals(operationSpan, bidding.getDouble(PARAM_DURATION));
 		bidTolerance = bidding.getDoubleOrDefault(PARAM_TOLERANCE, 1E-3);
 		assessmentFunction = AssessmentFunctionBuilder.build(input.getGroup(GROUP_ASSESSMENT),
 				electrolyzer.getVariableCostSeries());
 		allocateSchedulingArrays();
+	}
+
+	/** Returns how many full marketing intervals can be fitted into horizonInHours
+	 * 
+	 * @param marketingInterval time span of marketingInterval
+	 * @param horizonInHours to be considered
+	 * @return how many full marketing intervals can be fitted into horizonInHours */
+	public static int calcMarketingIntervals(TimeSpan marketingInterval, double horizonInHours) {
+		double intervalsPerHour = (double) de.dlr.gitlab.fame.time.Constants.STEPS_PER_HOUR / marketingInterval.getSteps();
+		return (int) (horizonInHours * intervalsPerHour);
 	}
 
 	/** Initialises general permanent arrays used for schedule preparation */

@@ -27,9 +27,9 @@ public class ProductionTarget extends ElectrolyzerStrategist {
 	private final double powerStepInMW;
 	private TimePeriod productionPeriod;
 
-	protected ProductionTarget(ParameterData input, Electrolyzer electrolyzer, TimePeriod operationPeriod)
+	protected ProductionTarget(ParameterData input, Electrolyzer electrolyzer, TimeSpan operationSpan)
 			throws MissingDataException {
-		super(input, electrolyzer, operationPeriod);
+		super(input, electrolyzer, operationSpan);
 		ParameterData production = input.getGroup(GROUP_PRODUCTION);
 		productionTargets = production.getTimeSeries(PARAM_TARGET);
 		productionInterval = production.getInteger(PARAM_INTERVAL);

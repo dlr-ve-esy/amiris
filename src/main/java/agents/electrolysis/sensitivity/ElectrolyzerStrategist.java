@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import agents.electrolysis.Electrolyzer;
 import agents.flexibility.BidSchedule;
-import agents.flexibility.dynamicProgramming.Optimiser;
 import agents.policy.hydrogen.PolicyItem;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
 import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.time.TimePeriod;
+import de.dlr.gitlab.fame.time.TimeSpan;
 import de.dlr.gitlab.fame.time.TimeStamp;
 
 /** Base class for electrolysis strategists using sensitivity forecasts
@@ -29,7 +29,8 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	static final String PARAM_FORESIGHT = "PlanningHorizonInHours";
 	static final String PARAM_TYPE = "Type";
 
-	static final Tree parameters = Make.newTree().addAs(ProductionTarget.GROUP_PRODUCTION, ProductionTarget.parameters)
+	public static final Tree parameters = Make.newTree()
+			.addAs(ProductionTarget.GROUP_PRODUCTION, ProductionTarget.parameters)
 			.add(Make.newDouble(PARAM_FORESIGHT), Make.newEnum(PARAM_TYPE, StrategistType.class))
 			.buildTree();
 
@@ -51,16 +52,19 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	protected BidSchedule schedule;
 	/** Number of time intervals for forecasting */
 	protected int forecastSteps;
+	/** Length of planning time in hours */
+	protected double planningHorizonInHours;
 
 	private TreeMap<TimePeriod, Double> hydrogenPrices = new TreeMap<>();
 	private PolicyItem policyItem;
 
-	protected ElectrolyzerStrategist(ParameterData input, Electrolyzer electrolyzer, TimePeriod operationPeriod)
+	protected ElectrolyzerStrategist(ParameterData input, Electrolyzer electrolyzer, TimeSpan operationSpan)
 			throws MissingDataException {
-		super(input, electrolyzer, operationPeriod);
+		super(input, electrolyzer, operationSpan);
 		this.electrolyzer = electrolyzer;
 		ParameterData strategy = input.getGroup(GROUP_STRATEGY);
-		forecastSteps = Optimiser.calcHorizonInPeriodSteps(operationPeriod, strategy.getDouble(PARAM_FORESIGHT));
+		planningHorizonInHours = strategy.getDouble(PARAM_FORESIGHT);
+		forecastSteps = calcMarketingIntervals(operationSpan, planningHorizonInHours);
 		allocatePlanningArrays();
 	}
 
@@ -75,16 +79,16 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	 * 
 	 * @param input parameters associated with electrolysis strategists
 	 * @param electrolyzer to be assigned to the new strategist
-	 * @param operationPeriod of the electricity products
+	 * @param operationSpan of the electricity products
 	 * @return new {@link Strategist} created from the given input
 	 * @throws MissingDataException if any required input is missing */
 	public static ElectrolyzerStrategist newStrategist(ParameterData input, Electrolyzer electrolyzer,
-			TimePeriod operationPeriod)
+			TimeSpan operationSpan)
 			throws MissingDataException {
 		StrategistType type = input.getGroup(GROUP_STRATEGY).getEnum(PARAM_TYPE, StrategistType.class);
 		switch (type) {
 			case PRODUCTION_TARGET:
-				return new ProductionTarget(input, electrolyzer, operationPeriod);
+				return new ProductionTarget(input, electrolyzer, operationSpan);
 			default:
 				throw new RuntimeException(ERR_UNKNOWN_STRATEGIST + type);
 		}
@@ -141,7 +145,7 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 			electricityPriceForecasts[hour] = assessmentFunction.getElectricityPriceAt(stepTimes[hour], 0);
 		}
 	}
-	
+
 	// TODO: Update electricity price at time with power amount x
 
 	/** Returns a valid schedule for the given target time

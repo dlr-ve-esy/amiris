@@ -148,12 +148,18 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 		}
 	}
 
-	// TODO: Update electricity price at time with power amount x
+	/** Set electricity price for specified hour in forecast interval, assuming given total external energy
+	 * 
+	 * @param hour to evaluate
+	 * @param externalEnergyInMWH charging if positive, discharging when negative */
+	protected void updateElectricityPrice(int hour, double externalEnergyInMWH) {
+		electricityPriceForecasts[hour] = assessmentFunction.getElectricityPriceAt(stepTimes[hour], externalEnergyInMWH);
+	}
 
 	/** Returns a valid schedule for the given target time
 	 * 
 	 * @param targetTime to return a valid schedule for
-	 * @return the previous schedule (if still valid) or a newly created one 
+	 * @return the previous schedule (if still valid) or a newly created one
 	 * @throws DispatchPlanningError */
 	public BidSchedule getValidSchedule(TimeStamp targetTime) throws DispatchPlanningError {
 		if (schedule == null || !schedule.isApplicable(targetTime, actualProducedHydrogen)) {

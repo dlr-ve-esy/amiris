@@ -210,4 +210,51 @@ public class Sensitivity implements Portable {
 	public boolean isValid() {
 		return supplyPowers.length > 1 && demandPowers.length > 1;
 	}
+
+	/** Returns absolute value of energy delta on top of given external energy delta that results in the same price level
+	 * 
+	 * @param externalEnergyDeltaInMWH demand &gt; 0; supply &lt; 0
+	 * @return absolute value of energy delta on top of given external energy delta that results in the same price level */
+	public double getRemainingEnergyAtSamePriceInMWH(double externalEnergyDeltaInMWH) {
+		double modifiedEnergy = multiplier * externalEnergyDeltaInMWH;
+		if (modifiedEnergy > 0) {
+			return getSupplyPowerStepLimit(modifiedEnergy) / Math.abs(multiplier);
+		} else if (modifiedEnergy < 0) {
+			return getDemandPowerStepLimit(modifiedEnergy) / Math.abs(multiplier);
+		}
+		return Math.min(getSupplyPowerStepLimit(0), getDemandPowerStepLimit(0)) / Math.abs(multiplier);
+	}
+
+	/** Returns energy delta on top of given external energy delta that results in the same price level
+	 * 
+	 * @param baseSupplyEnergyInMWH on top of which the remaining supply at the same price level is searched
+	 * @return energy delta on top of given external energy delta that results in the same price level */
+	private double getSupplyPowerStepLimit(double baseSupplyEnergyInMWH) {
+		int firstIndex = baseSupplyEnergyInMWH >= lastSupplyEnergy ? lastSupplyIndex : 1;
+		for (int index = firstIndex; index < supplyPowers.length; index++) {
+			if (supplyPowers[index] >= baseSupplyEnergyInMWH) {
+				lastSupplyEnergy = baseSupplyEnergyInMWH;
+				lastSupplyIndex = index;
+				return supplyPowers[index] - baseSupplyEnergyInMWH;
+			}
+		}
+		return Double.NaN;
+	}
+
+	/** Returns energy delta on top of given external energy delta that results in the same price level
+	 * 
+	 * @param baseDemandEnergyInMWH on top of which the remaining demand at the same price level is searched
+	 * @return energy delta on top of given external energy delta that results in the same price level */
+	private double getDemandPowerStepLimit(double baseDemandEnergyInMWH) {
+		int firstIndex = baseDemandEnergyInMWH >= lastDemandEnergy ? lastDemandIndex : 1;
+		for (int index = firstIndex; index < demandPowers.length; index++) {
+			if (demandPowers[index] >= baseDemandEnergyInMWH) {
+				lastDemandEnergy = baseDemandEnergyInMWH;
+				lastDemandIndex = index;
+				return demandPowers[index] - baseDemandEnergyInMWH;
+			}
+		}
+		return Double.NaN;
+	}
+
 }

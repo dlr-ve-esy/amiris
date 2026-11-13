@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.TreeMap;
 import agents.electrolysis.Electrolyzer;
 import agents.flexibility.BidSchedule;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
+import agents.forecast.sensitivity.SensitivityForecastProvider.ForecastType;
 import agents.policy.hydrogen.PolicyItem;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
@@ -151,8 +153,9 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	/** Returns a valid schedule for the given target time
 	 * 
 	 * @param targetTime to return a valid schedule for
-	 * @return the previous schedule (if still valid) or a newly created one */
-	public BidSchedule getValidSchedule(TimeStamp targetTime) {
+	 * @return the previous schedule (if still valid) or a newly created one 
+	 * @throws DispatchPlanningError */
+	public BidSchedule getValidSchedule(TimeStamp targetTime) throws DispatchPlanningError {
 		if (schedule == null || !schedule.isApplicable(targetTime, actualProducedHydrogen)) {
 			clearSensitivitiesBefore(targetTime);
 			TimePeriod targetTimeSegment = new TimePeriod(targetTime, OPERATION_PERIOD);
@@ -177,7 +180,7 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	 * 
 	 * @param firstTime first time period to be covered by a created schedule
 	 * @return List of {@link TimeStamp}s at which hydrogen prices is not yet defined */
-	public ArrayList<TimeStamp> getMissingHydrogenPriceForecastsTimes(TimePeriod firstTime) {
+	public ArrayList<TimeStamp> getMissingHydrogenPriceForecastTimes(TimePeriod firstTime) {
 		return getMissingForecastTimes(hydrogenPrices, firstTime);
 	}
 
@@ -238,5 +241,15 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	 * @param policyItem to be set */
 	public void setSupportRateInEURperMWH(PolicyItem policyItem) {
 		this.policyItem = policyItem;
+	}
+
+	/** @return ForecastType for electrolyzer strategist's assessment function */
+	public ForecastType getSensitivityType() {
+		return assessmentFunction.getSensitivityType();
+	}
+
+	/** @return latest multiplier of assessment function */
+	public double getMultiplier() {
+		return assessmentFunction.getMultiplier();
 	}
 }

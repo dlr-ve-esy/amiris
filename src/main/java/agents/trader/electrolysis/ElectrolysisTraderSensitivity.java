@@ -4,14 +4,19 @@
 package agents.trader.electrolysis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import agents.electrolysis.Electrolyzer;
 import agents.electrolysis.sensitivity.ElectrolyzerStrategist;
-import agents.flexibility.Strategist;
+import agents.flexibility.BidSchedule;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.forecast.sensitivity.SensitivityForecastClient;
+import agents.forecast.sensitivity.SensitivityForecastProvider;
 import agents.markets.DayAheadMarket;
+import agents.markets.DayAheadMarketTrader;
 import agents.markets.FuelsMarket;
 import agents.markets.FuelsTrader;
+import agents.markets.meritOrder.Bid;
 import agents.policy.hydrogen.HydrogenSupportClient;
 import agents.policy.hydrogen.HydrogenSupportProvider;
 import agents.policy.hydrogen.Mpfix;
@@ -19,11 +24,14 @@ import agents.trader.Trader;
 import communications.message.AmountAtTime;
 import communications.message.AwardData;
 import communications.message.ClearingTimes;
+import communications.message.ForecastClientRegistration;
 import communications.message.FuelBid;
 import communications.message.FuelBid.BidType;
 import communications.message.FuelCost;
 import communications.message.FuelData;
 import communications.message.HydrogenPolicyRegistration;
+import communications.message.PointInTime;
+import communications.portable.BidsAtTime;
 import communications.portable.HydrogenSupportData;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
 import de.dlr.gitlab.fame.agent.input.GroupBuilder;
@@ -45,6 +53,8 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * @author Christoph Schimeczek, Johannes Kochems */
 public class ElectrolysisTraderSensitivity extends Trader
 		implements SensitivityForecastClient, FuelsTrader, HydrogenSupportClient {
+	static final String ERR_PLANNING = "Dispatch planning failed for: ";
+
 	static final String GROUP_DEVICE = "Device";
 	static final String GROUP_STRATEGY = "Strategy";
 	static final String GROUP_SUPPORT = "Support";
@@ -64,12 +74,16 @@ public class ElectrolysisTraderSensitivity extends Trader
 		/** Amount of hydrogen produced */
 		ProducedHydrogenInMWH,
 		/** Total received money for selling hydrogen in EUR */
-		ReceivedMoneyForHydrogenInEUR
+		ReceivedMoneyForHydrogenInEUR,
+		DispatchMultiplier,
+		OfferedChargePriceInEURperMWH,
+		ElectricityPricePredictionInEURperMWH
 	}
 
 	private final String fuelType;
 	private final FuelData fuelData;
 	private HydrogenPolicyRegistration registrationData;
+	private BidSchedule bidSchedule;
 
 	/** Electrolyzer device used for hydrogen production */
 	protected final Electrolyzer electrolyzer;
@@ -94,15 +108,14 @@ public class ElectrolysisTraderSensitivity extends Trader
 		fuelData = new FuelData(fuelType);
 
 		registrationData = HydrogenSupportClient.getRegistration(fromInput().getOptionalGroup(GROUP_SUPPORT));
-		// call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);
-		// call(this::requestElectricityForecast).on(SensitivityForecastClient.Products.SensitivityRequest)
-		// .use(DayAheadMarket.Products.GateClosureInfo);
+		call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);
+		call(this::requestElectricitySensitivity).on(SensitivityForecastClient.Products.SensitivityRequest)
+				.use(DayAheadMarket.Products.GateClosureInfo);
+		call(this::updateForecast).onAndUse(SensitivityForecastProvider.Products.SensitivityForecast);
 		call(this::requestHydrogenPriceForecast).on(FuelsTrader.Products.FuelPriceForecastRequest)
 				.use(DayAheadMarket.Products.GateClosureInfo);
-		// call(this::updateForecast).onAndUse(SensitivityForecastProvider.Products.SensitivityForecast);
 		call(this::updateHydrogenPriceForecast).onAndUse(FuelsMarket.Products.FuelPriceForecast);
-
-		// call(this::prepareBids).on(DayAheadMarketTrader.Products.Bids).use(DayAheadMarket.Products.GateClosureInfo);
+		call(this::prepareBids).on(DayAheadMarketTrader.Products.Bids).use(DayAheadMarket.Products.GateClosureInfo);
 		call(this::digestAwards).onAndUse(DayAheadMarket.Products.Awards);
 		call(this::sellProducedHydrogen).on(FuelsTrader.Products.FuelBid);
 		call(this::digestSaleReturns).onAndUse(FuelsMarket.Products.FuelBill);
@@ -112,20 +125,38 @@ public class ElectrolysisTraderSensitivity extends Trader
 		call(this::digestSupportPayout).onAndUse(HydrogenSupportProvider.Products.SupportPayout);
 	}
 
-	// /** Requests a forecast from a contracted Forecaster.
-	// *
-	// * @param input one ClearingTimes message from connected {@link DayAheadMarket}
-	// * @param contracts single contracted Forecaster to request forecasts from */
-	// protected void requestElectricityForecast(ArrayList<Message> input, List<Contract> contracts) {
-	// Contract contract = CommUtils.getExactlyOneEntry(contracts);
-	// ClearingTimes clearingTimes = CommUtils.getExactlyOneEntry(input).getDataItemOfType(ClearingTimes.class);
-	// TimePeriod nextTime = new TimePeriod(clearingTimes.getTimes().get(0), OPERATION_PERIOD);
-	// var missingForecastTimes = strategist.get;
-	// for (TimeStamp missingForecastTime : missingForecastTimes) {
-	// PointInTime pointInTime = new PointInTime(missingForecastTime);
-	// fulfilNext(contract, pointInTime);
-	// }
-	// }
+	/** Send registration information to {@link SensitivityForecastProvider}
+	 * 
+	 * @param input none
+	 * @param contracts single contract with a {@link SensitivityForecastProvider} */
+	private void registerAtForecaster(ArrayList<Message> input, List<Contract> contracts) {
+		Contract contract = CommUtils.getExactlyOneEntry(contracts);
+		double averagePowerInMW = electrolyzer.getPeakPower(now());
+		double energyInMWH = averagePowerInMW * OPERATION_PERIOD.getSteps() / new TimeSpan(1, Interval.HOURS).getSteps();
+		fulfilNext(contract, new ForecastClientRegistration(strategist.getSensitivityType(), energyInMWH));
+	}
+
+	/** Requests a sensitivity forecast from a contracted SensitivityForecaster.
+	 *
+	 * @param input one ClearingTimes message from connected {@link DayAheadMarket}
+	 * @param contracts single contracted Forecaster to request forecasts from */
+	protected void requestElectricitySensitivity(ArrayList<Message> input, List<Contract> contracts) {
+		Contract contract = CommUtils.getExactlyOneEntry(contracts);
+		TimePeriod nextTime = new TimePeriod(extractTimesFromGateClosureInfoMessages(input).get(0), OPERATION_PERIOD);
+		var missingForecastTimes = strategist.getMissingForecastTimes(nextTime);
+		for (TimeStamp missingForecastTime : missingForecastTimes) {
+			PointInTime pointInTime = new PointInTime(missingForecastTime);
+			fulfilNext(contract, pointInTime);
+		}
+	}
+
+	/** Store input forecasts for dispatch planning
+	 * 
+	 * @param input to be stored
+	 * @param contracts not used */
+	protected void updateForecast(ArrayList<Message> input, List<Contract> contracts) {
+		strategist.storeForecast(input);
+	}
 
 	/** Requests forecast of hydrogen prices from one contracted {@link FuelsMarket}
 	 * 
@@ -133,9 +164,8 @@ public class ElectrolysisTraderSensitivity extends Trader
 	 * @param contracts single contracted fuels market to request hydrogen price(s) from */
 	private void requestHydrogenPriceForecast(ArrayList<Message> input, List<Contract> contracts) {
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
-		ClearingTimes clearingTimes = CommUtils.getExactlyOneEntry(input).getDataItemOfType(ClearingTimes.class);
-		TimePeriod nextTime = new TimePeriod(clearingTimes.getTimes().get(0), Strategist.OPERATION_PERIOD);
-		ArrayList<TimeStamp> missingForecastTimes = strategist.getMissingHydrogenPriceForecastsTimes(nextTime);
+		TimePeriod nextTime = new TimePeriod(extractTimesFromGateClosureInfoMessages(input).get(0), OPERATION_PERIOD);
+		ArrayList<TimeStamp> missingForecastTimes = strategist.getMissingHydrogenPriceForecastTimes(nextTime);
 		ClearingTimes missingTimes = new ClearingTimes(
 				missingForecastTimes.toArray(new TimeStamp[missingForecastTimes.size()]));
 		sendFuelPriceRequest(contract, fuelData, missingTimes);
@@ -149,9 +179,55 @@ public class ElectrolysisTraderSensitivity extends Trader
 		for (Message inputMessage : input) {
 			FuelCost priceForecastMessage = readFuelPriceMessage(inputMessage);
 			double priceForecastInEURperThermalMWH = priceForecastMessage.amount;
-			TimePeriod timeSegment = new TimePeriod(priceForecastMessage.validAt, Strategist.OPERATION_PERIOD);
+			TimePeriod timeSegment = new TimePeriod(priceForecastMessage.validAt, OPERATION_PERIOD);
 			strategist.storeHydrogenPriceForecast(timeSegment, priceForecastInEURperThermalMWH);
 		}
+	}
+
+	/** Prepares and sends Bids to the contracted partner
+	 * 
+	 * @param input one ClearingTimes message
+	 * @param contracts one partner */
+	private void prepareBids(ArrayList<Message> input, List<Contract> contracts) {
+		Contract contractToFulfil = CommUtils.getExactlyOneEntry(contracts);
+		for (TimeStamp targetTime : extractTimesFromGateClosureInfoMessages(input)) {
+			excuteBeforeBidPreparation(targetTime);
+			Bid demandBid = prepareHourlyDemandBids(targetTime);
+			store(OutputColumns.RequestedEnergyInMWH, demandBid.getEnergyAmountInMWH());
+			store(Outputs.ElectricityPricePredictionInEURperMWH,
+					bidSchedule.getExpectedElectricityPricesInEURperMWH(targetTime));
+			fulfilNext(contractToFulfil,
+					new BidsAtTime(targetTime, getId(), null, Arrays.asList(demandBid)));
+		}
+		store(Outputs.DispatchMultiplier, strategist.getMultiplier());
+	}
+
+	/** Clears past sensitivities and creates new schedule
+	 * 
+	 * @param targetTime TimeStamp of bid to prepare */
+	private void excuteBeforeBidPreparation(TimeStamp targetTime) {
+		if (bidSchedule == null || !bidSchedule.isApplicable(targetTime)) {
+			strategist.clearSensitivitiesBefore(now());
+			try {
+				bidSchedule = strategist.createSchedule(new TimePeriod(targetTime, OPERATION_PERIOD));
+			} catch (DispatchPlanningError e) {
+				throw new RuntimeException(ERR_PLANNING + this, e);
+			}
+		}
+	}
+
+	/** Prepares hourly demand bid
+	 * 
+	 * @param requestedTime TimeStamp at which the demand bid should be defined
+	 * @return demand bid for requestedTime */
+	private Bid prepareHourlyDemandBids(TimeStamp requestedTime) {
+		double demandPower = bidSchedule.getScheduledEnergyPurchaseInMWH(requestedTime);
+		double price = bidSchedule.getScheduledBidInHourInEURperMWH(requestedTime);
+		Bid demandBid = new Bid(demandPower, price, Double.NaN);
+		if (demandPower > 0) {
+			store(Outputs.OfferedChargePriceInEURperMWH, price);
+		}
+		return demandBid;
 	}
 
 	/** Digests award information from {@link DayAheadMarket}, writes dispatch

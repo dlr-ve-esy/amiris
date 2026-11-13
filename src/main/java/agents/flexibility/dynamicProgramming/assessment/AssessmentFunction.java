@@ -35,7 +35,7 @@ public interface AssessmentFunction {
 	 * 
 	 * @param planningTimes times in the upcoming planning horizon
 	 * @return list of time stamp which require additional information */
-	ArrayList<TimeStamp> getMissingForecastTimes(ArrayList<TimeStamp> planningTimes);
+	public ArrayList<TimeStamp> getMissingForecastTimes(ArrayList<TimeStamp> planningTimes);
 
 	/** Store forecasts for dispatch assessment
 	 * 

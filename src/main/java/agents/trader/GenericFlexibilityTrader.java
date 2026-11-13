@@ -142,9 +142,7 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 	 * @param contracts one partner */
 	private void prepareBids(ArrayList<Message> input, List<Contract> contracts) {
 		Contract contractToFulfil = CommUtils.getExactlyOneEntry(contracts);
-		ClearingTimes clearingTimes = CommUtils.getExactlyOneEntry(input).getDataItemOfType(ClearingTimes.class);
-		List<TimeStamp> targetTimes = clearingTimes.getTimes();
-		for (TimeStamp targetTime : targetTimes) {
+		for (TimeStamp targetTime : extractTimesFromGateClosureInfoMessages(input)) {
 			excuteBeforeBidPreparation(targetTime);
 			Bid demandBid = prepareHourlyDemandBids(targetTime);
 			Bid supplyBid = prepareHourlySupplyBids(targetTime);

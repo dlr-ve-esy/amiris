@@ -6,6 +6,7 @@ package agents.electrolysis.sensitivity;
 import java.util.ArrayList;
 import agents.electrolysis.Electrolyzer;
 import agents.flexibility.BidSchedule;
+import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunction;
 import agents.flexibility.dynamicProgramming.assessment.AssessmentFunctionBuilder;
 import agents.markets.meritOrder.Constants;
@@ -101,7 +102,7 @@ public abstract class Strategist {
 	 * 
 	 * @param startingPeriod first period of planning interval
 	 * @return List of {@link TimeStamp}s at which {@link MeritOrderSensitivity} is not yet defined */
-	ArrayList<TimeStamp> getMissingForecastTimes(TimePeriod startingPeriod) {
+	public ArrayList<TimeStamp> getMissingForecastTimes(TimePeriod startingPeriod) {
 		return assessmentFunction.getMissingForecastTimes(getPlanningTimes(startingPeriod));
 	}
 
@@ -122,7 +123,7 @@ public abstract class Strategist {
 	 * 
 	 * @param timePeriod first TimePeriod element of the schedule to be created
 	 * @return created {@link BidSchedule} for the specified {@link TimePeriod} */
-	public BidSchedule createSchedule(TimePeriod timePeriod) {
+	public BidSchedule createSchedule(TimePeriod timePeriod) throws DispatchPlanningError {
 		updateSchedule(timePeriod);
 		updateBidSchedule();
 		BidSchedule schedule = new BidSchedule(timePeriod, scheduleDurationPeriods);

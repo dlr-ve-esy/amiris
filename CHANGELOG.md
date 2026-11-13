@@ -10,7 +10,6 @@ SPDX-License-Identifier: Apache-2.0 -->
 ### Added
 - Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
 - Policy: Add remuneration switch for hours with negative prices #271 #275 (@dlr_jk, @dlr-cjs)
-- CI: check update of `codemeta.json` on release #278 (@dlr-cjs)
 
 ### Removed
 - Remove outdated tests with Python #274 (@dlr-cjs)

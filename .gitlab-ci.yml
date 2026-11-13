@@ -46,8 +46,9 @@ cache:
   script:
     - git fetch
     - 'echo "Base is: $CI_MERGE_REQUEST_DIFF_BASE_SHA"'
+    - 'echo "Checking for changes in file: $FILE_TO_CHECK"'
     - FILE_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD $FILE_TO_CHECK)
-    - 'if [[ "$FILE_TO_CHECK" == $FILE_CHANGED ]]; then EXIT_CODE=0; else echo "Error: No changes found in `$FILE_TO_CHECK` compared to target branch."; EXIT_CODE=1; fi'
+    - 'if [[ "$FILE_TO_CHECK" == $FILE_CHANGED ]]; then EXIT_CODE=0; else echo "Error: No changes found in file ($FILE_TO_CHECK) compared to target branch."; EXIT_CODE=1; fi'
     - exit $EXIT_CODE  
 
 # Ensure CHANGELOG.md was updated

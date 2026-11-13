@@ -106,7 +106,8 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 			double supportRateInEURperThermalMWH = getHydrogenSupportRateForPeriod(timePeriod);
 			hydrogenSaleOpportunityCostsPerElectricMWH[period] = (hydrogenPriceInEURperThermalMWH
 					+ supportRateInEURperThermalMWH)
-					* electrolyzer.getConversionFactor();
+					* electrolyzer.getConversionFactor()
+					- electrolyzer.getVariableCostSeries().getValueLinear(timePeriod.getStartTime());
 		}
 	}
 

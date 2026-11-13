@@ -41,7 +41,6 @@ public abstract class Strategist {
 	public static final Tree parameters = Make.newTree().addAs(GROUP_ASSESSMENT, AssessmentFunctionBuilder.parameters)
 			.add(Make.newGroup(GROUP_BIDS).add(Make.newDouble(PARAM_DURATION), Make.newDouble(PARAM_TOLERANCE).optional()))
 			.addAs(ElectrolyzerStrategist.GROUP_STRATEGY, ElectrolyzerStrategist.parameters)
-			.addAs(ProductionTarget.GROUP_PRODUCTION, ProductionTarget.parameters)
 			.buildTree();
 
 	/** number of time intervals of the created schedules */

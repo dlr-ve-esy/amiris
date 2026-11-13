@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 import agents.electrolysis.Electrolyzer;
 import agents.electrolysis.sensitivity.ElectrolyzerStrategist;
+import agents.electrolysis.sensitivity.Strategist;
 import agents.flexibility.BidSchedule;
 import agents.flexibility.dynamicProgramming.DispatchPlanningError;
 import agents.forecast.sensitivity.SensitivityForecastClient;
@@ -20,7 +21,6 @@ import agents.markets.meritOrder.Bid;
 import agents.policy.hydrogen.HydrogenSupportClient;
 import agents.policy.hydrogen.HydrogenSupportProvider;
 import agents.policy.hydrogen.Mpfix;
-import agents.trader.Trader;
 import communications.message.AmountAtTime;
 import communications.message.AwardData;
 import communications.message.ClearingTimes;
@@ -33,6 +33,7 @@ import communications.message.HydrogenPolicyRegistration;
 import communications.message.PointInTime;
 import communications.portable.BidsAtTime;
 import communications.portable.HydrogenSupportData;
+import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
 import de.dlr.gitlab.fame.agent.input.GroupBuilder;
 import de.dlr.gitlab.fame.agent.input.Input;
@@ -51,17 +52,17 @@ import de.dlr.gitlab.fame.time.TimeStamp;
  * consider competition of flexibility options.
  * 
  * @author Christoph Schimeczek, Johannes Kochems */
-public class ElectrolysisTraderSensitivity extends Trader
-		implements SensitivityForecastClient, FuelsTrader, HydrogenSupportClient {
+public class ElectrolysisTraderSensitivity extends Agent
+		implements DayAheadMarketTrader, SensitivityForecastClient, FuelsTrader, HydrogenSupportClient {
 	static final String ERR_PLANNING = "Dispatch planning failed for: ";
 
 	static final String GROUP_DEVICE = "Device";
-	static final String GROUP_STRATEGY = "Strategy";
+	static final String GROUP_DISPATCH = "Dispatch";
 	static final String GROUP_SUPPORT = "Support";
 
 	@Input public static final GroupBuilder parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
 			.addAs(GROUP_DEVICE, Electrolyzer.parameters)
-			.addAs(GROUP_STRATEGY, ElectrolyzerStrategist.parameters)
+			.addAs(GROUP_DISPATCH, Strategist.parameters)
 			.addAs(GROUP_SUPPORT, HydrogenSupportClient.parameters);
 
 	private static final TimeSpan OPERATION_PERIOD = new TimeSpan(1, Interval.HOURS);
@@ -101,7 +102,7 @@ public class ElectrolysisTraderSensitivity extends Trader
 	public ElectrolysisTraderSensitivity(DataProvider data) throws MissingDataException {
 		super(data);
 		electrolyzer = new Electrolyzer(fromInput().getGroup(GROUP_DEVICE));
-		strategist = ElectrolyzerStrategist.newStrategist(fromInput().getGroup(GROUP_STRATEGY), electrolyzer,
+		strategist = ElectrolyzerStrategist.newStrategist(fromInput().getGroup(GROUP_DISPATCH), electrolyzer,
 				OPERATION_PERIOD);
 
 		fuelType = FuelsTrader.readFuelType(fromInput());

@@ -94,7 +94,7 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 		}
 	}
 
-	/** calculates electricity price equivalent of opportunity costs for selling hydrogen with expected prices
+	/** Calculates electricity price equivalent of opportunity costs for selling hydrogen with expected prices
 	 * 
 	 * @param startTime first time period that update is done for */
 	protected void updateOpportunityCosts(TimePeriod startTime) {

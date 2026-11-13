@@ -9,7 +9,7 @@ workflow:
     - when: always
 
 stages:
-  - changelog
+  - file_change
   - lint
   - test
   - compatibility
@@ -40,18 +40,32 @@ cache:
   paths: [".m2/repository"]
 
 
-# Ensure CHANGELOG.md was updated
-check:changelog:
-  stage: changelog
+.file_change:
+  stage: file_change
   cache: [] # do not use cached files here, as those are not required
   script:
     - git fetch
     - 'echo "Base is: $CI_MERGE_REQUEST_DIFF_BASE_SHA"'
-    - CHANGELOG_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD CHANGELOG.md)
-    - 'if [[ "CHANGELOG.md" == $CHANGELOG_CHANGED ]]; then EXIT_CODE=0; else echo "Error: No changes found in CHANGELOG.md compared to target branch."; EXIT_CODE=1; fi'
-    - exit $EXIT_CODE
+    - 'echo "Checking for changes in file: $FILE_TO_CHECK"'
+    - FILE_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD $FILE_TO_CHECK)
+    - 'if [[ $FILE_TO_CHECK == $FILE_CHANGED ]]; then EXIT_CODE=0; else echo "Error: No changes found in file ($FILE_TO_CHECK) compared to target branch."; EXIT_CODE=1; fi'
+    - exit $EXIT_CODE  
+
+# Ensure CHANGELOG.md was updated
+file_change:changelog:
+  extends: .file_change
+  variables:
+    FILE_TO_CHECK: "CHANGELOG.md"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# On release: ensure codemeta.json was updated 
+file_change:codemeta:
+  extends: .file_change
+  variables:
+    FILE_TO_CHECK: "codemeta.json"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
 
 # Include reuse-test to check if all files comply with the reuse software requirements: https://reuse.software/dev/

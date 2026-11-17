@@ -170,7 +170,7 @@ public class LoadShiftStateManager {
 			HashMap<LoadShiftState, Double> nextFeasibleStatesAndCostsForReset, TimePeriod timePeriod) {
 		final int resettedShiftTime = 1;
 		double specificShiftingCostInEURperMWH = loadShiftingPortfolio
-				.getVariableShiftCostsInEURPerMWH(timePeriod.getStartTime());
+				.getVariableShiftCostsInEURperMWH(timePeriod.getStartTime());
 
 		if (initialState.energyState > zeroEnergyStateIndex) {
 			int requiredDownshift = initialState.energyState - zeroEnergyStateIndex;

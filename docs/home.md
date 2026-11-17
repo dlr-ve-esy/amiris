@@ -1,6 +1,6 @@
 ![AMIRIS_Logo](uploads/AMIRIS_LogoWTitle.png)
 
-### [Get Started](./Get-Started.md) &ndash; [Model Classes](./Classes.md)  &ndash; [Extensions](./Extensions.md) &ndash; [Glossary](./Glossary.md) &ndash; [Community](./Community.md)
+### [Get Started](./Get-Started.md) &ndash; [Model Classes](./Classes.md)  &ndash; [Extensions](./Extensions.md) &ndash; [Architecture](./Architecture.md) &ndash; [Community](./Community.md)
 
 The agent-based electricity market model AMIRIS has evolved for almost twenty years to a next-generation tool, ready to dissect the complex questions arising with respect to future energy markets, their market design and energy related policy instruments.
 The model computes electricity prices endogenously based on the simulation of strategic bidding behavior of prototyped market actors.

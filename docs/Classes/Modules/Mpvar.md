@@ -11,7 +11,7 @@ Not all hours of generation may be eligible for support, depending on the number
 
 Pieces of information included are
 * `Lcoe`: The lcoe of the [TechnologySet](../Comms/TechnologySet.md) which (by assumption) equals to its value to be applied in a variable ex post market premium scheme and given in EUR/MWh of power produced.
-* `maxNumberOfNegativeHours`: The maximum number of consecutive hours with negative prices tolerated until suspending support payment
+* `IsEligibleAtNegativePrices`: If set to `1`, support is also paid at times of negative prices. Otherwise, if set to `0`, no support is paid in such situations.
 
 # See also
 

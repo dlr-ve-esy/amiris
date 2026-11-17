@@ -5,7 +5,7 @@ Internal states or decision logics of agents
 * Conventional
   * [Portfolio](./Modules/Portfolio.md)
   * [PowerPlant](./Modules/PowerPlant.md)
-  * [PowerPlantPrototype](./Modules/PowerplantPrototype.md)
+  * [PowerPlantPrototype](./Modules/PowerPlantPrototype.md)
 * Electrolysis
   * [Electrolyzer](./Modules/Electrolyzer.md)
   * [ElectrolyzerStrategist](./Modules/ElectrolyzerStrategist.md)

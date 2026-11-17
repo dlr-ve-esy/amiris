@@ -33,7 +33,7 @@ public abstract class OrderBook implements Portable {
 		RANDOMIZE,
 		/** Bids with the same price are all awarded the same share */
 		SAME_SHARES
-	};
+	}
 
 	/** market clearing price */
 	protected double awardedPrice = Double.NaN;

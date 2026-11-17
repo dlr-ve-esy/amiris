@@ -142,16 +142,15 @@ public class MarketCoupling extends Agent {
 
 	/** Write results of market coupling to output **/
 	private void writeCouplingResults() {
+		var finalCapacities = demandBalancer.getTransmissionCapacities();
 		for (Long originId : couplingRequests.keySet()) {
-			CouplingData marketData = couplingRequests.get(originId);
-			ArrayList<TransmissionCapacity> transmissionBook = marketData.getTransmissionBook().getTransmissionCapacities();
 			ArrayList<TransmissionCapacity> initialTransmissionBook = initialTransmissionBookByMarket.get(originId)
 					.getTransmissionCapacities();
-			for (int i = 0; i < transmissionBook.size(); i++) {
-				double remainingCapacity = transmissionBook.get(i).getRemainingTransferCapacityInMW();
-				double initialCapacity = initialTransmissionBook.get(i).getRemainingTransferCapacityInMW();
-				String targetMarketZone = transmissionBook.get(i).getTarget();
+			for (var initialCapacities : initialTransmissionBook) {
+				String targetMarketZone = initialCapacities.getTarget();
 				Long targetId = getAgentIdOfMarketZone(targetMarketZone);
+				double initialCapacity = initialCapacities.getTransferCapacityInMW();
+				double remainingCapacity = finalCapacities.getRemainingCapacity(originId, targetId);
 				store(
 						availableCapacity.key(TransferKey.OriginAgentId, originId).key(TransferKey.TargetAgentId, targetId),
 						initialCapacity);

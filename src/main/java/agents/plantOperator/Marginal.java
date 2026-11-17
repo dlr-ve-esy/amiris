@@ -26,7 +26,7 @@ public class Marginal implements Portable {
 	private double marginalCostInEURperMWH;
 
 	/** required for {@link Portable}s */
-	public Marginal() {};
+	public Marginal() {}
 
 	/** Constructs new {@link Marginal}
 	 * 

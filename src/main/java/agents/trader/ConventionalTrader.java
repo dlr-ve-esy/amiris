@@ -19,6 +19,7 @@ import agents.plantOperator.PowerPlantOperator;
 import agents.plantOperator.PowerPlantScheduler;
 import communications.message.AmountAtTime;
 import communications.message.AwardData;
+import communications.message.ContractualPayout;
 import communications.portable.BidsAtTime;
 import communications.portable.MarginalsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
@@ -37,8 +38,11 @@ import util.Util;
  *
  * @author Christoph Schimeczek, Marc Deissenroth, Ulrich Frey */
 public class ConventionalTrader extends TraderWithClients implements PowerPlantScheduler {
+	static final String PARAM_MIN = "MinimumMarkup";
+	static final String PARAM_MAX = "MaximumMarkup";
+
 	@Input public static final GroupBuilder parameters = Make.newTree()
-			.add(Make.newDouble("minMarkup").optional(), Make.newDouble("maxMarkup").optional());
+			.add(Make.newDouble(PARAM_MIN).optional(), Make.newDouble(PARAM_MAX).optional());
 
 	private double minMarkup;
 	private double maxMarkup;
@@ -49,8 +53,8 @@ public class ConventionalTrader extends TraderWithClients implements PowerPlantS
 	 * @throws MissingDataException if any required data is not */
 	public ConventionalTrader(DataProvider dataProvider) throws MissingDataException {
 		super(dataProvider);
-		minMarkup = fromInput().getDoubleOrDefault("minMarkup", 0.);
-		maxMarkup = fromInput().getDoubleOrDefault("maxMarkup", 0.);
+		minMarkup = fromInput().getDoubleOrDefault(PARAM_MIN, 0.);
+		maxMarkup = fromInput().getDoubleOrDefault(PARAM_MAX, 0.);
 		ensureValidMarkups();
 
 		call(this::sendForecastBids).on(Trader.Products.BidsForecast)
@@ -144,7 +148,8 @@ public class ConventionalTrader extends TraderWithClients implements PowerPlantS
 		Message message = CommUtils.getExactlyOneEntry(messages);
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 		AwardData award = message.getDataItemOfType(AwardData.class);
-		double payoutInEUR = award.supplyEnergyInMWH * award.powerPriceInEURperMWH;
-		fulfilNext(contract, new AmountAtTime(award.beginOfDeliveryInterval, payoutInEUR));
+		double supportInEUR = 0.0;
+		double totalPayoutInEUR = award.supplyEnergyInMWH * award.powerPriceInEURperMWH + supportInEUR;
+		fulfilNext(contract, new ContractualPayout(award.beginOfDeliveryInterval, totalPayoutInEUR, supportInEUR));
 	}
 }

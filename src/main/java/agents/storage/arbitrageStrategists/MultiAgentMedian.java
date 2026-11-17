@@ -4,6 +4,7 @@
 package agents.storage.arbitrageStrategists;
 
 import java.util.Arrays;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import agents.markets.meritOrder.books.DemandOrderBook;
 import agents.markets.meritOrder.books.SupplyOrderBook;
 import agents.markets.meritOrder.sensitivities.MeritOrderSensitivity;
@@ -11,11 +12,10 @@ import agents.markets.meritOrder.sensitivities.PriceNoSensitivity;
 import agents.storage.Device;
 import de.dlr.gitlab.fame.agent.input.Make;
 import de.dlr.gitlab.fame.agent.input.ParameterData;
-import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.agent.input.ParameterData.MissingDataException;
+import de.dlr.gitlab.fame.agent.input.Tree;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
-import util.Polynomial;
 import util.Util;
 
 /** Creates simple storage dispatch strategies based on an electricity price forecast and its median; Charges whenever the price
@@ -27,8 +27,10 @@ import util.Util;
  * @author Christoph Schimeczek */
 public class MultiAgentMedian extends ArbitrageStrategist {
 	/** Input parameters for the {@link MultiAgentMedian} strategist */
+	private static final String PARAM_PREFACTORS = "AssessmentFunctionPrefactors";
+
 	public static final Tree parameters = Make.newTree().optional()
-			.add(Make.newDouble("AssessmentFunctionPrefactors").optional().list()
+			.add(Make.newDouble(PARAM_PREFACTORS).optional().list()
 					.help("Prefactors `a`,`b`,`c`, ... of a polynomial `a + bx + cx² + ...`, "
 							+ "where `x` is the difference between the hourly price and the price median. "
 							+ "Higher prefactors favour (dis-)charge at more extreme prices."))
@@ -37,9 +39,9 @@ public class MultiAgentMedian extends ArbitrageStrategist {
 	/** Denotes actions in corresponding sections of the planning interval */
 	private enum State {
 		CHARGE, DISCHARGE, IDLE
-	};
+	}
 
-	private final Polynomial assessmentFunction;
+	private final PolynomialFunction assessmentFunction;
 	private final double[] forecastPrices = new double[forecastSteps];
 	private final double[] internalChargingPowersInMW = new double[forecastSteps];
 	private final double[] assessmentValues = new double[forecastSteps];
@@ -50,13 +52,13 @@ public class MultiAgentMedian extends ArbitrageStrategist {
 	/** Creates a {@link MultiAgentMedian} strategist
 	 * 
 	 * @param generalInput general parameters associated with strategists
-	 * @param specificInput specific parameters for this strategist
+	 * @param specificInput parameters for this strategist
 	 * @param storage device to be optimised
 	 * @throws MissingDataException if any required input is missing */
 	public MultiAgentMedian(ParameterData generalInput, ParameterData specificInput, Device storage)
 			throws MissingDataException {
 		super(generalInput, storage);
-		this.assessmentFunction = new Polynomial(specificInput.getList("AssessmentFunctionPrefactors", Double.class));
+		assessmentFunction = Util.createPolynomial(specificInput.getList(PARAM_PREFACTORS, Double.class));
 	}
 
 	@Override
@@ -103,10 +105,10 @@ public class MultiAgentMedian extends ArbitrageStrategist {
 			double priceDeltaToMarginal;
 			if (forecastPrices[period] < maxChargePrice) {
 				priceDeltaToMarginal = maxChargePrice - forecastPrices[period];
-				assessmentValues[period] = assessmentFunction.evaluateAt(priceDeltaToMarginal);
+				assessmentValues[period] = assessmentFunction.value(priceDeltaToMarginal);
 			} else if (forecastPrices[period] > minDischargePrice) {
 				priceDeltaToMarginal = forecastPrices[period] - minDischargePrice;
-				assessmentValues[period] = assessmentFunction.evaluateAt(priceDeltaToMarginal);
+				assessmentValues[period] = assessmentFunction.value(priceDeltaToMarginal);
 			} else {
 				assessmentValues[period] = 0;
 			}

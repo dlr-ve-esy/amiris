@@ -9,7 +9,7 @@ workflow:
     - when: always
 
 stages:
-  - changelog
+  - file_change
   - lint
   - test
   - compatibility
@@ -17,6 +17,8 @@ stages:
 
 default:
   image: maven:3-eclipse-temurin-11
+  before_script: # base image: ubuntu
+    - apt-get install bash coreutils
 
 variables:
   # This will suppress any download for dependencies and plugins or upload messages which would clutter the console log.
@@ -26,6 +28,11 @@ variables:
   # when running from the command line. `installAtEnd` and `deployAtEnd` are only effective with recent version of the corresponding plugins.
   MAVEN_CLI_OPTS: "--batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true"
   GIT_DEPTH: 0 # disable shallow clones to
+  ECO_CI_LABEL: "AMIRIS-Core" # track energy use and CO2 emissions
+  ECO_CI_SEND_DATA: "false" # do not send data to online dashboard
+
+include:
+  - remote: 'https://raw.githubusercontent.com/green-coding-solutions/eco-ci-energy-estimation/main/eco-ci-gitlab.yml'
 
 # Cache downloaded dependencies and plugins between builds. Used at every stage unless explicitly defined otherwise.
 cache:
@@ -33,17 +40,32 @@ cache:
   paths: [".m2/repository"]
 
 
-# Ensure CHANGELOG.md was updated
-lint:changelog:
-  stage: changelog
+.file_change:
+  stage: file_change
   cache: [] # do not use cached files here, as those are not required
   script:
     - git fetch
     - 'echo "Base is: $CI_MERGE_REQUEST_DIFF_BASE_SHA"'
-    - CHANGELOG_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD CHANGELOG.md)
-    - 'if [[ "CHANGELOG.md" == $CHANGELOG_CHANGED ]]; then exit 0; else echo "No changes found in CHANGELOG.md compared to target branch."; exit 1; fi'
+    - 'echo "Checking for changes in file: $FILE_TO_CHECK"'
+    - FILE_CHANGED=$(git diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD $FILE_TO_CHECK)
+    - 'if [[ $FILE_TO_CHECK == $FILE_CHANGED ]]; then EXIT_CODE=0; else echo "Error: No changes found in file ($FILE_TO_CHECK) compared to target branch."; EXIT_CODE=1; fi'
+    - exit $EXIT_CODE  
+
+# Ensure CHANGELOG.md was updated
+file_change:changelog:
+  extends: .file_change
+  variables:
+    FILE_TO_CHECK: "CHANGELOG.md"
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# On release: ensure codemeta.json was updated 
+file_change:codemeta:
+  extends: .file_change
+  variables:
+    FILE_TO_CHECK: "codemeta.json"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "main"
 
 
 # Include reuse-test to check if all files comply with the reuse software requirements: https://reuse.software/dev/
@@ -52,51 +74,75 @@ lint:reuse:
   image:
     name: fsfe/reuse:latest
     entrypoint: [""]
-  cache: [] # do not use cached files here, as those will be assessed by the reuse linter
+  cache: [] # do not use cached files here, as those will be incorrectly assessed by the reuse linter
+  before_script: #base image: alpine
+    - apk add --no-cache curl jq gawk bash git coreutils
   script:
+    - !reference [.start_measurement, script]
     - reuse lint
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
-
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 # Check if javadoc building works
 lint:javadoc:
   stage: lint
   cache: [] # do not use cached files here, as maven will not build the project
   script:
+    - !reference [.start_measurement, script]
     - "mvn '-Dmaven.javadoc.failOnWarnings=true' javadoc:javadoc"
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 # Ensure files follow common code style using "spotless"
 lint:spotless:
   stage: lint
   dependencies: []
-  script: ["git fetch origin main", "mvn spotless:check"]
+  script: 
+    - !reference [.start_measurement, script]
+    - "git fetch origin main"
+    - "mvn spotless:check"
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "dev"
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 
 # Settings for unit tests & coverage analysis
 .unittest:
-  script: ['mvn $MAVEN_CLI_OPTS test']
+  script: 
+    - !reference [.start_measurement, script]
+    - 'mvn $MAVEN_CLI_OPTS test' 
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
   rules:
-    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-    - if: $CI_COMMIT_REF_NAME == "dev"
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 # Execute unit tests with JDK11
-test:Coverage:jdk11:
+test:coverage:jdk11:
   extends: .unittest
   stage: test
   after_script:
     - "cat target/site/jacoco/index.html | grep -o 'Total[^%]*%' | grep -o '[0-9.,]* of [0-9.,]*' | sed 's/[,.]//g' | sed 's/ of / /g' | awk '{printf \"COVERAGE::%.2f\\n\", ((1.0 - ($1 / $2)) *100)}'"
   coverage: '/COVERAGE::\d+\.\d+/'
 
+# Test packaging with mpi-enabled image
+test:packaging:mpi:
+  stage: test
+  image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
+  variables: # avoid redirect of .m2 repository as defined in default
+    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"  
+  script:
+    - !reference [.start_measurement, script]
+    - 'sed -i -E "s/<dependencies>/<dependencies><dependency><groupId>de.dlr.gitlab.fame<\/groupId><artifactId>mpi-ompi-impl<\/artifactId><version>1.0.5<\/version><\/dependency>\n/g" pom.xml'
+    - 'mvn $MAVEN_CLI_OPTS package'
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "main"
 
 .compatibility:
   extends: .unittest
@@ -115,34 +161,51 @@ compatibility:jdk25:
   extends: .compatibility
   image: maven:3-eclipse-temurin-25
 
+
 .deploy:
   stage: deploy
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_COMMIT_BRANCH == "main"
 
 # Package AMIRIS & build javadoc
 deploy:javadoc:
   extends: .deploy
-  script: ['mvn $MAVEN_CLI_OPTS package', 'mvn javadoc:javadoc']
+  script: 
+    - !reference [.start_measurement, script]
+    - 'mvn $MAVEN_CLI_OPTS package'
+    - 'mvn javadoc:javadoc'
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
   artifacts:
-    paths: ["target/reports/apidocs"]
-    expire_in: 1 hour
+    paths: 
+      - "target/reports/apidocs"
+    expire_in: 1 day
 
+# Package with mpi-enabled image
 deploy:jar:
   extends: .deploy
   image: registry.gitlab.com/fame-framework/fame-mpi-facade/openmpi-impl:latest
   artifacts:
-    paths: ["target/*.jar"]
-    expire_in: 1 hour
+    paths:
+      - "target/*.jar"
+    expire_in: 1 day
+  variables: # avoid redirect of .m2 repository as defined in default
+    MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   script:
-    - 'sed -i -E "s/<dependencies>/<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>de.dlr.gitlab.fame<\/groupId>\n\t\t\t<artifactId>mpi-ompi-impl<\/artifactId>\n\t\t\t<version>1.0.3<\/version>\n\t\t<\/dependency>\n/g" pom.xml'
+    - !reference [.start_measurement, script]
+    - 'sed -i -E "s/<dependencies>/<dependencies><dependency><groupId>de.dlr.gitlab.fame<\/groupId><artifactId>mpi-ompi-impl<\/artifactId><version>1.0.5<\/version><\/dependency>\n/g" pom.xml'
     - 'mvn $MAVEN_CLI_OPTS package'
+    - !reference [.get_measurement, script]
+    - !reference [.display_results, script]
 
 # Publish javadoc to pages
 pages:
   stage: .post
-  script: ["mkdir public", "cp -r target/reports/apidocs/* public"]
+  script: 
+    - "mkdir public"
+    - "cp -r target/reports/apidocs/* public"
   artifacts:
-    paths: [public]
+    paths: 
+      - public
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
+    - if: $CI_COMMIT_BRANCH == "main"

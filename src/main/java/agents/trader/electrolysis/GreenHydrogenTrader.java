@@ -63,7 +63,7 @@ public class GreenHydrogenTrader extends Trader
 	public static enum Products {
 		/** Report annual costs (not sent to other agents, but calculated within trader class) */
 		AnnualCostReport,
-	};
+	}
 
 	@Input public static final GroupBuilder parameters = Make.newTree().add(FuelsTrader.fuelTypeParameter)
 			.addAs("Device", Electrolyzer.parameters).addAs("Refinancing", AnnualCostCalculator.parameters)

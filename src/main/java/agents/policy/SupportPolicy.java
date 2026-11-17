@@ -74,7 +74,7 @@ public class SupportPolicy extends Agent {
 	@Output
 	private enum Outputs {
 		MarketValueInEURperMWH
-	};
+	}
 
 	private enum OutputKey {
 		EnergyCarrier

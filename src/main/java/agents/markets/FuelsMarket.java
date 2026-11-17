@@ -43,7 +43,7 @@ public class FuelsMarket extends Agent {
 		FuelPrice,
 		/** cost of purchased fuel amounts - negative for revenues from fuel offers */
 		FuelBill,
-	};
+	}
 
 	@Input public static final GroupBuilder parameters = Make.newTree().add(Make.newGroup("FuelPrices").list()
 			.add(FuelsTrader.fuelTypeParameter, Make.newSeries("Price"), Make.newDouble("ConversionFactor")));

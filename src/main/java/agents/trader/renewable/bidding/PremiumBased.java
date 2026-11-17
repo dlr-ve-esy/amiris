@@ -33,7 +33,7 @@ public abstract class PremiumBased {
 		PREVIOUS_MONTH,
 		/** Forecast from file */
 		FROM_FILE
-	};
+	}
 
 	/** Inputs for market value forecasting */
 	public static final ParameterBuilder marketValueForecastParam = Make

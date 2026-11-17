@@ -8,6 +8,7 @@ import java.util.List;
 import accounting.AnnualCostCalculator;
 import agents.trader.Trader;
 import communications.message.AmountAtTime;
+import communications.message.ContractualPayout;
 import de.dlr.gitlab.fame.agent.Agent;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
 import de.dlr.gitlab.fame.agent.input.GroupBuilder;
@@ -52,7 +53,9 @@ public abstract class PowerPlantOperator extends Agent {
 		/** Fixed operation and maintenance costs */
 		FixedCostsInEUR,
 		/** Annual share of investment cost */
-		InvestmentAnnuityInEUR
+		InvestmentAnnuityInEUR,
+		/** Received support payments */
+		ReceivedSupportInEUR,
 	}
 
 	private final AnnualCostCalculator annualCost;
@@ -93,9 +96,10 @@ public abstract class PowerPlantOperator extends Agent {
 	 * @param contracts not used */
 	protected void digestPayment(ArrayList<Message> input, List<Contract> contracts) {
 		Message message = CommUtils.getExactlyOneEntry(input);
-		AmountAtTime payout = message.getDataItemOfType(AmountAtTime.class);
-		store(OutputFields.ReceivedMoneyInEUR, payout.amount);
-		digestPaymentPerPlant(payout.validAt, payout.amount);
+		ContractualPayout payout = message.getDataItemOfType(ContractualPayout.class);
+		store(OutputFields.ReceivedMoneyInEUR, payout.totalRevenuesInEUR);
+		digestPaymentPerPlant(payout.validAt, payout.totalRevenuesInEUR);
+		store(OutputFields.ReceivedSupportInEUR, payout.supportInEUR);
 	}
 
 	/** Optional function to digest payments for individual plants of plant operator

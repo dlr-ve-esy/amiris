@@ -6,6 +6,7 @@ package agents.storage.arbitrageStrategists;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import agents.flexibility.BidSchedule;
 import agents.flexibility.GenericDevice;
 import agents.flexibility.GenericDeviceCache;
@@ -15,7 +16,6 @@ import communications.portable.Sensitivity.InterpolationType;
 import de.dlr.gitlab.fame.communication.message.Message;
 import de.dlr.gitlab.fame.time.TimePeriod;
 import de.dlr.gitlab.fame.time.TimeStamp;
-import util.Polynomial;
 import util.Util;
 
 public class HeuristicMedian {
@@ -26,7 +26,7 @@ public class HeuristicMedian {
 
 	private final int forecastSteps;
 	private final int schedulePeriods;
-	private final Polynomial assessmentFunction;
+	private final PolynomialFunction assessmentFunction;
 	private final GenericDevice device;
 	private final GenericDeviceCache deviceCache;
 
@@ -50,13 +50,13 @@ public class HeuristicMedian {
 	 * @param device to find dispatch strategies for
 	 * @param forecastPeriods number of time periods of the forecast
 	 * @param schedulePeriods number of time periods of the schedule */
-	public HeuristicMedian(Polynomial assessmentfunction, GenericDevice device, int forecastPeriods,
+	public HeuristicMedian(PolynomialFunction assessmentfunction, GenericDevice device, int forecastPeriods,
 			int schedulePeriods) {
 		this.forecastSteps = forecastPeriods;
 		this.schedulePeriods = schedulePeriods;
 		this.assessmentFunction = assessmentfunction;
 		this.device = device;
-		this.deviceCache = new GenericDeviceCache(device);
+		deviceCache = new GenericDeviceCache(device);
 
 		forecastPrices = new double[forecastPeriods];
 		internalChargingPowersInMW = new double[forecastPeriods];
@@ -155,10 +155,10 @@ public class HeuristicMedian {
 			double priceDeltaToMarginal;
 			if (forecastPrices[period] < maxChargePrice) {
 				priceDeltaToMarginal = maxChargePrice - forecastPrices[period];
-				assessmentValues[period] = assessmentFunction.evaluateAt(priceDeltaToMarginal);
+				assessmentValues[period] = assessmentFunction.value(priceDeltaToMarginal);
 			} else if (forecastPrices[period] > minDischargePrice) {
 				priceDeltaToMarginal = forecastPrices[period] - minDischargePrice;
-				assessmentValues[period] = assessmentFunction.evaluateAt(priceDeltaToMarginal);
+				assessmentValues[period] = assessmentFunction.value(priceDeltaToMarginal);
 			} else {
 				assessmentValues[period] = 0;
 			}

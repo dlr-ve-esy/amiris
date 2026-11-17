@@ -2,19 +2,48 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
-## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - TBA
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+## [5.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.1.0) - tba.
+### Changed
+- codemeta: updated affiliation of Nitsch to BOKU University #269 (@dlr_fn)
+- README: add user logo #272 (@LeonardWilleke)
+
+### Added
+- Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
+- Policy: Add remuneration switch for hours with negative prices #271 #275 (@dlr_jk, @dlr-cjs)
+- CI: check update of `codemeta.json` on release #278 (@dlr-cjs)
+
+### Removed
+- Remove outdated tests with Python #274 (@dlr-cjs)
+- Replace class `Polynomial` with commons-math `PolynomialFunction`#277 (@dlr-cjs)
+
+### Fixed
+- Fix division by zero in `AggregatorTrader` #270 (@dlr_jk)
+- Fix spelling errors in docs for `PowerPlantPrototype` #273 (@dlr_jk)
+
+## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-10
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 
 ### Changed
 - **Breaking**: Update to FAME-Core v3.0, requires FAME-Io v4.0 #254 (@dlr-cjs)
-- **Breaking**: `CarbonMarket`: Renamed output columns name `Co2EmissionsInTons` to `Co2EmissionsInT` #253 (@dlr-cjs @sstroemer)
-- **Breaking**: `PriceForecasterApi`: Renamed output column name `ElectricityPriceForecastVarianceInEURperMWH` to `PriceForecastStandardDeviationInEURperMWH` #253 (@dlr-cjs @dlr_fn)
+- **Breaking**: `PriceForecasterApi`: Renamed input attributes `ServiceURL` and `ResidualLoadInMWh` to `ServiceUrl` and `ResidualLoadInMWH` #256 (@dlr-cjs)
+- **Breaking**: `ConventionalTrader`: Renamed input attributes `minMarkup` and `maxMarkup` to `MinimumMarkup` and `MaximumMarkup` #256 (@dlr-cjs)
+- **Breaking**: `LoadShiftingTrader`: Renamed several input attributes #256 (@dlr-cjs)
+- **Breaking**: `CarbonMarket`: Renamed output columns name `Co2EmissionsInTons` to `Co2EmissionsInT` #253 (@dlr-cjs, @sstroemer)
+- **Breaking**: `PriceForecasterApi`: Renamed output columns `ElectricityPriceForecastVarianceInEURperMWH` and `ResidualLoadInMWh` to `PriceForecastStandardDeviationInEURperMWH` and `ResidualLoadInMWH` #253 #256 (@dlr-cjs, @dlr_fn)
+- **Breaking**: `HouseholdPvTraderExternal`: Renamed output columns `AwardedDemandInMWh` and `AwardedSupplyInMWh` to `AwardedDemandInMWH` and `AwardedSupplyInMWH` #256 (@dlr-cjs)
 - Switch logger to logback #153 (@dlr-cjs)
 - Build package with parallel execution capabilities in CI #250
+- docs: improve Getting-Started section (@dlr-cjs)
+- docs: improve description of Timeseries #255 (@dlr-cjs)
+- docs: update model schema #251 (@dlr_fn, @dlr-cjs, @dlr-ach)
 - README: update funding agency name #243 (@dlr-cjs)
-- docs: update Roadmap #244 (@dlr-cjs @dlr_jk)
-- improved Getting-Started section in docs (@dlr-cjs)
-- docs: update model schema #251 (@dlr_fn @dlr-cjs @dlr-ach)
+- README: update section `Applications` #264 (@dlr_fn) 
+- docs: update Roadmap #244 (@dlr-cjs, @dlr_jk)
+- README: place hint to star the project and add user logos #176 (@dlr-cjs)
+
+### Added
+- Add first elements of architecture documentation #255 (@dlr-cjs)
+- Add electricity use and emission tracking to CI #266 (@dlr-cjs)
 
 ### Added
 - `ElectrolysisTraderSensitivity`: Implement new agent #255 (@dlr-cjs, @dlr_jk)
@@ -22,6 +51,16 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)
+- Fix packaging with MPI using Java 11 container #268 !284 (@dlr-cjs)
+
+## [4.1.4](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.4) - 2026-08-26
+### Fixed
+- `GenericFlexibilityTrader`: Fix crash on time-variable energy limits #262 (@dlr-cjs)
+
+## [4.1.3](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.3) - 2026-08-14
+### Fixed
+- `MarketCoupling`: Fix incorrect consideration of re-transferred energy #171 (@dlr-cjs)
+- `GenericFlexibilityTrader`: Fix crash on cut overflows with short markets #258 (@dlr-cjs)
 
 ## [4.1.2](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.1.2) - 2026-05-08
 ### Fixed
@@ -69,7 +108,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - license headers: Use incremental dates in SPDX headers #223 (@dlr-cjs)
 
 ## [4.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v4.0.0) - 2025-09-09
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#400)_
 
 ### Changed
 - **Breaking**: Rename `GenericFlexibilityTrader` assessment function types #166 (@dlr-cjs, @dlr_jk)
@@ -148,7 +187,8 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Fix incongruent energy levels in `EnergyStateManager` that could cause a crash #164 (@dlr-cjs)
 
 ## [3.5.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v3.5.0) - 2025-05-05
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#350)_
+
 ### Changed
 - Change data type of `ImportCostInEURperMWH` to time series #150 (@dlr_jk)
 - Rename `Strategist` in `dynamicProgramming` to `Optimiser` #156 (@dlr-cjs)
@@ -207,7 +247,8 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Configure artifacts to expire after one year #130 (@dlr_fn, @dlr-cjs)
 
 ## [3.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v3.0.0) - 2024-09-20
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#300)_
+
 ### Changed
 - **Breaking**: Change `FuelType` input parameter from `enum` to `string_set` and move to `FuelsTrader` #120 (@dlr_fn, @dlr-cjs)
 - **Breaking**: Change `Set` input parameter from `enum` to `string_set` and rename to `PolicySet` #5 (@dlr_fn, @dlr-cjs)
@@ -252,7 +293,7 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
 - Increased FAME-Core version to 1.6 #106 (@dlr-cjs, @dlr_fn)
 
 ## [2.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v2.0.0) - 2024-03-12
-_If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md)_
+_If you are upgrading: please see [`UPGRADING.md`](./UPGRADING.md#200)_
 
 ### Changed
 - **Breaking**: Rename `EnergyExchange` to `DayAheadMarketSingleZone` #41 (@dlr-cjs)

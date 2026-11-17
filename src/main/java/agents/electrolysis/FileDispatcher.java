@@ -24,12 +24,12 @@ public class FileDispatcher extends ElectrolyzerStrategist {
 	/** Determines whether the given schedule represents absolute amounts or is relative to installed converter power */
 	private static enum Mode {
 		ABSOLUTE, RELATIVE
-	};
+	}
 
 	/** Determines whether the given schedule represents a hydrogen production or electricity consumption */
 	private static enum Target {
 		ELECTRICITY, HYDROGEN
-	};
+	}
 
 	/** Input parameters for the {@link FileDispatcher} */
 	public static final Tree parameters = Make.newTree().optional().add(

@@ -59,11 +59,15 @@ Co2Prices: 200
 
 Rerun the simulation and observe the impact of your changes on the electricity prices.
 
-Please also refer to the [FAME-Wiki](https://gitlab.com/fame-framework/wiki/-/wikis) when applying more advanced adaptations to your scenario, such as changing the [simulation duration](https://gitlab.com/fame-framework/wiki/-/wikis/GetStarted/core/Contracts).
+# Learn the Details
+
+Details on how to prepare time series input are explained in this dedicated section about [Time in AMIRIS](./Get-Started/Time.md).
+See our [Architecture Documentation](../Architecture.md) to learn about the context of components and design decisions in AMIRIS.
+Check the [FAME-Wiki](https://gitlab.com/fame-framework/wiki/-/wikis) on how to perform advanced adaptations to your scenario, such as changing the [simulation duration](https://gitlab.com/fame-framework/wiki/-/wikis/GetStarted/core/Contracts).
 
 # Build AMIRIS
 
-So far you only ran the AMIRIS model as it is provided.
+So far, you only ran the AMIRIS model as it is provided.
 If you were to modify code and change agent logic of AMIRIS, you would also need to package the application.
 See the [AMIRIS Build Guide](./Get-Started/Build.md) for instructions.
 

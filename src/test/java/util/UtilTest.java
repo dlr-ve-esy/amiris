@@ -15,6 +15,9 @@ import static org.mockito.Mockito.when;
 import static testUtils.Exceptions.assertThrowsMessage;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -307,6 +310,27 @@ public class UtilTest {
 		assertEquals(original.length, result.length);
 		for (int i = 0; i < original.length; i++) {
 			assertEquals(original[i], result[i]);
+		}
+	}
+
+	@Test
+	public void createPolynomial_null_throws() {
+		assertThrowsMessage(IllegalArgumentException.class, Util.EMPTY_POLYNOMIAL,
+				() -> Util.createPolynomial(null));
+	}
+
+	@Test
+	public void createPolynomial_empty_throws() {
+		assertThrowsMessage(IllegalArgumentException.class, Util.EMPTY_POLYNOMIAL,
+				() -> Util.createPolynomial(Collections.emptyList()));
+	}
+
+	@Test
+	public void createPolynomial_givenCoefficients_matchSetCoefficients() {
+		List<Double> input = Arrays.asList(0., 1., 1., 2., 3., 5., 8., 13.);
+		PolynomialFunction polynomial = Util.createPolynomial(input);
+		for (int index = 0; index < input.size(); index++) {
+			assertEquals(input.get(index), polynomial.getCoefficients()[index], 1E-14);
 		}
 	}
 }

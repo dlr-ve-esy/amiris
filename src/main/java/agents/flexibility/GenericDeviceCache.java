@@ -14,6 +14,7 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class GenericDeviceCache {
 	static final String ERR_PERIOD_INIT = "GenericDeviceCache's `setPeriod()` must be called at least once before `prepareFor()`.";
 
+	static final double TOLERANCE = 1E-9;
 	private final GenericDevice device;
 	private double intervalDurationInHours = Double.NaN;
 
@@ -101,37 +102,24 @@ public class GenericDeviceCache {
 
 	/** Returns the maximum reachable internal energy content by applying maximum charging power for the specified duration and
 	 * considering the initial energy content, self discharge, and inward / outward flows. The transitions is assumed to start at
-	 * the currently cached time - all related values are assumed to not change during the transition's duration. The energy content
-	 * is capped at the upper energy content limit that applies to the {@link GenericDevice}. If underflows can be prevented by
-	 * cutting outflows, the lower energy content limit is also considered.
+	 * the currently cached time - all related values are assumed to not change during the transition's duration. <b>Energy limits
+	 * are not considered</b>.
 	 * 
 	 * @param initialEnergyContentInMWH at the beginning of transition
-	 * @return maximum reachable energy content for given initial energy content in MWh */
-	public double getMaxTargetEnergyContentInMWH(double initialEnergyContentInMWH) {
-		double targetEnergyInMWH = initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate) + maxNetChargingEnergyInMWH;
-		targetEnergyInMWH = Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
-		if (device.onUnderflow() == StateViolation.CUT) {
-			targetEnergyInMWH = Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
-		}
-		return targetEnergyInMWH;
+	 * @return maximum reachable internal energy content ignoring energy limits */
+	public double getMaxChargingTargetNoEnergyLimitMWH(double initialEnergyContentInMWH) {
+		return initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate) + maxNetChargingEnergyInMWH;
 	}
 
 	/** Returns the minimum reachable internal energy content by applying maximum discharging power for the specified duration and
 	 * considering the initial energy content, self discharge, and inward / outward flows. The transitions is assumed to start at
-	 * the currently cached time - all related values are assumed to not change during the transition's duration. The energy content
-	 * is capped at the lower energy content limit that applies to the {@link GenericDevice}. If overflows can be prevented by
-	 * cutting inflows, the upper energy content limit is also considered.
+	 * the currently cached time - all related values are assumed to not change during the transition's duration. <b>Energy limits
+	 * are not considered</b>.
 	 * 
 	 * @param initialEnergyContentInMWH at the beginning of transition
-	 * @return minimum allowed energy content for given initial energy content in MWh */
-	public double getMinTargetEnergyContentInMWH(double initialEnergyContentInMWH) {
-		double targetEnergyInMWH = initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate)
-				+ maxNetDischargingEnergyInMWH;
-		targetEnergyInMWH = Math.max(energyContentLowerLimitInMWH, targetEnergyInMWH);
-		if (device.onOverflow() == StateViolation.CUT) {
-			targetEnergyInMWH = Math.min(energyContentUpperLimitInMWH, targetEnergyInMWH);
-		}
-		return targetEnergyInMWH;
+	 * @return minimum reachable internal energy content ignoring energy limits */
+	public double getMaxDischargingTargetNoEnergyLimitInMWH(double initialEnergyContentInMWH) {
+		return initialEnergyContentInMWH * (1 - effectiveSelfDischargeRate) + maxNetDischargingEnergyInMWH;
 	}
 
 	/** Simulates a transition at the currently cached time ignoring its current energy level, but starting from a given initial
@@ -182,5 +170,18 @@ public class GenericDeviceCache {
 	 * @return variable cost of a device at currently cached time */
 	public double getVariableCostInEURperMWH() {
 		return variableCostInEURperMWH;
+	}
+
+	/** Returns true, if this device can hold the energy level without charging or discharging - either because it has negligible
+	 * net inflow, or because it can cut the inflow or outflow.
+	 * 
+	 * @return true if this device can hold the energy level and ignore any inflow / outflow */
+	public boolean canHoldEnergyLevelWithoutAction() {
+		if (netInflowEnergyInMWH < -TOLERANCE) {
+			return device.onUnderflow() == StateViolation.CUT;
+		} else if (netInflowEnergyInMWH > TOLERANCE) {
+			return device.onOverflow() == StateViolation.CUT;
+		}
+		return true;
 	}
 }

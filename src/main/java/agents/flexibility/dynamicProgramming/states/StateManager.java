@@ -72,10 +72,14 @@ public interface StateManager {
 	 * <li>if true, a complete list of available final state indices is returned</li>
 	 * <li>if false, only the first and last (inclusive) final state index is returned</li>
 	 * </ul>
-	 * If an underflow or overflow of the associated device occurs, instead a <b>single</b> corresponding state is returned
+	 * If an underflow or overflow of the associated device occurs that does not support further assessment of the transition value,
+	 * exactly two entries are returned: The first entry indicates the type of situation (overflow or underflow). If the energy
+	 * limits can be ensured by the device with a "CUT" of the inflow, the seconds entry contains the closest valid final state
+	 * index (positive or zero value) to be reached. If the device cannot CUT the inflow, the second entry is negative, indicating
+	 * that no valid final state can be reached.
 	 * 
 	 * @param initialStateIndex index of state at the begin of a transition
-	 * @return final state indices reachable from given initial state at prepared time */
+	 * @return final state indices reachable from given initial state at prepared time, or two values on (over-)/underflow */
 	int[] getFinalStates(int initialStateIndex);
 
 	/** Gets a transition value from the transition from an initial to a final state
@@ -155,6 +159,14 @@ public interface StateManager {
 	 * @return time first time of the given starting period shifted by time index */
 	static TimeStamp getTimeByIndex(TimePeriod startingPeriod, int timeIndex) {
 		return startingPeriod.shiftByDuration(timeIndex).getStartTime();
+	}
+
+	/** Returns a new {@link TimePeriod} shifted by one duration to earlier times
+	 * 
+	 * @param timePeriod to be shifted to earlier times by one duration
+	 * @return {@link TimePeriod} before the given timePeriod */
+	static TimePeriod shiftLeftByOne(TimePeriod timePeriod) {
+		return new TimePeriod(timePeriod.getStartTime().earlierBy(timePeriod.getDuration()), timePeriod.getDuration());
 	}
 
 	/** Returns number of time shifts of given starting period to begin with given time

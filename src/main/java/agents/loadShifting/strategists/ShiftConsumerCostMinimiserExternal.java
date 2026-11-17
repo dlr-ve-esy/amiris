@@ -79,8 +79,8 @@ public class ShiftConsumerCostMinimiserExternal extends LoadShiftingStrategist {
 		inputs.setPeak_demand_before(portfolio.getBaselinePeakLoad());
 		inputs.setPeak_load_price(tariffStrategist.calcCapacityRelatedPriceInEURPerMW(startTime.getStartTime()));
 		inputs.setSolver(solver);
-		inputs.setVariable_costs_down(convertToArray(portfolio.getVariableShiftCostsInEURPerMWHSeries(), startTime));
-		inputs.setVariable_costs_up(convertToArray(portfolio.getVariableShiftCostsInEURPerMWHSeries(), startTime));
+		inputs.setVariable_costs_down(convertToArray(portfolio.getVariableShiftCostsInEURperMWHSeries(), startTime));
+		inputs.setVariable_costs_up(convertToArray(portfolio.getVariableShiftCostsInEURperMWHSeries(), startTime));
 		inputs.setMax_activations(portfolio.getMaximumActivations());
 		inputs.setInitial_energy_level(portfolio.getCurrentEnergyShiftStorageLevelInMWH());
 		inputs.setPrice_sensitivity(convertToArray(priceSensitivity, startTime));

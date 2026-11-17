@@ -108,7 +108,7 @@ public class ElectrolysisTraderSensitivity extends Agent
 		fuelType = FuelsTrader.readFuelType(fromInput());
 		fuelData = new FuelData(fuelType);
 
-		registrationData = HydrogenSupportClient.getRegistration(fromInput().getOptionalGroup(GROUP_SUPPORT));
+		registrationData = HydrogenSupportClient.buildRegistration(fromInput().getOptionalGroup(GROUP_SUPPORT));
 		call(this::registerAtForecaster).on(SensitivityForecastClient.Products.ForecastRegistration);
 		call(this::requestElectricitySensitivity).on(SensitivityForecastClient.Products.SensitivityRequest)
 				.use(DayAheadMarket.Products.GateClosureInfo);

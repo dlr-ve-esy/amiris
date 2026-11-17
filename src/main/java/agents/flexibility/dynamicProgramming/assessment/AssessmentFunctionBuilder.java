@@ -33,7 +33,8 @@ public final class AssessmentFunctionBuilder {
 	 * @param variableCostInEURperMWH for assessment
 	 * @return new {@link AssessmentFunction}
 	 * @throws MissingDataException if any required parameter is missing */
-	public static AssessmentFunction build(ParameterData input, TimeSeries variableCostInEURperMWH) throws MissingDataException {
+	public static AssessmentFunction build(ParameterData input, TimeSeries variableCostInEURperMWH)
+			throws MissingDataException {
 		Type type = input.getEnum("Type", Type.class);
 		switch (type) {
 			case MAX_PROFIT_PRICE_TAKER:

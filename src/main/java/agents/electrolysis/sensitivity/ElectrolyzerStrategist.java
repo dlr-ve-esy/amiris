@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 German Aerospace Center <amiris@dlr.de>
+//
+// SPDX-License-Identifier: Apache-2.0
 package agents.electrolysis.sensitivity;
 
 import java.util.ArrayList;

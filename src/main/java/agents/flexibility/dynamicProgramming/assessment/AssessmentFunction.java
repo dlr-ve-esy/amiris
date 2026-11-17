@@ -70,10 +70,9 @@ public interface AssessmentFunction {
 	 * 
 	 * @param time at which to calculate the remaining energy amount with the same price
 	 * @param externalEnergyDeltaInMWH charging if positive, discharging when negative
-	 * @return remaining energy amount with the same price
-	 */
+	 * @return remaining energy amount with the same price */
 	double getRemainingAmountAtSamePrice(TimeStamp time, double externalEnergyDeltaInMWH);
-	
+
 	/** Return the sign of a cost value
 	 * 
 	 * @return sign of cost added to value */

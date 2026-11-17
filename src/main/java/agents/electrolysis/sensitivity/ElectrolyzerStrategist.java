@@ -164,7 +164,7 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	 * 
 	 * @param targetTime to return a valid schedule for
 	 * @return the previous schedule (if still valid) or a newly created one
-	 * @throws DispatchPlanningError */
+	 * @throws DispatchPlanningError in case schedule creation fails */
 	public BidSchedule getValidSchedule(TimeStamp targetTime) throws DispatchPlanningError {
 		if (schedule == null || !schedule.isApplicable(targetTime, actualProducedHydrogen)) {
 			clearSensitivitiesBefore(targetTime);

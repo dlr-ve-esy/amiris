@@ -121,7 +121,8 @@ public abstract class Strategist {
 	/** Creates a {@link BidSchedule} for the connected flexibility
 	 * 
 	 * @param timePeriod first TimePeriod element of the schedule to be created
-	 * @return created {@link BidSchedule} for the specified {@link TimePeriod} */
+	 * @return created {@link BidSchedule} for the specified {@link TimePeriod}
+	 * @throws DispatchPlanningError in case dispatch planning fails */
 	public BidSchedule createSchedule(TimePeriod timePeriod) throws DispatchPlanningError {
 		updateSchedule(timePeriod);
 		updateBidSchedule();

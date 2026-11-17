@@ -3682,7 +3682,10 @@ AgentTypes:
                 AttributeType: enum
                 Mandatory: true
                 List: false
-                Values: ["MAX_PROFIT"]  # Other functions unused; not implemented
+                Values:
+                  MAX_PROFIT:  # Other functions unused; not implemented
+                    MetaData:
+                      description: "Maximises own profits using a merit order sensitivity forecast that takes into account the impact of bids from all GenericFlexibilityTraders"
           Bidding:
             AttributeType: block
             Mandatory: true
@@ -3692,10 +3695,18 @@ AgentTypes:
                 AttributeType: double
                 Mandatory: true
                 List: false
+                MetaData:
+                  description: "Duration in hours each created dispatch schedule is viable"
+                  unit: h
+                  isAbout: [{name: "time span", "@id": "OEO_00030035"}]
               BidToleranceInEURperMWH:
                 AttributeType: double
                 Mandatory: false
                 List: false
+                MetaData:
+                  description: "Tolerance value added to each calculated bid"
+                  unit: EUR/MWh
+                  isAbout: [{name: "bid", "@id": "OEO_00140121"}]
           Strategy:
             AttributeType: block
             Mandatory: true
@@ -3710,19 +3721,37 @@ AgentTypes:
                     AttributeType: time_series
                     Mandatory: true
                     List: false
+                    MetaData:
+                      description: "Time series specifying the targeted total hydrogen production within the ProductionTargetIntervalInHours; Important: Always synchronise data points with production target interval (e.g.: production interval X hours → total hydrogen production target specifications every X hours)."
+                      unit: MWh
+                      isAbout: [{name: "time series", "@id": "OEO_00030034"}, {name: "fuel production", "@id": "OEO_00010420"}]
                   ProductionTargetIntervalInHours:
                     AttributeType: integer
                     Mandatory: true
                     List: false
+                    MetaData:
+                      description: "Time resolution of HydrogenProductionTargetInMWH time series data points; Beware: If this time resolution does not match that of the time series and time series is anything other than a constant → results will be wrong! Attention: Value should not be smaller than forecast period!"
+                      unit: h
+                      isAbout: [{name: "time span", "@id": "OEO_00030035"}]
               PlanningHorizonInHours:
                 AttributeType: double
                 Mandatory: true
                 List: false
+                MetaData:
+                  description: "Foresight time length in hours. Must be smaller or equal to that of the contracted Forecaster."
+                  unit: h
+                  isAbout: [{name: "time span", "@id": "OEO_00030035"}]
               Type:
                 AttributeType: enum
                 Mandatory: true
                 List: false
-                Values: ["PRODUCTION_TARGET", "GREEN_HYDROGEN_MONTHLY"]
+                Values:
+                  PRODUCTION_TARGET:
+                    MetaData:
+                      description: "Schedules based on a moving target of hydrogen production totals and electricity prices"
+                  GREEN_HYDROGEN_MONTHLY:
+                    MetaData:
+                      description: "Schedules green hydrogen dispatch for monthly equivalence between electrolysis demand and renewable generation"
       Support: *HydrogenSupportClient_G_Support
     Products:
       ForecastRegistration: *SensitivityForecastClient_P_ForecastRegistration
@@ -3735,9 +3764,42 @@ AgentTypes:
       SupportInfoRequest: *HydrogenSupportClient_P_SupportInfoRequest
       SupportPayoutRequest: *HydrogenSupportClient_P_SupportPayoutRequest
     Outputs:
-      - OfferedElectricityPriceInEURperMWH
-      - ProducedHydrogenInMWH
-      - ReceivedMoneyForHydrogenInEUR
-      - DispatchMultiplier
-      - OfferedChargePriceInEURperMWH
-      - ElectricityPricePredictionInEURperMWH
+      OfferedElectricityPriceInEURperMWH:
+        MetaData:
+          description: "Offered electricity price in EUR per MWh"
+          unit: EUR/MWh
+          isAbout: [{name: "bid", "@id": "OEO_00140121"}, {name: "electricity price", "@id": "OEO_00020117"}]
+      ProducedHydrogenInMWH:
+        MetaData:
+          description: "Produced amount of hydrogen in thermal MWh"
+          unit: MWh
+          isAbout: [{name: "hydrogen", "@id": "OEO_00000220"}, {name: "fuel production", "@id": "OEO_00010420"}]
+      ReceivedMoneyForHydrogenInEUR:
+        MetaData:
+          description: "Total received money for selling hydrogen in EUR"
+          unit: EUR
+          isAbout: [{name: "market revenue", "@id": "OEO_00020128"}]
+      DispatchMultiplier:
+        MetaData:
+          description: "Multiplier applied to energy when planning dispatch to account for actions by other (competing) flexibility traders."
+          unit: 1
+          isAbout: [{name: "simultaneous with", "@id": "RO_0002082"}, {name: "net capacity factor", "@id": "OEO_00240016"}]   
+      OfferedChargePriceInEURperMWH:
+        MetaData:
+          description: "Offered price for charging in EUR per MWh"
+          unit: EUR/MWh
+          isAbout: [{name: "bid", "@id": "OEO_00140121"}, {name: "electricity price", "@id": "OEO_00020117"}]
+      ElectricityPricePredictionInEURperMWH:
+        MetaData:
+          description: "Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch"
+          unit: EUR/MWh
+          isAbout: [{name: "assumption", "@id": "OEO_00000063"}, {name: "electricity price", "@id": "OEO_00020117"}]
+      VariableCostsInEUR:
+        MetaData:
+          description: "Variable operation and maintenance costs in EUR"
+          unit: EUR
+          isAbout: [{name: "variable production cost", "@id": "OEO_00020146"}]
+      OfferedEnergyInMWH: *&DamTrader_O_OfferedEnergy
+      AwardedEnergyInMWH: *&DamTrader_O_AwardedEnergy
+      RequestedEnergyInMWH: *&DamTrader_O_RequestedEnergy
+      ReceivedHydrogenSupportInEUR: *HydrogenSupportClient_O_ReceivedHydrogenSupportInEUR

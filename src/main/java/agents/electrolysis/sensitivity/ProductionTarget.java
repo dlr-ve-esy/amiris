@@ -30,12 +30,12 @@ public class ProductionTarget extends ElectrolyzerStrategist {
 	private final TimeSeries productionTargets;
 	private final int productionInterval;
 	private TimePeriod productionPeriod;
-	private double[] energyScheduleDummy = new double[scheduleDurationPeriods];
 
 	protected ProductionTarget(ParameterData input, Electrolyzer electrolyzer, TimeSpan operationSpan)
 			throws MissingDataException {
 		super(input, electrolyzer, operationSpan);
-		ParameterData production = input.getGroup(GROUP_PRODUCTION);
+		ParameterData strategy = input.getGroup(GROUP_STRATEGY);
+		ParameterData production = strategy.getGroup(GROUP_PRODUCTION);
 		productionTargets = production.getTimeSeries(PARAM_TARGET);
 		productionInterval = production.getInteger(PARAM_INTERVAL);
 	}
@@ -47,11 +47,11 @@ public class ProductionTarget extends ElectrolyzerStrategist {
 
 	@Override
 	protected void updateSchedule(TimePeriod timePeriod) {
+		updateStepTimes(timePeriod);
 		updateIntervalStart(timePeriod);
 		resetElectricityPrices(timePeriod);
 		updateOpportunityCosts(timePeriod);
 		updateBiddingPriceLimits();
-		updateStepTimes(timePeriod);
 		Arrays.fill(electricDemandOfElectrolysisInMW, 0);
 		double totalProductionTargetInForecastPeriod = calcProductionTargetWithinForecastPeriod(timePeriod);
 		optimiseDispatch(totalProductionTargetInForecastPeriod);
@@ -140,17 +140,8 @@ public class ProductionTarget extends ElectrolyzerStrategist {
 
 	/** transfer optimised dispatch to schedule arrays */
 	private void updateScheduleArrays() {
-		double initialHydrogenProductionInMWH = actualProducedHydrogen;
 		for (int hour = 0; hour < scheduleDurationPeriods; hour++) {
 			demandScheduleInMWH[hour] = electricDemandOfElectrolysisInMW[hour];
-			scheduledChargedHydrogenTotal[hour] = initialHydrogenProductionInMWH;
-			initialHydrogenProductionInMWH += electrolyzer.calcHydrogenEnergy(demandScheduleInMWH[hour]);
 		}
 	}
-
-	@Override
-	protected double[] getInternalEnergySchedule() {
-		return energyScheduleDummy;
-	}
-
 }

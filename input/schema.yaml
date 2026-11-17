@@ -2121,126 +2121,6 @@ AgentTypes:
       subject: [{name: "water electrolysis process", "@id": "OEO_00010219"}, {name: "trader", "@id": "OEO_00040005"}]
       keywords: ["electrolysis", "hydrogen", "electricity", "trading"]
 
-  ElectrolysisTraderSensitivity:
-    Attributes:
-      FuelType: *FuelsTrader_A_FuelType
-      Device: &Electrolyzer_G_Device
-        AttributeType: block
-        Mandatory: true
-        List: false
-        NestedAttributes:
-          PeakConsumptionInMW:
-            AttributeType: time_series
-            Mandatory: true
-            List: false
-            MetaData:
-              description: "The peak electricity consumption"
-              unit: MW
-              isAbout: [{name: "electricity demand", "@id": "OEO_00320062"}, {name: "power rating", "@id": "OEO_00230001"}]
-          ConversionFactor:
-            AttributeType: double
-            Mandatory: true
-            List: false
-            help: "Factor < 1 to convert electric energy to hydrogen's thermal energy equivalent"
-            MetaData:
-              description: "Factor < 1 to convert electric energy to hydrogen's thermal energy equivalent."
-              unit: 1
-              isAbout: [{name: "energy conversion efficiency", "@id": "OEO_00140049"}]
-          VariableCostInEURperMWH:
-            AttributeType: time_series
-            Mandatory: true
-            List: false
-            Default: 0.
-            MetaData:
-              description: "The variable cost of an electrolyzer in EUR per MWh electricity"
-              unit: EUR/MWh
-              isAbout: [{name: "variable production cost", "@id": "OEO_00020146"}]
-        MetaData:
-          description: "Technical details of the electrolysis device to administrate."
-      Dispatch:
-        AttributeType: block
-        Mandatory: true
-        List: false
-        NestedAttributes:
-          Assessment:
-            AttributeType: block
-            Mandatory: true
-            List: false
-            NestedAttributes:
-              Type:
-                AttributeType: enum
-                Mandatory: true
-                List: false
-                Values: ["MAX_PROFIT"]  # Other functions unused; not implemented
-          Bidding:
-            AttributeType: block
-            Mandatory: true
-            List: false
-            NestedAttributes:
-              ScheduleDurationInHours:
-                AttributeType: double
-                Mandatory: true
-                List: false
-              BidToleranceInEURperMWH:
-                AttributeType: double
-                Mandatory: false
-                List: false
-          Strategy:
-            AttributeType: block
-            Mandatory: true
-            List: false
-            NestedAttributes:
-              ProductionTarget:
-                AttributeType: block
-                Mandatory: false
-                List: false
-                NestedAttributes:
-                  HydrogenProductionTargetInMWH:
-                    AttributeType: time_series
-                    Mandatory: true
-                    List: false
-                  ProductionTargetIntervalInHours:
-                    AttributeType: integer
-                    Mandatory: true
-                    List: false
-              PlanningHorizonInHours:
-                AttributeType: double
-                Mandatory: true
-                List: false
-              Type:
-                AttributeType: enum
-                Mandatory: true
-                List: false
-                Values: ["PRODUCTION_TARGET", "GREEN_HYDROGEN_MONTHLY"]
-          
-
-      Support:
-        AttributeType: block
-        Mandatory: false
-        List: false
-        NestedAttributes:
-          SupportInstrument:
-            AttributeType: enum
-            Mandatory: true
-            List: false
-            Values: ["MPFIX"]
-    Products:
-      ForecastRegistration: *SensitivityForecastClient_P_ForecastRegistration
-      NetAward: *SensitivityForecastClient_P_NetAward
-      SensitivityRequest: *SensitivityForecastClient_P_SensitivityRequest
-      FuelPriceForecastRequest: *FuelsTrader_P_FuelPriceForecastRequest
-      FuelPriceRequest: *FuelsTrader_P_FuelPriceRequest
-      FuelBid: *FuelsTrader_P_FuelBid
-      Bids: *DamTrader_P_Bids
-      SupportInfoRequest: *HydrogenSupportClient_P_SupportInfoRequest
-      SupportPayoutRequest: *HydrogenSupportClient_P_SupportPayoutRequest
-    Outputs:
-      - OfferedElectricityPriceInEURperMWH
-      - ProducedHydrogenInMWH
-      - ReceivedMoneyForHydrogenInEUR
-      - DispatchMultiplier
-      - OfferedChargePriceInEURperMWH
-      - ElectricityPricePredictionInEURperMWH
 
   GreenHydrogenTrader:
     Attributes:
@@ -3782,3 +3662,82 @@ AgentTypes:
       description: "Trader that operates an energy storage device, e.g., a battery storage, pumped-hydro storage using heuristic dispatch strategies."
       subject: [{name: "flexibility", "@id": "OEO_00360007"}, {name: "trader", "@id": "OEO_00040005"}]
       keywords: ["electricity", "trading", "flexibility"]
+
+
+  ElectrolysisTraderSensitivity:
+    Attributes:
+      FuelType: *FuelsTrader_A_FuelType
+      Device: *Electrolyzer_G_Device
+      Dispatch:
+        AttributeType: block
+        Mandatory: true
+        List: false
+        NestedAttributes:
+          Assessment:
+            AttributeType: block
+            Mandatory: true
+            List: false
+            NestedAttributes:
+              Type:
+                AttributeType: enum
+                Mandatory: true
+                List: false
+                Values: ["MAX_PROFIT"]  # Other functions unused; not implemented
+          Bidding:
+            AttributeType: block
+            Mandatory: true
+            List: false
+            NestedAttributes:
+              ScheduleDurationInHours:
+                AttributeType: double
+                Mandatory: true
+                List: false
+              BidToleranceInEURperMWH:
+                AttributeType: double
+                Mandatory: false
+                List: false
+          Strategy:
+            AttributeType: block
+            Mandatory: true
+            List: false
+            NestedAttributes:
+              ProductionTarget:
+                AttributeType: block
+                Mandatory: false
+                List: false
+                NestedAttributes:
+                  HydrogenProductionTargetInMWH:
+                    AttributeType: time_series
+                    Mandatory: true
+                    List: false
+                  ProductionTargetIntervalInHours:
+                    AttributeType: integer
+                    Mandatory: true
+                    List: false
+              PlanningHorizonInHours:
+                AttributeType: double
+                Mandatory: true
+                List: false
+              Type:
+                AttributeType: enum
+                Mandatory: true
+                List: false
+                Values: ["PRODUCTION_TARGET", "GREEN_HYDROGEN_MONTHLY"]
+      Support: *HydrogenSupportClient_G_Support
+    Products:
+      ForecastRegistration: *SensitivityForecastClient_P_ForecastRegistration
+      NetAward: *SensitivityForecastClient_P_NetAward
+      SensitivityRequest: *SensitivityForecastClient_P_SensitivityRequest
+      FuelPriceForecastRequest: *FuelsTrader_P_FuelPriceForecastRequest
+      FuelPriceRequest: *FuelsTrader_P_FuelPriceRequest
+      FuelBid: *FuelsTrader_P_FuelBid
+      Bids: *DamTrader_P_Bids
+      SupportInfoRequest: *HydrogenSupportClient_P_SupportInfoRequest
+      SupportPayoutRequest: *HydrogenSupportClient_P_SupportPayoutRequest
+    Outputs:
+      - OfferedElectricityPriceInEURperMWH
+      - ProducedHydrogenInMWH
+      - ReceivedMoneyForHydrogenInEUR
+      - DispatchMultiplier
+      - OfferedChargePriceInEURperMWH
+      - ElectricityPricePredictionInEURperMWH

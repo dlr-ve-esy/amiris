@@ -48,6 +48,8 @@ public abstract class Strategist {
 	/** safety margins at bidding */
 	private final double bidTolerance;
 
+	/** Planned production schedule for hydrogen in thermal MWh */
+	protected double[] scheduledChargedHydrogenTotal;
 	/** schedule for the electricity demand (or charging) schedule */
 	protected double[] demandScheduleInMWH;
 	/** schedule for the expected electricity prices */
@@ -85,6 +87,7 @@ public abstract class Strategist {
 
 	/** Initialises general permanent arrays used for schedule preparation */
 	private void allocateSchedulingArrays() {
+		scheduledChargedHydrogenTotal = new double[scheduleDurationPeriods];
 		demandScheduleInMWH = new double[scheduleDurationPeriods];
 		priceScheduleInEURperMWH = new double[scheduleDurationPeriods];
 		scheduledBidPricesInEURperMWH = new double[scheduleDurationPeriods];
@@ -127,11 +130,15 @@ public abstract class Strategist {
 		updateSchedule(timePeriod);
 		updateBidSchedule();
 		BidSchedule schedule = new BidSchedule(timePeriod, scheduleDurationPeriods);
+		schedule.setExpectedElectricityPricesInEURperMWH(getExpectedElectricityPrices());
 		schedule.setBidsScheduleInEURperMWH(scheduledBidPricesInEURperMWH);
 		schedule.setRequestedEnergyPerPeriod(demandScheduleInMWH);
-		schedule.setExpectedInitialInternalEnergyScheduleInMWH(getInternalEnergySchedule());
+		schedule.setExpectedInitialInternalEnergyScheduleInMWH(scheduledChargedHydrogenTotal);
 		return schedule;
 	}
+
+	/** @return expected electricity prices during schedule */
+	protected abstract double[] getExpectedElectricityPrices();
 
 	/** Updates the bid schedules considering safety margins for the bid prices and market price limits */
 	protected void updateBidSchedule() {
@@ -152,7 +159,4 @@ public abstract class Strategist {
 	 * 
 	 * @param timePeriod first period of the schedule to be created */
 	protected abstract void updateSchedule(TimePeriod timePeriod);
-
-	/** @return array representing the expected internal energy state of the controlled flexibility */
-	protected abstract double[] getInternalEnergySchedule();
 }

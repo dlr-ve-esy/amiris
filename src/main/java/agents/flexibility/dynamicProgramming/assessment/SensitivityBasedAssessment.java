@@ -66,7 +66,8 @@ public abstract class SensitivityBasedAssessment implements AssessmentFunction {
 
 	@Override
 	public final double getMultiplier() {
-		return currentSensitivity.getMultiplier();
+		return currentSensitivity != null ? currentSensitivity.getMultiplier()
+				: sensitivityForecasts.firstEntry().getValue().getMultiplier();
 	}
 
 	@Override

@@ -9,6 +9,8 @@ SPDX-License-Identifier: Apache-2.0 -->
 
 ### Added
 - Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
+- `ElectrolysisTraderSensitivity`: Implement new agent #255 (@dlr-cjs, @dlr_jk)
+- Add `VariableCostInEURperMWH` to `ElectrolysisTrader`s #255 (@dlr-cjs, @dlr_jk)
 - Policy: Add remuneration switch for hours with negative prices #271 #275 (@dlr_jk, @dlr-cjs)
 - CI: check update of `codemeta.json` on release #278 (@dlr-cjs)
 
@@ -44,10 +46,6 @@ _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 ### Added
 - Add first elements of architecture documentation #255 (@dlr-cjs)
 - Add electricity use and emission tracking to CI #266 (@dlr-cjs)
-
-### Added
-- `ElectrolysisTraderSensitivity`: Implement new agent #255 (@dlr-cjs, @dlr_jk)
-- Add `VariableCostInEURperMWH` to `ElectrolysisTrader`s #255 (@dlr-cjs, @dlr_jk)
 
 ### Fixed
 - Fix typo in schema #252 (@dlr-cjs)

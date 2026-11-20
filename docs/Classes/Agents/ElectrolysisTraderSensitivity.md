@@ -7,24 +7,17 @@ It is a [SensitivityForecastClient](./SensitivityForecastClient.md) that uses se
 
 ## Strategies
 
-`ElectrolysisTraderSensitivity` uses the [ProductionTarget](../Modules/ProductionTarget.md) strategist by default, which schedules electrolyzer operation based on a moving target of hydrogen production totals and electricity prices.
+`ElectrolysisTraderSensitivity` employs an [ElectrolyzerStrategist](../Modules/ElectrolyzerStrategist(Sensitivity).md) that is compatible with sensitivity forecasts.
+Currently, only a single variant, [ProductionTarget](../Modules/ProductionTarget.md) is implemented.
+It schedules electrolyzer operation based on a moving target of hydrogen production totals and electricity prices.
 It considers the sensitivity of the merit order with respect to demand and supply changes to optimise its dispatch.
-
-| Strategist        | Used Forecast              | Provide Forecast | Flex agent count        | Robustness | Available to                          |
-|-------------------|----------------------------|------------------|-------------------------|------------|---------------------------------------|
-| ProductionTarget  | sensitivity                | no               | multiple                | untested   | ElectrolysisTraderSensitivity         |
-
-## Sensitivity-Based Dispatch
-
-The key feature of `ElectrolysisTraderSensitivity` is its ability to estimate its market impact through sensitivity forecasts.
-It interacts with a [SensitivityForecaster](./SensitivityForecaster.md) which provides information about how changes in demand or supply affect electricity prices.
 
 ## Contracts
 
 ElectrolysisTraderSensitivity requires contracts with:
 * [SensitivityForecaster](./SensitivityForecaster.md): Send `ForecastRegistration`, `SensitivityRequest`, and `NetAward`; receive `SensitivityForecast`
 * [DayAheadMarket](./DayAheadMarket.md): Send `Bid`s and receive `Award`s
-* [FuelsMarket](./FuelsMarket.md): Send `FuelBid` to offer hydrogen supply; receive `FuelBill` with payments for sold hydrogen
+* [FuelsMarket](./FuelsMarket.md): Send `FuelPriceForecastRequest` and `FuelBid`; receive `FuelPriceForecast` and `FuelBill`
 * [HydrogenSupportPolicy](./HydrogenSupportPolicy.md): Send `SupportInfoRequest`, `SupportPayoutRequest`; receive `SupportInfo`, `SupportPayout`
 
 # Dependencies
@@ -36,7 +29,7 @@ ElectrolysisTraderSensitivity requires contracts with:
 # Input from file
 
 * `Device`: Group, defined in [Electrolyzer](../Modules/Electrolyzer.md) covering technical details of the electrolyzer device
-* `Strategy`: Group defined in [ElectrolyzerStrategist](../Modules/ElectrolyzerStrategist.md) with strategy parameters
+* `Strategy`: Group defined in [ElectrolyzerStrategist](../Modules/ElectrolyzerStrategist(Sensitivity).md) with strategy parameters
 * `Support`: Optional group, defined in [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md) covering hydrogen support details
 
 # Input from environment
@@ -57,17 +50,19 @@ See
 * `ElectricityPricePredictionInEURperMWH`: Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch
 * `VariableCostsInEUR`: Variable operation and maintenance costs in EUR
 
+See also [DayAheadMarketTrader](../Abilities/DayAheadMarketTrader.md) and [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md).
+
 # Messages
 
-* [ForecastClientRegistration](../Comms/ForecastClientRegistration.md): sent `ForecastRegistration` to [SensitivityForecaster](./SensitivityForecaster.md)
-* [Sensitivity](../Comms/Sensitivity.md): received `SensitivityForecast` from [SensitivityForecaster](./SensitivityForecaster.md)
-* [FuelData](../Comms/FuelData.md): sent `FuelPriceForecastRequest` and `FuelPriceRequest` to [FuelsMarket](./FuelsMarket.md)
-* [AmountAtTime](../Comms/AmountAtTime.md): sent `NetAward` to [SensitivityForecaster](./SensitivityForecaster.md); received hydrogen price forecast from [FuelsMarket](./FuelsMarket.md)
-* [ClearingTimes](../Comms/ClearingTimes.md): received `GateClosureInfo` from [DayAheadMarket](./DayAheadMarket.md)
+See [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md), [DayAheadMarketTrader](../Abilities/DayAheadMarketTrader.md), [FuelsTrader](../Abilities/FuelsTrader.md), and [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md).
 
 # See also
 
 * [DayAheadMarket](./DayAheadMarket.md)
+* [DayAheadMarketTrader](../Abilities/DayAheadMarketTrader.md)
 * [SensitivityForecaster](./SensitivityForecaster.md)
+* [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md)
 * [FuelsMarket](./FuelsMarket.md)
+* [FuelsTrader](../Abilities/FuelsTrader.md)
 * [HydrogenSupportPolicy](./HydrogenSupportPolicy.md)
+* [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md)

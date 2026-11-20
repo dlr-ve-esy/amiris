@@ -1,8 +1,8 @@
 ﻿# In Short
 
-`ProductionTarget` is a Strategist implementation for [ElectrolyzerStrategist](ElectrolyzerStrategist.md).
-It schedules electrolysis dispatch to fulfill a hydrogen production target within a specified interval 
-while considering sensitivity-based electricity price and hydrogen price forecasts.
+`ProductionTarget` is type of [ElectrolyzerStrategist](./ElectrolyzerStrategist(Sensitivity).md).
+It schedules an electrolysis unit to fulfill a hydrogen production target within a specified time interval 
+while considering electricity price sensitivity and hydrogen price forecasts.
 
 # Details
 
@@ -20,7 +20,6 @@ ProductionTarget determines an optimal dispatch strategy by:
 The strategist maintains a rolling production period based on the `ProductionTargetIntervalInHours` parameter:
 - It tracks whether hydrogen production targets have been met for each interval
 - Deficits or surpluses from previous intervals carry forward to ensure long-term target fulfillment
-- The production period shifts when the current interval ends
 
 ### Dispatch Optimisation
 
@@ -44,16 +43,8 @@ As it is integrated with a `SensitivityForecaster`, the strategist receives:
 - `HydrogenProductionTargetInMWH`: time series; Time series of hydrogen production targets (MWh) for each time period
 - `ProductionTargetIntervalInHours`: int; Interval in hours within which production targets must be fulfilled
 
-## Key Methods
-
-- getPlanningTimes(): Returns time stamps for the planning horizon
-- updateSchedule(): Recalculates the dispatch schedule based on current forecasts and targets
-- updateIntervalStart(): Updates production period and carries forward deficits/surpluses
-- calcProductionTargetWithinForecastPeriod(): Calculates the total target within the forecast period
-- optimiseDispatch(): Distributes electrolysis dispatch across hours to minimise costs
-
 # See also
 
-- [ElectrolyzerStrategist(Sensitivity)](./ElectrolyzerStrategist(Sensitivity).md): Base class
-- [Strategist(Electrolysis)](./Strategist(Electrolysis)): Parent class
-- [ElectrolysisTraderSensitivity](./ElectrolysisTraderSensitivity.md): Agent using this strategist
+- [ElectrolyzerStrategist(Sensitivity)](./ElectrolyzerStrategist(Sensitivity).md)
+- [Strategist(Electrolysis)](./Strategist(Electrolysis))
+- [ElectrolysisTraderSensitivity](./ElectrolysisTraderSensitivity.md)

@@ -12,6 +12,10 @@ Internal states or decision logics of agents
   * [FileDispatcher](./Modules/FileDispatcher(Electrolysis).md)
   * [SingleAgentSimple](./Modules/SingleAgentSimple(Electrolysis).md)
   * [MonthlyEquivalence](./Modules/MonthlyEquivalence.md)
+  * Sensitivity
+    * [Strategist](./Modules/Strategist(Electrolysis).md)
+    * [ElectrolyzerStrategist](./Modules/ElectrolyzerStrategist(Sensitivity).md)
+    * [ProductionTarget](./Modules/ProductionTarget.md)
 * Flexibility
   * [BidSchedule](./Modules/BidSchedule.md)
   * [GenericDevice](./Modules/GenericDevice.md)

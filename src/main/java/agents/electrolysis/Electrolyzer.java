@@ -111,4 +111,9 @@ public class Electrolyzer {
 	public TimeSeries getVariableCostSeries() {
 		return variableCostInEURperMWH;
 	}
+
+	/** @return variable cost of electrolyzer at given time */
+	public double getVariableCostInEURperMWH(TimeStamp time) {
+		return variableCostInEURperMWH.getValueLinear(time);
+	}
 }

@@ -4,6 +4,7 @@
 package agents.electrolysis.sensitivity;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.TreeMap;
 import agents.electrolysis.Electrolyzer;
 import agents.flexibility.BidSchedule;
@@ -39,8 +40,6 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 			.add(Make.newDouble(PARAM_FORESIGHT), Make.newEnum(PARAM_TYPE, StrategistType.class))
 			.buildTree();
 
-	/** Planned production schedule for hydrogen in thermal MWh */
-	protected double[] scheduledChargedHydrogenTotal;
 	/** total actual hydrogen produced in thermal MWH */
 	protected double actualProducedHydrogen = 0;
 	/** Maximum willingness to pay for electricity compared to selling hydrogen */
@@ -174,11 +173,6 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 		return schedule;
 	}
 
-	@Override
-	protected double[] getInternalEnergySchedule() {
-		return scheduledChargedHydrogenTotal;
-	}
-
 	/** Updates produced hydrogen total by adding the given amount
 	 * 
 	 * @param producedHydrogenInMWH amount of produced hydrogen to add to the total */
@@ -261,5 +255,10 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	/** @return latest multiplier of assessment function */
 	public double getMultiplier() {
 		return assessmentFunction.getMultiplier();
+	}
+
+	@Override
+	protected double[] getExpectedElectricityPrices() {
+		return Arrays.copyOfRange(electricityPriceForecasts, 0, scheduleDurationPeriods);
 	}
 }

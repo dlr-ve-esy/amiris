@@ -78,7 +78,8 @@ public class ElectrolysisTraderSensitivity extends Agent
 		ReceivedMoneyForHydrogenInEUR,
 		DispatchMultiplier,
 		OfferedChargePriceInEURperMWH,
-		ElectricityPricePredictionInEURperMWH
+		ElectricityPricePredictionInEURperMWH,
+		VariableCostsInEUR,
 	}
 
 	private final String fuelType;
@@ -118,6 +119,7 @@ public class ElectrolysisTraderSensitivity extends Agent
 		call(this::updateHydrogenPriceForecast).onAndUse(FuelsMarket.Products.FuelPriceForecast);
 		call(this::prepareBids).on(DayAheadMarketTrader.Products.Bids).use(DayAheadMarket.Products.GateClosureInfo);
 		call(this::digestAwards).onAndUse(DayAheadMarket.Products.Awards);
+		call(this::sendAward).on(SensitivityForecastClient.Products.NetAward).use(DayAheadMarket.Products.Awards);
 		call(this::sellProducedHydrogen).on(FuelsTrader.Products.FuelBid);
 		call(this::digestSaleReturns).onAndUse(FuelsMarket.Products.FuelBill);
 		call(this::registerSupport).on(HydrogenSupportClient.Products.SupportInfoRequest);
@@ -239,17 +241,28 @@ public class ElectrolysisTraderSensitivity extends Agent
 		Message awardMessage = CommUtils.getExactlyOneEntry(messages);
 		AwardData award = awardMessage.getDataItemOfType(AwardData.class);
 
-		double awardedEnergyInMWH = award.demandEnergyInMWH;
-		double costs = award.powerPriceInEURperMWH * awardedEnergyInMWH;
 		lastClearingTime = award.beginOfDeliveryInterval;
+		double awardedEnergyInMWH = award.demandEnergyInMWH;
+		double costsInEUR = (award.powerPriceInEURperMWH + electrolyzer.getVariableCostInEURperMWH(lastClearingTime))
+				* awardedEnergyInMWH;
 
 		lastProducedHydrogenInMWH = electrolyzer.calcProducedHydrogenOneHour(awardedEnergyInMWH, lastClearingTime);
 		strategist.updateProducedHydrogenTotal(lastProducedHydrogenInMWH);
 
 		store(OutputColumns.AwardedEnergyInMWH, awardedEnergyInMWH);
 		store(Outputs.ProducedHydrogenInMWH, lastProducedHydrogenInMWH);
+		store(Outputs.VariableCostsInEUR, costsInEUR);
 		// TODO: Add new interface AssetOwner that includes AnnualCostReport and Outputs, cf. FlexibilityTrader
-		// store(FlexibilityTrader.Outputs.VariableCostsInEUR, costs);
+	}
+
+	/** Send award total to {@link SensitivityForecastProvider}
+	 * 
+	 * @param input award information received from {@link DayAheadMarket}
+	 * @param contracts single contract with {@link SensitivityForecastProvider} */
+	private void sendAward(ArrayList<Message> input, List<Contract> contracts) {
+		AwardData awards = CommUtils.getExactlyOneEntry(input).getDataItemOfType(AwardData.class);
+		Contract contract = CommUtils.getExactlyOneEntry(contracts);
+		fulfilNext(contract, new AmountAtTime(awards.beginOfDeliveryInterval, -awards.demandEnergyInMWH));
 	}
 
 	/** Sells hydrogen at fuels market using a "negative purchase" message

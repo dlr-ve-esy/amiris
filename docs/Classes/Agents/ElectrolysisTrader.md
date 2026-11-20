@@ -46,7 +46,6 @@ Following the DispatchSchedule, the ElectrolysisTrader places demand bids at the
 * [PowerPlantScheduler](../Abilities/PowerPlantScheduler.md)
 * [MarketForecaster](./MarketForecaster.md)
 * [FuelsMarket](./FuelsMarket.md)
-* [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md)
 * [HydrogenSupportProvider](../Abilities/HydrogenSupportProvider.md)
 
 also see [FlexibilityTrader](./FlexibilityTrader.md)

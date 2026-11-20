@@ -1,85 +1,73 @@
 ﻿# 42 words
 
-ElectrolysisTraderSensitivity is a flexible Trader that demands electricity and produces hydrogen from it via electrolysis.
-It is a [FlexibilityTrader](./FlexibilityTrader.md) that uses sensitivity forecasts to consider competition of flexibility options.
-This agent extends the base ElectrolysisTrader by incorporating sensitivity information from a [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md) to estimate its joint market impact with other flexibility options.
+`ElectrolysisTraderSensitivity` is a trader that demands electricity and produces hydrogen from it via a flexible electrolysis unit.
+It is a [SensitivityForecastClient](./SensitivityForecastClient.md) that uses sensitivity forecasts to consider competition of flexibility options and estimate its joint market impact with other flexibility options.
 
 # Details
 
 ## Strategies
 
-ElectrolysisTraderSensitivity uses the ProductionTarget strategist by default, which schedules based on a moving target of hydrogen production totals and electricity prices.
-It considers the sensitivity of the merit order with respect to demand and supply changes to optimize its dispatch.
+`ElectrolysisTraderSensitivity` uses the [ProductionTarget](../Modules/ProductionTarget.md) strategist by default, which schedules electrolyzer operation based on a moving target of hydrogen production totals and electricity prices.
+It considers the sensitivity of the merit order with respect to demand and supply changes to optimise its dispatch.
 
 | Strategist        | Used Forecast              | Provide Forecast | Flex agent count        | Robustness | Available to                          |
 |-------------------|----------------------------|------------------|-------------------------|------------|---------------------------------------|
-| ProductionTarget  | price, sensitivity         | yes              | multiple                | tested     | ElectrolysisTraderSensitivity         |
+| ProductionTarget  | sensitivity                | no               | multiple                | untested   | ElectrolysisTraderSensitivity         |
 
 ## Sensitivity-Based Dispatch
 
-The key feature of ElectrolysisTraderSensitivity is its ability to estimate its market impact through sensitivity forecasts.
-It interacts with a [SensitivityForecaster](./SensitivityForecaster.md) which provides information about how changes in demand or supply affect market outcomes.
-
-The interaction flow is as follows:
-1. ElectrolysisTraderSensitivity registers at the SensitivityForecaster with its type of sensitivity needed
-2. It sends net awards after market clearings to help the forecaster update its joint-impact assessment
-3. It requests sensitivity forecasts which include an estimate of its dispatch multiplier
-4. The strategist uses this information to optimize dispatch considering competition with other flexibility options
+The key feature of `ElectrolysisTraderSensitivity` is its ability to estimate its market impact through sensitivity forecasts.
+It interacts with a [SensitivityForecaster](./SensitivityForecaster.md) which provides information about how changes in demand or supply affect electricity prices.
 
 ## Contracts
 
 ElectrolysisTraderSensitivity requires contracts with:
-* [SensitivityForecaster](./SensitivityForecaster.md): Send ForecastRegistration, NetAward, and SensitivityRequest; receive SensitivityForecast
-* [DayAheadMarket](./DayAheadMarket.md): Send bids and receive awards
-* [FuelsMarket](./FuelsMarket.md): Offer hydrogen supply
-* [HydrogenSupportPolicy](./HydrogenSupportPolicy.md): Receive support information and send payout requests
+* [SensitivityForecaster](./SensitivityForecaster.md): Send `ForecastRegistration`, `SensitivityRequest`, and `NetAward`; receive `SensitivityForecast`
+* [DayAheadMarket](./DayAheadMarket.md): Send `Bid`s and receive `Award`s
+* [FuelsMarket](./FuelsMarket.md): Send `FuelBid` to offer hydrogen supply; receive `FuelBill` with payments for sold hydrogen
+* [HydrogenSupportPolicy](./HydrogenSupportPolicy.md): Send `SupportInfoRequest`, `SupportPayoutRequest`; receive `SupportInfo`, `SupportPayout`
 
 # Dependencies
 
-* [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md)
 * [SensitivityForecaster](./SensitivityForecaster.md)
 * [FuelsMarket](./FuelsMarket.md)
-* [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md)
 * [HydrogenSupportProvider](../Abilities/HydrogenSupportProvider.md)
 
 # Input from file
 
-* Device: Group, defined in [Electrolyzer](../Modules/Electrolyzer.md) covering technical details of the electrolyzer device
-* Strategy: Group defined in [ElectrolyzerStrategist](../Modules/ElectrolyzerStrategist.md) with ProductionTarget parameters:
-  * ProductionTarget.HydrogenProductionTargetInMWH: Time series of hydrogen production targets
-  * ProductionTarget.ProductionTargetIntervalInHours: Interval in hours for production target fulfillment
-* Support: Optional group, defined in [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md) covering hydrogen support details
+* `Device`: Group, defined in [Electrolyzer](../Modules/Electrolyzer.md) covering technical details of the electrolyzer device
+* `Strategy`: Group defined in [ElectrolyzerStrategist](../Modules/ElectrolyzerStrategist.md) with strategy parameters
+* `Support`: Optional group, defined in [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md) covering hydrogen support details
 
 # Input from environment
 
-See [FlexibilityTrader](./FlexibilityTrader.md), [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md), and [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md)
+See
+* [DayAheadMarketTrader](../Abilities/DayAheadMarketTrader.md)
+* [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md)
+* [FuelsTrader](../Abilities/FuelsTrader.md)
+* [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md)
 
 # Simulation outputs
 
-* OfferedElectricityPriceInEURperMWH: Offered price for electricity in EUR/MWh
-* ProducedHydrogenInMWH: Produced amount of hydrogen in MWh
-* ReceivedMoneyForHydrogenInEUR: Total received money for selling hydrogen in EUR
-* ReceivedMoneyForElectricityInEUR: Total received money for purchasing electricity in EUR
-* VariableCostsInEUR: Variable costs in EUR
-* DispatchMultiplier: Current dispatch multiplier estimate from sensitivity forecaster
-
-See also [FlexibilityTrader](./FlexibilityTrader.md)
+* `OfferedElectricityPriceInEURperMWH`: Offered price for electricity in EUR/MWh
+* `ProducedHydrogenInMWH`: Produced amount of hydrogen in thermal MWh
+* `ReceivedMoneyForHydrogenInEUR`: Total received money for selling hydrogen in EUR
+* `DispatchMultiplier`: Current dispatch multiplier estimate from sensitivity forecaster
+* `OfferedChargePriceInEURperMWH`: Offered price for charging in EUR/MWh
+* `ElectricityPricePredictionInEURperMWH`: Assumed electricity price in the next market clearing event based on forecast + flexibility dispatch
+* `VariableCostsInEUR`: Variable operation and maintenance costs in EUR
 
 # Messages
 
-* [Sensitivity](../Comms/Sensitivity.md): received SensitivityForecast from SensitivityForecaster
-* [ForecastClientRegistration](../Comms/ForecastClientRegistration.md): sent ForecastRegistration to SensitivityForecaster
-* [AmountAtTime](../Comms/AmountAtTime.md): sent NetAward to SensitivityForecaster, received hydrogen price forecast
-* [ClearingTimes](../Comms/ClearingTimes.md): received GateClosureInfo from DayAheadMarket
-
-See also [FlexibilityTrader](./FlexibilityTrader.md)
+* [ForecastClientRegistration](../Comms/ForecastClientRegistration.md): sent `ForecastRegistration` to [SensitivityForecaster](./SensitivityForecaster.md)
+* [Sensitivity](../Comms/Sensitivity.md): received `SensitivityForecast` from [SensitivityForecaster](./SensitivityForecaster.md)
+* [FuelData](../Comms/FuelData.md): sent `FuelPriceForecastRequest` and `FuelPriceRequest` to [FuelsMarket](./FuelsMarket.md)
+* [AmountAtTime](../Comms/AmountAtTime.md): sent `NetAward` to [SensitivityForecaster](./SensitivityForecaster.md); received hydrogen price forecast from [FuelsMarket](./FuelsMarket.md)
+* [ClearingTimes](../Comms/ClearingTimes.md): received `GateClosureInfo` from [DayAheadMarket](./DayAheadMarket.md)
 
 # See also
 
-* [FlexibilityTrader](./FlexibilityTrader.md)
-* [ElectrolysisTrader](./ElectrolysisTrader.md)
+* [DayAheadMarket](./DayAheadMarket.md)
 * [SensitivityForecaster](./SensitivityForecaster.md)
-* [SensitivityForecastProvider](../Abilities/SensitivityForecastProvider.md)
-* [SensitivityForecastClient](../Abilities/SensitivityForecastClient.md)
 * [FuelsMarket](./FuelsMarket.md)
 * [HydrogenSupportPolicy](./HydrogenSupportPolicy.md)

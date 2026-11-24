@@ -112,7 +112,10 @@ public class Electrolyzer {
 		return variableCostInEURperMWH;
 	}
 
-	/** @return variable cost of electrolyzer at given time */
+	/** Return variable cost of electrolyzer at specified time
+	 * 
+	 * @param time for which to return the variable cost
+	 * @return variable cost of electrolyzer at given time */
 	public double getVariableCostInEURperMWH(TimeStamp time) {
 		return variableCostInEURperMWH.getValueLinear(time);
 	}

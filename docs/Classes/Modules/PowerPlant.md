@@ -6,7 +6,7 @@ It is constructed using a technical template `PrototypeData` - but individual pl
 # Details
 
 Different generation technologies are implemented with different time series and parameters by respective [PredefinedPlantBuilders](../Agents/PredefinedPlantBuilder.md).
-Each power plant is built based on a [PowerPlantPrototype](./PowerplantPrototype.md) and by configuring its efficiency and installed block power (in MW).
+Each power plant is built based on a [PowerPlantPrototype](./PowerPlantPrototype.md) and by configuring its efficiency and installed block power (in MW).
 Using cost data for fuels and co2 emission certificates, the PowerPlant also calculates and announces its hourly `availablePower` and `marginalCostValue` to the [ConventionalPlantOperator](../Agents/ConventionalPlantOperator.md).
 If a PowerPlant is dispatched via its `updateGeneration` method, it provides a [DispatchResult](./DispatchResult.md) comprising associated:
 

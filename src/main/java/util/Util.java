@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import org.apache.commons.math3.analysis.polynomials.PolynomialFunction;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 import communications.message.PointInTime;
 import de.dlr.gitlab.fame.communication.CommUtils;
@@ -25,6 +26,7 @@ public final class Util {
 	static final String COUNT_MISMATCH = "No equal number of entries for in list of messages for types %s %s";
 	static final String TIME_DUPLICATE = "More than one message of type %s found for same time %s";
 	static final String TIME_UNMATCHED = "Time %s in messages of type %s could not be matched to times in messages of type %s";
+	static final String EMPTY_POLYNOMIAL = "Coefficients for a polynomial must contain at least one value.";
 
 	Util() {
 		throw new IllegalStateException(NO_INSTANCE + getClass().getCanonicalName());
@@ -190,5 +192,17 @@ public final class Util {
 			}
 		}
 		return array;
+	}
+
+	/** Returns a new {@link PolynomialFunction} of arbitrary degree: a + b*x + c*x**2 + d*x**3 + ...
+	 * 
+	 * @param coefficients a, b, c, d, ... of the polynomial function in ascending order
+	 * @throws IllegalArgumentException in case given list of coefficients is null or empty
+	 * @return new Polynomial */
+	public static PolynomialFunction createPolynomial(List<Double> coefficients) {
+		if (coefficients == null || coefficients.size() == 0) {
+			throw new IllegalArgumentException(EMPTY_POLYNOMIAL);
+		}
+		return new PolynomialFunction(coefficients.stream().mapToDouble(d -> d).toArray());
 	}
 }

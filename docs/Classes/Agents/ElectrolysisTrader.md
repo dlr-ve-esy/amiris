@@ -17,6 +17,11 @@ Two operation Strategists are available for the ElectrolysisTrader:
   This strategy is assumed to be somewhat robust and might be used in combination with other flexibility options, but has not been tested for this feature.
 * An additional Strategist `GREEN_HYDROGEN_MONTHLY` is only available to ElectrolysisTrader's child class [GreenHydrogenTraderMonthly](./GreenHydrogenTraderMonthly.md).
 
+## Alternative: ElectrolysisTraderSensitivity
+
+For scenarios where multiple flexibility options compete and their joint market impact should be considered, use [ElectrolysisTraderSensitivity](./ElectrolysisTraderSensitivity.md).
+This variant uses sensitivity forecasts to estimate dispatch multipliers and optimise its dispatch when competing against other flexibility options.
+
 | Strategist             | Used Forecast              | Provide Forecast | Flex agent count        | Robustness | Available to               |
 |------------------------|----------------------------|------------------|-------------------------|------------|----------------------------|
 | DISPATCH_FILE          | none                       | yes              | multiple                | n/a        | ElectrolysisTrader         |
@@ -41,7 +46,6 @@ Following the DispatchSchedule, the ElectrolysisTrader places demand bids at the
 * [PowerPlantScheduler](../Abilities/PowerPlantScheduler.md)
 * [MarketForecaster](./MarketForecaster.md)
 * [FuelsMarket](./FuelsMarket.md)
-* [HydrogenSupportClient](../Abilities/HydrogenSupportClient.md)
 * [HydrogenSupportProvider](../Abilities/HydrogenSupportProvider.md)
 
 also see [FlexibilityTrader](./FlexibilityTrader.md)
@@ -95,6 +99,7 @@ See also [FlexibilityTrader](./FlexibilityTrader.md), [HydrogenSupportClient](..
 
 # See also
 
+* [ElectrolysisTraderSensitivity](./ElectrolysisTraderSensitivity.md)
 * [FlexibilityTrader](./FlexibilityTrader.md)
 * [FuelsMarket](./FuelsMarket.md)
 * [FuelsTrader](../Abilities/FuelsTrader.md)

@@ -19,6 +19,7 @@ import agents.plantOperator.PowerPlantOperator;
 import agents.plantOperator.PowerPlantScheduler;
 import communications.message.AmountAtTime;
 import communications.message.AwardData;
+import communications.message.ContractualPayout;
 import communications.portable.BidsAtTime;
 import communications.portable.MarginalsAtTime;
 import de.dlr.gitlab.fame.agent.input.DataProvider;
@@ -147,7 +148,8 @@ public class ConventionalTrader extends TraderWithClients implements PowerPlantS
 		Message message = CommUtils.getExactlyOneEntry(messages);
 		Contract contract = CommUtils.getExactlyOneEntry(contracts);
 		AwardData award = message.getDataItemOfType(AwardData.class);
-		double payoutInEUR = award.supplyEnergyInMWH * award.powerPriceInEURperMWH;
-		fulfilNext(contract, new AmountAtTime(award.beginOfDeliveryInterval, payoutInEUR));
+		double supportInEUR = 0.0;
+		double totalPayoutInEUR = award.supplyEnergyInMWH * award.powerPriceInEURperMWH + supportInEUR;
+		fulfilNext(contract, new ContractualPayout(award.beginOfDeliveryInterval, totalPayoutInEUR, supportInEUR));
 	}
 }

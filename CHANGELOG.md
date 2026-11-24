@@ -2,6 +2,26 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
+## [5.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.1.0) - 2026-11-24
+### Changed
+- codemeta: updated affiliation of Nitsch to BOKU University #269 (@dlr_fn)
+- README: add user logo #272 (@LeonardWilleke)
+
+### Added
+- Add support output for `RenewablePlantOperator` #215 (@dlr_jk)
+- `ElectrolysisTraderSensitivity`: Implement new agent #255 (@dlr-cjs, @dlr_jk)
+- Add `VariableCostInEURperMWH` to `ElectrolysisTrader`s #255 (@dlr-cjs, @dlr_jk)
+- Policy: Add remuneration switch for hours with negative prices #271 #275 (@dlr_jk, @dlr-cjs)
+- CI: check update of `codemeta.json` on release #278 (@dlr-cjs)
+
+### Removed
+- Remove outdated tests with Python #274 (@dlr-cjs)
+- Replace class `Polynomial` with commons-math `PolynomialFunction`#277 (@dlr-cjs)
+
+### Fixed
+- Fix division by zero in `AggregatorTrader` #270 (@dlr_jk)
+- Fix spelling errors in docs for `PowerPlantPrototype` #273 (@dlr_jk)
+
 ## [5.0.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.0.0) - 2026-09-10
 _If you are upgrading: please see [`UPGRADING.md`](UPGRADING.md#500)_
 

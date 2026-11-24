@@ -9,7 +9,7 @@ Not all hours of generation may be eligible for support, depending on the number
 Included parameters are
 
 * `Premium`: The fixed market premium of the [TechnologySet](../Comms/TechnologySet.md) which is paid on top to market revenues and given in EUR/MWh of power produced.
-* `maxNumberOfNegativeHours`: The maximum number of consecutive hours with negative prices tolerated until support payment is suspended
+* `IsEligibleAtNegativePrices`: If set to `1`, support is also paid at times of negative prices. Otherwise, if set to `0`, no support is paid in such situations.
 
 # See also
 

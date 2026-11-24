@@ -1,4 +1,4 @@
-<!-- SPDX-FileCopyrightText: 2021-2025 German Aerospace Center <amiris@dlr.de>
+<!-- SPDX-FileCopyrightText: 2021-2026 German Aerospace Center <amiris@dlr.de>
 
 SPDX-License-Identifier: Apache-2.0 -->
 ![AMIRIS_Logo](./docs/uploads/AMIRIS_LogoWTitle.png)
@@ -111,5 +111,8 @@ The following (incomplete) list features prominent organisations employing AMIRI
   </a></td>
   <td><a href="https://boku.ac.at/en/personen/person/CAC12771D2DCFF26">
     <img src="./docs/uploads/logos/BOKU.png" alt="University of Natural Resources and Life Sciences, Vienna" height="100">
+  </a></td>
+  <td><a href="https://sheffield.ac.uk/cmbe/people/cbe-academic-staff/solomon-brown">
+    <img src="./docs/uploads/logos/SHEFFIELD.png" alt="University of Sheffield, Sheffield" height="100">
   </a></td>
 </tr></table>

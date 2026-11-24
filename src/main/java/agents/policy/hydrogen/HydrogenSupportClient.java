@@ -24,9 +24,11 @@ import de.dlr.gitlab.fame.service.output.Output;
  * 
  * @author Johannes Kochems, Christoph Schimeczek */
 public interface HydrogenSupportClient extends AgentAbility {
+	static final String PARAM_INSTRUMENT = "SupportInstrument";
+
 	/** Input parameters related to requesting hydrogen support */
 	static final Tree parameters = Make.newTree().optional()
-			.add(Make.newEnum("SupportInstrument", SupportInstrument.class),
+			.add(Make.newEnum(PARAM_INSTRUMENT, SupportInstrument.class),
 					HydrogenSupportProvider.setParameter)
 			.buildTree();
 
@@ -51,10 +53,10 @@ public interface HydrogenSupportClient extends AgentAbility {
 	 * @param input group related to the hydrogen policy, can be null if no such group
 	 * @return registration message to a {@link HydrogenSupportProvider} regarding the policy, or null if input is null
 	 * @throws MissingDataException in case mandatory parameters are missing */
-	public static HydrogenPolicyRegistration getRegistration(ParameterData input) throws MissingDataException {
+	public static HydrogenPolicyRegistration buildRegistration(ParameterData input) throws MissingDataException {
 		if (input != null) {
 			return new HydrogenPolicyRegistration(HydrogenSupportProvider.readSet(input),
-					input.getEnum("SupportInstrument", SupportInstrument.class));
+					input.getEnum(PARAM_INSTRUMENT, SupportInstrument.class));
 		}
 		return null;
 	}

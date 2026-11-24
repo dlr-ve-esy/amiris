@@ -3,17 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 package agents.flexibility.dynamicProgramming.assessment;
 
-import agents.flexibility.GenericDevice;
 import agents.flexibility.dynamicProgramming.Optimiser.Target;
 import agents.forecast.sensitivity.SensitivityForecastProvider.ForecastType;
 import communications.portable.Sensitivity.InterpolationType;
+import de.dlr.gitlab.fame.data.TimeSeries;
 
 /** Maximise profit of transitions using an electricity price forecast neglecting any price impact of bids
  * 
  * @author Christoph Schimeczek, Felix Nitsch, Johannes Kochems */
 public class MaxProfitPriceTaker extends SensitivityBasedAssessment {
-	public MaxProfitPriceTaker(GenericDevice device) {
-		super(device);
+	public MaxProfitPriceTaker(TimeSeries variableCostInEURperMWH) {
+		super(variableCostInEURperMWH);
 	}
 
 	@Override

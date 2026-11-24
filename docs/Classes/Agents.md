@@ -16,6 +16,7 @@ Energy system actors represented in AMIRIS
   * [FlexibilityTrader](./Agents/FlexibilityTrader.md)
     * [StorageTrader](./Agents/StorageTrader.md)
     * [ElectrolysisTrader](./Agents/ElectrolysisTrader.md)
+      * [ElectrolysisTraderSensitivity](./Agents/ElectrolysisTraderSensitivity.md)
       * [GreenHydrogenTraderMonthly](./Agents/GreenHydrogenTraderMonthly.md)
     * [EvTraderExternal](./Agents/EvTraderExternal.md)
     * [HouseholdPvTraderExternal](./Agents/HouseholdPvTraderExternal.md)

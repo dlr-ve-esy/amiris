@@ -432,6 +432,13 @@ public class GenericDevice {
 		return onUnderflow;
 	}
 
+	/** Returns variable costs of device
+	 * 
+	 * @return variable cost time series */
+	public TimeSeries getVariableCostSeries() {
+		return variableCostInEURperMWH;
+	}
+
 	/** @return true if overflows can be cut */
 	public boolean canCutOverflows() {
 		return onOverflow == StateViolation.CUT;

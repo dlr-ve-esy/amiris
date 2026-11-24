@@ -96,7 +96,7 @@ public class ElectrolysisTrader extends FlexibilityTrader
 		fuelType = FuelsTrader.readFuelType(fromInput());
 		fuelData = new FuelData(fuelType);
 
-		registrationData = HydrogenSupportClient.getRegistration(fromInput().getOptionalGroup("Support"));
+		registrationData = HydrogenSupportClient.buildRegistration(fromInput().getOptionalGroup("Support"));
 
 		call(this::prepareForecasts).on(Trader.Products.BidsForecast).use(MarketForecaster.Products.ForecastRequest);
 		call(this::requestElectricityForecast).on(DamForecastClient.Products.PriceForecastRequest)

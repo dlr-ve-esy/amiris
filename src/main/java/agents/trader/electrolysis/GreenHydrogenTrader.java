@@ -110,7 +110,7 @@ public class GreenHydrogenTrader extends Trader
 		fuelData = new FuelData(fuelType);
 		electrolyzer = new Electrolyzer(fromInput().getGroup("Device"));
 		annualCost = AnnualCostCalculator.build(fromInput(), "Refinancing");
-		registrationData = HydrogenSupportClient.getRegistration(fromInput().getOptionalGroup("Support"));
+		registrationData = HydrogenSupportClient.buildRegistration(fromInput().getOptionalGroup("Support"));
 
 		call(this::requestPpaInformation).on(GreenHydrogenProducer.Products.PpaInformationForecastRequest)
 				.use(MarketForecaster.Products.ForecastRequest);

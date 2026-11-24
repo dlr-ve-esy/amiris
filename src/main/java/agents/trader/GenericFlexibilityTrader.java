@@ -86,7 +86,8 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 		super(dataProvider);
 
 		device = new GenericDevice(fromInput().getGroup(GROUP_DEVICE));
-		assessmentFunction = AssessmentFunctionBuilder.build(fromInput().getGroup(GROUP_ASSESSMENT), device);
+		assessmentFunction = AssessmentFunctionBuilder.build(fromInput().getGroup(GROUP_ASSESSMENT),
+				device.getVariableCostSeries());
 		stateManager = StateManagerBuilder.build(device, assessmentFunction, fromInput().getGroup(GROUP_STATES));
 		var bidScheduler = BidSchedulerBuilder.build(fromInput().getGroup(GROUP_BIDS));
 		strategist = new Optimiser(stateManager, bidScheduler, assessmentFunction.getTargetType());
@@ -142,9 +143,7 @@ public class GenericFlexibilityTrader extends Trader implements SensitivityForec
 	 * @param contracts one partner */
 	private void prepareBids(ArrayList<Message> input, List<Contract> contracts) {
 		Contract contractToFulfil = CommUtils.getExactlyOneEntry(contracts);
-		ClearingTimes clearingTimes = CommUtils.getExactlyOneEntry(input).getDataItemOfType(ClearingTimes.class);
-		List<TimeStamp> targetTimes = clearingTimes.getTimes();
-		for (TimeStamp targetTime : targetTimes) {
+		for (TimeStamp targetTime : extractTimesFromGateClosureInfoMessages(input)) {
 			excuteBeforeBidPreparation(targetTime);
 			Bid demandBid = prepareHourlyDemandBids(targetTime);
 			Bid supplyBid = prepareHourlySupplyBids(targetTime);

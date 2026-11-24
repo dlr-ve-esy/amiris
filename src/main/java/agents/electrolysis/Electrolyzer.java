@@ -17,24 +17,28 @@ import de.dlr.gitlab.fame.time.TimeStamp;
 public class Electrolyzer {
 	static final String ERR_NEGATIVE_POWER = " MWh for electrolyzer dispatch. Negative for time step: ";
 
+	private static final String PARAM_PEAK_CONSUMPTION = "PeakConsumptionInMW";
+	private static final String PARAM_CONVERSION_FACTOR = "ConversionFactor";
+	private static final String PARAM_VAR_COST = "VariableCostInEURperMWH";
+
 	/** Input parameters of an {@link Electrolyzer} unit */
 	public static final Tree parameters = Make.newTree().add(
-			Make.newSeries("PeakConsumptionInMW"),
-			Make.newDouble("ConversionFactor")
-					.help("Factor < 1 to convert electric energy to hydrogen's thermal energy equivalent"))
+			Make.newSeries(PARAM_PEAK_CONSUMPTION), Make.newDouble(PARAM_CONVERSION_FACTOR), Make.newSeries(PARAM_VAR_COST))
 			.buildTree();
 
 	private static final double NEGATIVE_TOLERANCE = -1E-5;
 	private final double conversionFactor;
 	private final TimeSeries peakConsumptions;
+	private final TimeSeries variableCostInEURperMWH;
 
 	/** Create electrolyzer device using its associated input
 	 * 
 	 * @param input parameter data group associated with {@link Electrolyzer}
 	 * @throws MissingDataException if any required input is missing */
 	public Electrolyzer(ParameterData input) throws MissingDataException {
-		conversionFactor = input.getDouble("ConversionFactor");
-		peakConsumptions = input.getTimeSeries("PeakConsumptionInMW");
+		peakConsumptions = input.getTimeSeries(PARAM_PEAK_CONSUMPTION);
+		conversionFactor = input.getDouble(PARAM_CONVERSION_FACTOR);
+		variableCostInEURperMWH = input.getTimeSeries(PARAM_VAR_COST);
 	}
 
 	/** Calculates produced hydrogen in one hour for given electric power at given time
@@ -101,5 +105,18 @@ public class Electrolyzer {
 	/** @return factor &lt; 1 of converting electric energy to hydrogen thermal energy */
 	public double getConversionFactor() {
 		return conversionFactor;
+	}
+
+	/** @return variable cost of electrolyzer */
+	public TimeSeries getVariableCostSeries() {
+		return variableCostInEURperMWH;
+	}
+
+	/** Return variable cost of electrolyzer at specified time
+	 * 
+	 * @param time for which to return the variable cost
+	 * @return variable cost of electrolyzer at given time */
+	public double getVariableCostInEURperMWH(TimeStamp time) {
+		return variableCostInEURperMWH.getValueLinear(time);
 	}
 }

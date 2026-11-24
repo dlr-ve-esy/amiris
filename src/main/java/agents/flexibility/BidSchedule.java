@@ -118,6 +118,14 @@ public class BidSchedule {
 		return timeDelta % period.getSteps() == 0;
 	}
 
+	/** Returns true if this schedule is defined for the given time
+	 * 
+	 * @param time TimeStamp which the schedule is checked for
+	 * @return true if the schedule is applicable at the specified time */
+	public boolean isApplicable(TimeStamp time) {
+		return isWithinTimeFrame(time) && matchesBeginningOfTimeElement(time);
+	}
+
 	/** @return true if the schedule is applicable to the specified hour with the specified energy in storage
 	 * @param time for which to check the expected energy level
 	 * @param storageEnergyLevelInMWH actual energy level to be compared with the planned one */

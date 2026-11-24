@@ -147,7 +147,7 @@ public abstract class ElectrolyzerStrategist extends Strategist {
 	}
 
 	/** Provides forecast for electricity demand at given time;<br>
-	 * only available to FileDispatcher is it doesn't use forecasts themselves
+	 * only available to FileDispatcher since it doesn't use forecasts themselves
 	 * 
 	 * @param targetTime to calculate the forecast for
 	 * @return forecasted electricity demand

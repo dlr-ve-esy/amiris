@@ -3799,7 +3799,7 @@ AgentTypes:
           description: "Variable operation and maintenance costs in EUR"
           unit: EUR
           isAbout: [{name: "variable production cost", "@id": "OEO_00020146"}]
-      OfferedEnergyInMWH: *&DamTrader_O_OfferedEnergy
-      AwardedEnergyInMWH: *&DamTrader_O_AwardedEnergy
-      RequestedEnergyInMWH: *&DamTrader_O_RequestedEnergy
+      OfferedEnergyInMWH: *DamTrader_O_OfferedEnergy
+      AwardedEnergyInMWH: *DamTrader_O_AwardedEnergy
+      RequestedEnergyInMWH: *DamTrader_O_RequestedEnergy
       ReceivedHydrogenSupportInEUR: *HydrogenSupportClient_O_ReceivedHydrogenSupportInEUR

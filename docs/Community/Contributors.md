@@ -20,3 +20,4 @@ The following people made significant contributions to AMIRIS (in order of their
 1. [Leonard Willeke](https://orcid.org/0009-0004-4859-2452)
 1. [Milena Sipovac](https://orcid.org/0009-0005-1010-6591)
 1. [Manuel Wetzel](https://orcid.org/0000-0001-7838-2414)
+1. [Agustín Cortés Hähnle](https://orcid.org/0009-0000-7805-4218)

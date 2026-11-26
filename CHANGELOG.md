@@ -2,6 +2,10 @@
 
 SPDX-License-Identifier: Apache-2.0 -->
 # Changelog
+## [5.1.1](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.1.1) - 2026-11-26
+### Fixed
+- Fix syntax error in schema.yaml #283 (@dlr-ach, @dlr-cjs)
+
 ## [5.1.0](https://gitlab.com/dlr-ve/esy/amiris/amiris/-/releases/v5.1.0) - 2026-11-24
 ### Changed
 - codemeta: updated affiliation of Nitsch to BOKU University #269 (@dlr_fn)
